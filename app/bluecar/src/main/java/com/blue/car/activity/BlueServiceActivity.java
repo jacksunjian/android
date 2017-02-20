@@ -209,7 +209,8 @@ public class BlueServiceActivity extends AppCompatActivity {
     }
 
     private void startFirstStartCommand() {
-        commandMap.put(new String(CommandManager.getFirstCommand()), 1);
+        command = new String(CommandManager.getFirstCommand());
+        commandMap.put(command, 1);
         writeFirstStartCommand();
     }
 
