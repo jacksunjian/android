@@ -188,7 +188,7 @@ public class BlueServiceActivity extends AppCompatActivity {
                         + " write "
                         + characteristic.getUuid().toString()
                         + " -> "
-                        + new String(characteristic.getValue()));
+                        + BlueUtils.bytesToHexString(characteristic.getValue()));
             }
         }
     };
