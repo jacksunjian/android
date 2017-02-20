@@ -119,7 +119,7 @@ public class BlueUtils {
             if (hv.length() < 2) {
                 stringBuilder.append(0);//确保是两位比如 01 02 之类的，有空格
             }
-            stringBuilder.append(hv);
+            stringBuilder.append(hv).append(" ");
         }
         return stringBuilder.toString();
     }

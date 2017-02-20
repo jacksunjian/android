@@ -33,18 +33,23 @@ import java.util.List;
 import java.util.UUID;
 
 public class BlueServiceActivity extends AppCompatActivity {
+    private static final boolean USE_DEBUG = true;
 
     private static final String TAG = BlueServiceActivity.class.getSimpleName();
 
-    private final static String UUID_STRING_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb";
-    private final static String UUID_STRING_CHARACTER = "0000ffe4-0000-1000-8000-00805f9b34fb";
+    private final static String UUID_STRING_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String UUID_STRING_CHARACTER = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String UUID_STRING_CHARACTER2 = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
     public final static UUID UUID_SERVICE = UUID.fromString(UUID_STRING_SERVICE);
     public final static UUID UUID_CHARACTER = UUID.fromString(UUID_STRING_CHARACTER);
-
-    private final Handler handler = new Handler();
+    public final static UUID UUID_CHARACTER2 = UUID.fromString(UUID_STRING_CHARACTER2);
 
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothLeService bluetoothLeService = null;
+
+    private String deviceName;
+    private String deviceAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,10 +98,6 @@ public class BlueServiceActivity extends AppCompatActivity {
         }
     }
 
-    private BluetoothLeService bluetoothLeService = null;
-    private String deviceName;
-    private String deviceAddress;
-
     private final ServiceConnection bluetoothServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -137,8 +138,10 @@ public class BlueServiceActivity extends AppCompatActivity {
     private BluetoothLeService.OnServiceDiscoverListener serviceDiscoverListener = new BluetoothLeService.OnServiceDiscoverListener() {
         @Override
         public void onServiceDiscover(BluetoothGatt gatt) {
-            displayGattServices(bluetoothLeService.getSupportedGattServices());
-            writeCommand(gatt, CommandManager.getFirstCommand());
+            if (USE_DEBUG) {
+                displayGattServices(bluetoothLeService.getSupportedGattServices());
+            }
+            writeFirstStartCommand();
         }
     };
 
@@ -170,16 +173,32 @@ public class BlueServiceActivity extends AppCompatActivity {
         }
     };
 
+    private void writeFirstStartCommand() {
+        BluetoothGatt gatt = bluetoothLeService.getBluetoothGatt();
+        writeCommand(gatt, CommandManager.getFirstCommand());
+    }
+
     private void writeCommand(BluetoothGatt bluetoothGatt, byte[] command) {
-        BluetoothGattService service = bluetoothGatt.getService(UUID_SERVICE);
-        if (service != null) {
-            BluetoothGattCharacteristic characteristic = service.getCharacteristic(UUID_CHARACTER);
-            if (characteristic != null) {
-                bluetoothGatt.setCharacteristicNotification(characteristic, true);
-                characteristic.setValue(command);
-                bluetoothGatt.writeCharacteristic(characteristic);
-            }
+        BluetoothGattCharacteristic characteristic = getServiceCharacteristic(bluetoothGatt);
+        if (characteristic == null) {
+            showToast("找不到服务的特征，无法操作");
+            return;
         }
+        characteristic.setValue(command);
+        bluetoothGatt.writeCharacteristic(characteristic);
+    }
+
+    private BluetoothGattCharacteristic getServiceCharacteristic(BluetoothGatt bluetoothGatt) {
+        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(UUID_SERVICE);
+        if (bluetoothGattService == null) {
+            return null;
+        }
+        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(UUID_CHARACTER);
+        if (characteristic == null) {
+            return null;
+        }
+        bluetoothGatt.setCharacteristicNotification(characteristic, true);
+        return characteristic;
     }
 
     private void displayCharacteristics(List<BluetoothGattCharacteristic> gattCharacteristicList) {
