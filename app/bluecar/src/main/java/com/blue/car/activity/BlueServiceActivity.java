@@ -28,8 +28,11 @@ import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.CollectionUtils;
+import com.blue.car.utils.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class BlueServiceActivity extends AppCompatActivity {
@@ -45,11 +48,18 @@ public class BlueServiceActivity extends AppCompatActivity {
     public final static UUID UUID_CHARACTER = UUID.fromString(UUID_STRING_CHARACTER);
     public final static UUID UUID_CHARACTER2 = UUID.fromString(UUID_STRING_CHARACTER2);
 
+    private Handler processHandler = new Handler();
+
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeService bluetoothLeService = null;
 
     private String deviceName;
     private String deviceAddress;
+
+    private Map<String, Integer> commandMap = new HashMap<>();
+    private String command;
+    private int firstCommandSendCount = 0;
+    private boolean firstCommandResp = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,6 +169,7 @@ public class BlueServiceActivity extends AppCompatActivity {
                         + characteristic.getUuid().toString()
                         + " -> "
                         + BlueUtils.bytesToHexString(dataBytes));
+                processCommandResp(dataBytes);
             }
         }
 
@@ -173,9 +184,42 @@ public class BlueServiceActivity extends AppCompatActivity {
         }
     };
 
+    private void processCommandResp(byte[] resp) {
+        if (StringUtils.isNullOrEmpty(command) || commandMap.containsKey(command)) {
+            return;
+        }
+        switch (commandMap.get(command)) {
+            case 1:
+                processFirstCommandResp(resp);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void processFirstCommandResp(byte[] resp) {
+        getFirstCommandResp(true, true);
+    }
+
+    private synchronized boolean getFirstCommandResp(boolean needSet, boolean value) {
+        if (needSet) {
+            firstCommandResp = value;
+        }
+        return firstCommandResp;
+    }
+
     private void writeFirstStartCommand() {
-        BluetoothGatt gatt = bluetoothLeService.getBluetoothGatt();
-        writeCommand(gatt, CommandManager.getFirstCommand());
+        processHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getFirstCommandResp(false, false) || firstCommandSendCount++ > 25) {
+                    return;
+                }
+                BluetoothGatt gatt = bluetoothLeService.getBluetoothGatt();
+                writeCommand(gatt, CommandManager.getFirstCommand());
+                writeFirstStartCommand();
+            }
+        }, 120);
     }
 
     private void writeCommand(BluetoothGatt bluetoothGatt, byte[] command) {
@@ -185,7 +229,7 @@ public class BlueServiceActivity extends AppCompatActivity {
             return;
         }
         characteristic.setValue(command);
-        bluetoothGatt.writeCharacteristic(characteristic);
+        bluetoothGatt.readCharacteristic(characteristic);
     }
 
     private BluetoothGattCharacteristic getServiceCharacteristic(BluetoothGatt bluetoothGatt) {
