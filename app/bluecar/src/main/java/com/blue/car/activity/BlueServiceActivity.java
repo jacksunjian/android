@@ -235,7 +235,10 @@ public class BlueServiceActivity extends AppCompatActivity {
             return;
         }
         characteristic.setValue(command);
-        bluetoothGatt.readCharacteristic(characteristic);
+        boolean success = bluetoothGatt.readCharacteristic(characteristic);
+        if (USE_DEBUG) {
+            Log.e("sendCommand", "result:" + success);
+        }
     }
 
     private BluetoothGattCharacteristic getServiceCharacteristic(BluetoothGatt bluetoothGatt) {
