@@ -289,7 +289,7 @@ public class DeviceListActivity extends AppCompatActivity {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     addDeviceToAdapter(getBluetoothDeviceAlias(device));
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                    Toast.makeText(DeviceListActivity.this, "扫描完成了", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DeviceListActivity.this, "扫描完成了哈", Toast.LENGTH_SHORT).show();
                 }
             }
         };
