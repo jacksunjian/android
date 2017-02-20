@@ -151,7 +151,7 @@ public class BlueServiceActivity extends AppCompatActivity {
             if (USE_DEBUG) {
                 displayGattServices(bluetoothLeService.getSupportedGattServices());
             }
-            writeFirstStartCommand();
+            startFirstStartCommand();
         }
     };
 
@@ -206,6 +206,11 @@ public class BlueServiceActivity extends AppCompatActivity {
             firstCommandResp = value;
         }
         return firstCommandResp;
+    }
+
+    private void startFirstStartCommand() {
+        commandMap.put(new String(CommandManager.getFirstCommand()), 1);
+        writeFirstStartCommand();
     }
 
     private void writeFirstStartCommand() {
