@@ -162,6 +162,9 @@ public class BlueServiceActivity extends AppCompatActivity {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            if (USE_DEBUG) {
+                Log.e("onCharacteristicWrite", "status:" + status);
+            }
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 final byte[] dataBytes = characteristic.getValue();
                 Log.e(TAG, "onCharRead " + gatt.getDevice().getName()
@@ -175,12 +178,18 @@ public class BlueServiceActivity extends AppCompatActivity {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt,
-                                          BluetoothGattCharacteristic characteristic) {
-            Log.e(TAG, "onCharWrite " + gatt.getDevice().getName()
-                    + " write "
-                    + characteristic.getUuid().toString()
-                    + " -> "
-                    + new String(characteristic.getValue()));
+                                          BluetoothGattCharacteristic characteristic,
+                                          int status) {
+            if (USE_DEBUG) {
+                Log.e("onCharacteristicWrite", "status:" + status);
+            }
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                Log.e(TAG, "onCharWrite " + gatt.getDevice().getName()
+                        + " write "
+                        + characteristic.getUuid().toString()
+                        + " -> "
+                        + new String(characteristic.getValue()));
+            }
         }
     };
 
@@ -235,7 +244,7 @@ public class BlueServiceActivity extends AppCompatActivity {
             return;
         }
         characteristic.setValue(command);
-        boolean success = bluetoothGatt.readCharacteristic(characteristic);
+        boolean success = bluetoothGatt.writeCharacteristic(characteristic);
         if (USE_DEBUG) {
             Log.e("sendCommand", "result:" + success);
         }

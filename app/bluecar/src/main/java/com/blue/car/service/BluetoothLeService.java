@@ -43,6 +43,7 @@ public class BluetoothLeService extends Service {
 
     public interface OnConnectListener {
         void onConnect(BluetoothGatt gatt);
+
         void onDisConnect(BluetoothGatt gatt);
     }
 
@@ -57,7 +58,7 @@ public class BluetoothLeService extends Service {
     public interface OnDataAvailableListener {
         void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
 
-        void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic);
+        void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
     }
 
     public void setOnConnectListener(OnConnectListener l) {
@@ -108,9 +109,15 @@ public class BluetoothLeService extends Service {
         }
     }
 
+    private void onDataCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+        if (mOnDataAvailableListener != null) {
+            mOnDataAvailableListener.onCharacteristicWrite(gatt, characteristic, status);
+        }
+    }
+
     private void onDataCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
         if (mOnDataAvailableListener != null) {
-            mOnDataAvailableListener.onCharacteristicRead(gatt, characteristic, 0);
+            mOnDataAvailableListener.onCharacteristicRead(gatt, characteristic, status);
         }
     }
 
@@ -153,7 +160,11 @@ public class BluetoothLeService extends Service {
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            onDataCharacteristicChanged(gatt, characteristic, 0);
+            onDataCharacteristicChanged(gatt, characteristic, BluetoothGatt.GATT_SUCCESS);
+        }
+
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            onDataCharacteristicWrite(gatt, characteristic, status);
         }
     };
 
