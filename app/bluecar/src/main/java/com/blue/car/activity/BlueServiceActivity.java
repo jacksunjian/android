@@ -295,6 +295,10 @@ public class BlueServiceActivity extends BaseActivity {
         return characteristic;
     }
 
+    private boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
+        return (characteristic.getProperties() & property) != 0;
+    }
+
     private void displayCharacteristics(List<BluetoothGattCharacteristic> gattCharacteristicList) {
         if (CollectionUtils.isNullOrEmpty(gattCharacteristicList)) {
             return;
@@ -303,6 +307,10 @@ public class BlueServiceActivity extends BaseActivity {
             BluetoothGattCharacteristic bluetoothGattCharacteristic = gattCharacteristicList.get(i);
             Log.e((i + 1) + ",---gattCharacteristic", "------------------------");
             Log.e("---uuid", bluetoothGattCharacteristic.getUuid().toString());
+            Log.e("---canRead", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_READ)));
+            Log.e("---canWrite", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_WRITE)));
+            Log.e("---canWrite_no_response", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)));
+            Log.e("---canNotify", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_NOTIFY)));
         }
     }
 
