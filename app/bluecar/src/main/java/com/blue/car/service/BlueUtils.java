@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.text.TextUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,25 +135,6 @@ public class BlueUtils {
         return b & 0xFF;
     }
 
-    //byte 数组与 int 的相互转换
-    public static int byteArrayToInt(byte[] b, int offset, int len) {
-        int toInt = 0;
-        int temp = len - 1;
-        for (int i = 0; i < len; i++) {
-            toInt |= (b[i + offset] & 0xFF) << (8 * (temp - i));
-        }
-        return toInt;
-    }
-
-    public static byte[] intToByteArray(int a) {
-        return new byte[]{
-                (byte) ((a >> 24) & 0xFF),
-                (byte) ((a >> 16) & 0xFF),
-                (byte) ((a >> 8) & 0xFF),
-                (byte) (a & 0xFF)
-        };
-    }
-
     private static ByteBuffer buffer = ByteBuffer.allocate(8);
 
     //byte 数组与 long 的相互转换
@@ -167,5 +149,76 @@ public class BlueUtils {
         buffer.put(bytes, 0, bytes.length);
         buffer.flip();//need flip 
         return buffer.getLong();
+    }
+
+    // begin use code
+
+    public static String getStringByIsoCharsetName(byte[] bytes) {
+        try {
+            return new String(bytes, "iso-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public static byte[] getBytesByIsoCharsetName(String str) {
+        try {
+            return str.getBytes("iso-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String bytesToAscii(byte[] bytes, int offset, int dateLen) {
+        if ((bytes == null) || (bytes.length == 0) || (offset < 0) || (dateLen <= 0)) {
+            return null;
+        }
+        if ((offset >= bytes.length) || (bytes.length - offset < dateLen)) {
+            return null;
+        }
+
+        String asciiStr = null;
+        byte[] data = new byte[dateLen];
+        System.arraycopy(bytes, offset, data, 0, dateLen);
+        try {
+            asciiStr = new String(data, "iso-8859-1");//ISO8859-1
+        } catch (UnsupportedEncodingException e) {
+        }
+        return asciiStr;
+    }
+
+    public static String bytesToAscii(byte[] bytes, int dateLen) {
+        return bytesToAscii(bytes, 0, dateLen);
+    }
+
+    public static String bytesToAscii(byte[] bytes) {
+        return bytesToAscii(bytes, 0, bytes.length);
+    }
+
+    public static int byteArrayToInt(byte[] b, int offset, int len) {
+        int toInt = 0;
+        for (int i = 0; i < len; i++) {
+            toInt |= (b[i + offset] & 0xFF) << (8 * i);
+        }
+        return toInt;
+    }
+
+    public static byte[] intToByteArray(int a) {
+        return new byte[]{
+                (byte) (a & 0xFF),
+                (byte) ((a >> 8) & 0xFF),
+                (byte) ((a >> 16) & 0xFF),
+                (byte) ((a >> 24) & 0xFF),
+        };
+    }
+
+    public static byte[] getNewBytes(byte[] originData, int offset, int length) {
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = originData[offset + i];
+        }
+        return bytes;
     }
 }

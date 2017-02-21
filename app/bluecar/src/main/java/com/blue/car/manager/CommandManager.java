@@ -1,6 +1,16 @@
 package com.blue.car.manager;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.blue.car.model.BatteryInfoCommandResp;
+import com.blue.car.model.FirstStartCommandResp;
+import com.blue.car.model.LedCommandResp;
+import com.blue.car.model.MainFuncCommandResp;
+import com.blue.car.model.RidingTimeCommandResp;
+import com.blue.car.model.SensitivityCommandResp;
+import com.blue.car.model.SpeedLimitResp;
+import com.blue.car.service.BlueUtils;
 
 import java.io.UnsupportedEncodingException;
 
@@ -19,9 +29,14 @@ public class CommandManager {
     static final byte COMMAND_SEND = 0x0A;
     static final byte COMMAND_RECEIVER = 0x0D;
 
-    private static int checkSum(byte[] bytes, int offset) {
+    private static int checkSum(byte[] bytes, int startPosition) {
+        return checkSum(bytes, startPosition, bytes.length);
+    }
+
+    //not include endPosition, for example [0,n): 0<=p<n
+    private static int checkSum(byte[] bytes, int startPosition, int endPosition) {
         int sum = 0;
-        for (int i = offset; i < bytes.length; i++) {
+        for (int i = startPosition; i < endPosition; i++) {
             sum += bytes[i] & 0xFF;
         }
         return sum;
@@ -125,6 +140,99 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x03, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xD3});
     }
 
+    public static byte[] getLedCommand() {
+        //《55 AA 03 0A 01 C6 1A 11 FF
+        return getSendCommand(new byte[]{0x1A}, COMMAND_SEND, new byte[]{0x01, (byte) 0xC6});
+    }
+
+    /*设置氛围灯模式0-9分别代表关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3*/
+    public static byte[] getAmbientLightSettingCommand(int mode) {
+        //《55 AA 04 0A 03 C6 09 00 28 FF
+        byte[] commandData = new byte[]{(byte) mode};
+        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC6});
+    }
+
+    public static byte[] getFrontLightOpenCommand(int mode) {
+        //《55 AA 04 0A 03 D3 03 00 18 FF
+        return getFrontBehindLightCommand(new byte[]{0x03, 0x00});
+    }
+
+    public static byte[] getFrontLightCloseCommand(int mode) {
+        //《55 AA 04 0A 03 D3 02 00 19 FF
+        return getFrontBehindLightCommand(new byte[]{0x02, 0x00});
+    }
+
+    public static byte[] getBrakesLightOpenCommand(int mode) {
+        //《55 AA 04 0A 03 D3 04 00 18 FF
+        return getFrontBehindLightCommand(new byte[]{0x04, 0x00});
+    }
+
+    public static byte[] getBrakesLightCloseCommand(int mode) {
+        //《55 AA 04 0A 03 D3 01 00 1A FF
+        return getFrontBehindLightCommand(new byte[]{0x01, 0x00});
+    }
+
+    private static byte[] getFrontBehindLightCommand(byte[] commandData) {
+        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xD3});
+    }
+
+    public static byte[] getBlueCarNameSettingCommand(@NonNull String name) {
+        //55 AA 11 0A 50 00
+        //4E 69 6E 65 62 6F 74 4D 69 6E 69 20 4D 31 30  蓝牙名称小于30个字符，asc码表示
+        //6A FA
+        return getSendCommand(BlueUtils.getBytesByIsoCharsetName(name), COMMAND_SEND, new byte[]{0x50, 0x00});
+    }
+
+    public static byte[] getBlueCarPasswordSettingCommand(String password) {
+        //《55 AA 08 0A 03 17
+        // 31 32 33 34 35 36  密码123456
+        // 9E FE
+        return getSendCommand(BlueUtils.getBytesByIsoCharsetName(password), COMMAND_SEND, new byte[]{0x03, 0x17});
+    }
+
+    public static byte[] getBlueCarPasswordCheckCommand() {
+        //《55 AA 03 0A 01 17 06 D4 FF
+        //》55 AA 08 0D 01 17 31 32 33 34 35 36 9D FE
+        return getSendCommand(new byte[]{0x06}, COMMAND_SEND, new byte[]{0x01, 0x17});
+    }
+
+    public static byte[] getBlueCarRidingTimeCommand() {
+        //《55 AA 03 0A 01 32 18 21 FF
+        return getSendCommand(new byte[]{0x18}, COMMAND_SEND, new byte[]{0x01, 0x32});
+    }
+
+    public static byte[] getBatteryInfoCommand() {
+        //《55 AA 03 0C 01 31 16 A8 FF
+        return getSendCommand(new byte[]{0x16}, COMMAND_SEND, new byte[]{0x01, 0x31});
+    }
+
+    /*黑匣子读取步骤
+    1.锁车
+    2.黑匣子读取
+    3.解锁*/
+    //待定
+
+    public static byte[] getRemoteControlModeCommand() {
+        //《55 AA 03 0A 01 B2 08 3D FF
+        return getSendCommand(new byte[]{0x08}, COMMAND_SEND, new byte[]{0x01, (byte) 0xB2});
+    }
+
+    public static byte[] getRemoteControlOpenCommand() {
+        //《55 AA 04 0A 03 7A 01 00 73 FF
+        return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x7A});
+    }
+
+    public static byte[] getRemoteControlCloseCommand() {
+        //《55 AA 04 0A 03 7A 00 00 74 FF
+        return getSendCommand(new byte[]{0x00, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x7A});
+    }
+
+    public static byte[] getRemoteControlMoveCommand(@NonNull byte[] commandSpeedData) {
+        //《55 AA 06 0A 03 7B 00 00 00 00 71 FF
+        //《55 AA 06 0A 03 7B CF 07 EE FF AE FC
+        return getSendCommand(commandSpeedData, COMMAND_SEND, new byte[]{0x03, 0x7B});
+    }
+
     /*
         1《55 AA 04 0A 03 70 01 00 7D FF
         2《55 AA 04 0A 03 75 01 00 78 FF
@@ -158,12 +266,12 @@ public class CommandManager {
         setValue(result, index, commandSet);
         index += commandSet.length;
         setValue(result, index, data);
-        int sum = checkSum(result, 2);
+        int sum = checkSum(result, 2);//帧头0x55 0xaa不需要
         byte[] checkByte = getCharByte(~sum);
         index += data.length;
         setValue(result, index, checkByte);
-        Log.d("checkSum", toHexString(getStringByIsoCharsetName(checkByte)));
-        Log.d("command", toHexString(getStringByIsoCharsetName(result)));
+        Log.d("checkSum", toHexString(BlueUtils.getStringByIsoCharsetName(checkByte)));
+        Log.d("command", toHexString(BlueUtils.getStringByIsoCharsetName(result)));
         return result;
     }
 
@@ -189,6 +297,14 @@ public class CommandManager {
         };
     }
 
+    private static int getIntByByte(byte[] bytes, int startPosition, int endPosition) {
+        int toInt = 0;
+        for (int i = startPosition; i < endPosition; i++) {
+            toInt |= (bytes[i] & 0xFF) << (8 * (i - startPosition));
+        }
+        return toInt;
+    }
+
     public static String toHexString(String originString) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < originString.length(); i++) {
@@ -202,12 +318,190 @@ public class CommandManager {
         return sb.toString();
     }
 
-    public static String getStringByIsoCharsetName(byte[] bytes) {
-        try {
-            return new String(bytes, "iso-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+    /*55 AA 20 0D 01 10
+      31 31 39 36 30 2F 31 30 30 30 30 39 30 30 carId(14位)
+      30 30 30 30 30 30  passWord
+      31 01 //主板版本号
+      00 00 //错误码
+      00 00 //警告码
+      48 18 sysStatus
+      89 01 be[2]
+      CB FA*/
+    public static FirstStartCommandResp getFirstStartCommandRespData(@NonNull byte[] originData) {
+        /*byte[] originData = UnEncryptAndCheckSumData(encryptData);
+        if (originData == null) {
+            return null;
+        }*/
+        FirstStartCommandResp resp = new FirstStartCommandResp();
+        resp.carId = BlueUtils.bytesToAscii(originData, 6, 14);
+        resp.blePassword = BlueUtils.bytesToAscii(originData, 20, 6);
+        resp.boardVersion = BlueUtils.byteArrayToInt(originData, 26, 2);
+        resp.errCode = BlueUtils.byteArrayToInt(originData, 28, 2);
+        resp.warningCode = BlueUtils.byteArrayToInt(originData, 30, 2);
+        resp.sysStatus = BlueUtils.byteArrayToInt(originData, 32, 2);
+        resp.remain = BlueUtils.getNewBytes(originData, 34, 2);
+        return resp;
+    }
+
+    /*55 AA 22 0D 01 B0
+    00 00 //错误代码
+    00 00 //警告代码
+    48 18 //系统状态
+    01 00 //工作模式
+    61 00 //剩余电量百分比
+    00 00 //速度
+    00 00 //平均速度
+    61 15 //总里程
+    00 00 //本次里程
+    00 00 //本次运行时间
+    A8 02 //温度
+    AA 00 //当前模式的限速值
+    64 B4 //电流
+    00 00 //b17[2];
+    00 00 //MaxAbsKMH
+    7B FB*/
+
+    public static MainFuncCommandResp getMainFuncCommandResp(@NonNull byte[] originData) {
+        MainFuncCommandResp resp = new MainFuncCommandResp();
+        resp.errCode = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.warningCode = BlueUtils.byteArrayToInt(originData, 8, 2);
+        resp.sysStatus = BlueUtils.byteArrayToInt(originData, 10, 2);
+        resp.workMode = BlueUtils.byteArrayToInt(originData, 12, 2);
+        resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 14, 2);
+        resp.speed = BlueUtils.byteArrayToInt(originData, 16, 2);
+        resp.averageSpeed = BlueUtils.byteArrayToInt(originData, 18, 2);
+        resp.totalMileage = BlueUtils.byteArrayToInt(originData, 20, 4);
+        resp.perMileage = BlueUtils.byteArrayToInt(originData, 24, 2);
+        resp.perRunTime = BlueUtils.byteArrayToInt(originData, 26, 2);
+        resp.temperature = BlueUtils.byteArrayToInt(originData, 28, 2);
+        resp.speedLimit = BlueUtils.byteArrayToInt(originData, 30, 2);
+        resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 32, 2);
+        resp.remain = BlueUtils.getNewBytes(originData, 34, 2);
+        resp.maxAbsSpeed = BlueUtils.byteArrayToInt(originData, 36, 2);
+        return resp;
+    }
+
+    /*
+    55 AA 06 0D 01 73
+    20 4E //speed?
+    88 13 //限速模式下的限速值
+    6F FE*/
+    public static SpeedLimitResp getSpeedLimitCommandResp(@NonNull byte[] originData) {
+        SpeedLimitResp resp = new SpeedLimitResp();
+        resp.speed = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.speedLimit = BlueUtils.byteArrayToInt(originData, 8, 2);
+        return resp;
+    }
+
+    /*
+    55 AA 0C 0D 01 A1
+    65 00 //转弯手把灵敏度
+    2D 00 //骑行灵敏度
+    11 00 //助力模式下的平衡点
+    00 00 //a83[2];
+    01 00 //a84 int16u
+    A0 FE*/
+    public static SensitivityCommandResp getSensitivityCommandResp(@NonNull byte[] originData) {
+        SensitivityCommandResp resp = new SensitivityCommandResp();
+        resp.turningSensitivity = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.ridingSensitivity = BlueUtils.byteArrayToInt(originData, 8, 2);
+        resp.balanceInPowerMode = BlueUtils.byteArrayToInt(originData, 10, 2);
+        resp.remainA = BlueUtils.getNewBytes(originData, 12, 2);
+        resp.remainB = BlueUtils.byteArrayToInt(originData, 14, 2);
+        return resp;
+    }
+
+    /*55 AA 04 0D 01 D3
+    07 00
+    13 FF
+    */
+    public static byte[] getLockConditionCommandResp(byte[] originData) {
+        return BlueUtils.getNewBytes(originData, 6, 2);
+    }
+
+    /*55 AA 1C 0D 01 C6
+    01 00
+    00 00 F0 8B
+    00 00 F0 50
+    00 00 F0 F0
+    00 00 F0 C8
+
+    00 00 00 00
+    00 00 00 00
+    BB F8*/
+    public static LedCommandResp getLedCommandResp(byte[] originData) {
+        LedCommandResp resp = new LedCommandResp();
+        resp.ledMode = BlueUtils.byteArrayToInt(originData, 6, 2);
+        for (int i = 0; i < resp.ledColor.length; i++) {
+            resp.ledColor[i] = BlueUtils.byteArrayToInt(originData, 8 + 4 * i, 4);
         }
-        return "";
+        return resp;
+    }
+
+    /*》55 AA 08 0D 01 17
+    31 32 33 34 35 36
+    9D FE*/
+    public static String getBlueCarPasswordCheckCommandResp(@NonNull byte[] originData) {
+        byte[] password = BlueUtils.getNewBytes(originData, 6, 6);
+        return BlueUtils.getStringByIsoCharsetName(password);
+    }
+
+    public static RidingTimeCommandResp getRidingTimeCommandResp(@NonNull byte[] originData) {
+        RidingTimeCommandResp resp = new RidingTimeCommandResp();
+        resp.totalRunningTime = BlueUtils.byteArrayToInt(originData, 6, 4);
+        resp.totalRidingTime = BlueUtils.byteArrayToInt(originData, 10, 4);
+        resp.totalPowerTime = BlueUtils.byteArrayToInt(originData, 14, 4);
+        resp.totalRemoteTime = BlueUtils.byteArrayToInt(originData, 18, 4);
+        resp.perRunningTime = BlueUtils.byteArrayToInt(originData, 22, 2);
+        resp.perRidingTime = BlueUtils.byteArrayToInt(originData, 24, 2);
+        resp.perPowerTime = BlueUtils.byteArrayToInt(originData, 26, 2);
+        resp.perRemoteTime = BlueUtils.byteArrayToInt(originData, 28, 2);
+        return resp;
+    }
+
+    /*55 AA 18 0F 01 31
+    29 0A 3C 00 08 00 76 16 21 21 00 00 00 00 00 00 29 0A 29 0A 62 00
+    99 FD*/
+    public static BatteryInfoCommandResp getBatteryInfoCommandResp(@NonNull byte[] originData) {
+        BatteryInfoCommandResp resp = new BatteryInfoCommandResp();
+        resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.remainPercent = BlueUtils.byteArrayToInt(originData, 8, 2);
+        resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 10, 2);
+        resp.voltage = BlueUtils.byteArrayToInt(originData, 12, 2);
+        resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
+        resp.remainForFuture = BlueUtils.getNewBytes(originData, 16, 10);
+        resp.state = BlueUtils.byteArrayToInt(originData, 26, 2);
+        return resp;
+    }
+
+    public static byte[] unEncryptAndCheckSumData(byte[] encryptData) {
+        byte[] originData = getUnEncryptData(encryptData);
+        if (originData == null) {
+            return null;
+        }
+        if (!checkVerificationCode(originData)) {
+            return null;
+        }
+        return originData;
+    }
+
+    public static boolean checkVerificationCode(byte[] data) {
+        if (data == null || data.length <= 0) {
+            return false;
+        }
+        int checkSum = checkSum(data, 2, data.length - 2);
+        int dataSum = getIntByByte(data, data.length - 2, data.length);
+        return checkSum == dataSum;
+    }
+
+    public static byte[] getUnEncryptData(byte[] encryptData) {
+        if (encryptData == null || encryptData.length <= 0) {
+            return null;
+        }
+        byte[] data = new byte[encryptData.length];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = (byte) EncryptDataManager.getUnEncryptData(0xFF & encryptData[i]);
+        }
+        return data;
     }
 }
