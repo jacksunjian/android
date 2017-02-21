@@ -12,13 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -35,10 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class BlueServiceActivity extends AppCompatActivity {
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
+public class BlueServiceActivity extends BaseActivity {
     private static final boolean USE_DEBUG = true;
 
     private static final String TAG = BlueServiceActivity.class.getSimpleName();
+
+    private static final int COARSE_LOCATION_PERMS_REQUEST_CODE = 1011;
+    private static final String[] COARSE_LOCATION_PERMS = new String[]{
+            Manifest.permission.ACCESS_COARSE_LOCATION};
 
     private final static String UUID_STRING_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     private final static String UUID_STRING_CHARACTER = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
@@ -64,16 +67,44 @@ public class BlueServiceActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_blue_service);
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 10);
-            }
-        }
-        initConfig();
     }
 
-    private void initConfig() {
+    @Override
+    protected Integer getLayoutId() {
+        return R.layout.activity_blue_service;
+    }
+
+    @Override
+    protected void initConfig() {
+    }
+
+    @Override
+    protected void initView() {
+
+    }
+
+    @Override
+    protected void initData() {
+        requestPermission();
+    }
+
+    @Override
+    protected int getPermissionRequestCode() {
+        return COARSE_LOCATION_PERMS_REQUEST_CODE;
+    }
+
+    @AfterPermissionGranted(COARSE_LOCATION_PERMS_REQUEST_CODE)
+    private void requestPermission() {
+        String[] perms = COARSE_LOCATION_PERMS;
+        if (EasyPermissions.hasPermissions(this, perms)) {
+            afterPermissionGranted();
+        } else {
+            EasyPermissions.requestPermissions(this, getString(R.string.request_coarse_location_permission_rationale),
+                    COARSE_LOCATION_PERMS_REQUEST_CODE, perms);
+        }
+    }
+
+    private void afterPermissionGranted() {
         initBluetooth();
     }
 
@@ -348,6 +379,8 @@ public class BlueServiceActivity extends AppCompatActivity {
                     Toast.makeText(this, "蓝牙请求开启通过议案", Toast.LENGTH_SHORT).show();
                     startIntentToDeviceScan();
                 }
+                break;
+            case COARSE_LOCATION_PERMS_REQUEST_CODE:
                 break;
         }
     }
