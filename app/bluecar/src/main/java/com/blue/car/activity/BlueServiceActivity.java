@@ -162,16 +162,16 @@ public class BlueServiceActivity extends AppCompatActivity {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (USE_DEBUG) {
-                Log.e("onCharacteristicWrite", "status:" + status);
-            }
-            if (status == BluetoothGatt.GATT_SUCCESS) {
+            if (USE_DEBUG && status == BluetoothGatt.GATT_SUCCESS) {
                 final byte[] dataBytes = characteristic.getValue();
-                Log.e(TAG, "onCharRead " + gatt.getDevice().getName()
-                        + " read "
-                        + characteristic.getUuid().toString()
-                        + " -> "
-                        + BlueUtils.bytesToHexString(dataBytes));
+                if (USE_DEBUG) {
+                    Log.e("onCharacteristicRead", "status:" + status);
+                    Log.e(TAG, "onCharRead " + gatt.getDevice().getName()
+                            + " read "
+                            + characteristic.getUuid().toString()
+                            + " -> "
+                            + BlueUtils.bytesToHexString(dataBytes));
+                }
                 processCommandResp(dataBytes);
             }
         }
@@ -180,15 +180,16 @@ public class BlueServiceActivity extends AppCompatActivity {
         public void onCharacteristicWrite(BluetoothGatt gatt,
                                           BluetoothGattCharacteristic characteristic,
                                           int status) {
-            if (USE_DEBUG) {
-                Log.e("onCharacteristicWrite", "status:" + status);
-            }
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.e(TAG, "onCharWrite " + gatt.getDevice().getName()
-                        + " write "
-                        + characteristic.getUuid().toString()
-                        + " -> "
-                        + BlueUtils.bytesToHexString(characteristic.getValue()));
+                final byte[] bytes = characteristic.getValue();
+                if (USE_DEBUG) {
+                    Log.e("onCharacteristicWrite", "status:" + status);
+                    Log.e(TAG, "onCharWrite " + gatt.getDevice().getName()
+                            + " write "
+                            + characteristic.getUuid().toString()
+                            + " -> "
+                            + BlueUtils.bytesToHexString(bytes));
+                }
             }
         }
     };
