@@ -1,9 +1,5 @@
 package com.blue.car.model;
 
-/**
- * Created by suicheng on 2017/2/20.
- */
-
 public class MainFuncCommandResp {
     public int errCode;
     public int warningCode;

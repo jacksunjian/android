@@ -1,8 +1,5 @@
 package com.blue.car.model;
 
-/**
- * Created by suicheng on 2017/2/21.
- */
 public class RidingTimeCommandResp {
     /*
     本次骑行时间：单位S，2字节，转化为时秒分

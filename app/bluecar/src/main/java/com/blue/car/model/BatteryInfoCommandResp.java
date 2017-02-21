@@ -1,8 +1,5 @@
 package com.blue.car.model;
 
-/**
- * Created by suicheng on 2017/2/21.
- */
 public class BatteryInfoCommandResp {
 
     public int remainBatteryElectricity;

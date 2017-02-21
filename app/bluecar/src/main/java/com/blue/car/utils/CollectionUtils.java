@@ -3,9 +3,6 @@ package com.blue.car.utils;
 import java.util.Collection;
 import java.util.Map;
 
-/**
- * Created by suicheng on 2017/2/9.
- */
 public class CollectionUtils {
 
     public static boolean isNullOrEmpty(Map map) {
