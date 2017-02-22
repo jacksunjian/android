@@ -32,7 +32,7 @@ public class CommandManager {
     static final byte COMMAND_SEND = 0x0A;
     static final byte COMMAND_RECEIVER = 0x0D;
 
-    private static int checkSum(byte[] bytes, int startPosition) {
+    public static int checkSum(byte[] bytes, int startPosition) {
         return checkSum(bytes, startPosition, bytes.length);
     }
 
@@ -293,7 +293,7 @@ public class CommandManager {
         };
     }
 
-    private static byte[] getCharByte(int value) {
+    public static byte[] getCharByte(int value) {
         return new byte[]{
                 (byte) (value & 0xFF),
                 (byte) ((value >> 8) & 0xFF)
@@ -492,7 +492,7 @@ public class CommandManager {
         if (BluetoothConstant.USE_DEBUG) {
             Log.e("dataBeforeCheckSum", BlueUtils.bytesToHexString(data));
         }
-        int checkSum = checkSum(data, 2, data.length - 2);
+        int checkSum = ~checkSum(data, 2, data.length - 2); //校验后要取反
         int dataSum = getIntByByte(data, data.length - 2, data.length);
         return checkSum == dataSum;
     }
