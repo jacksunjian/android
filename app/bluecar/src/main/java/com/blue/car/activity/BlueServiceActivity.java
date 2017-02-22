@@ -287,14 +287,14 @@ public class BlueServiceActivity extends BaseActivity {
         processHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (getFirstCommandResp(false, false) || firstCommandSendCount++ > 20) {
+                if (getFirstCommandResp(false, false) || firstCommandSendCount++ > 10) {
                     return;
                 }
                 BluetoothGatt gatt = bluetoothLeService.getBluetoothGatt();
                 writeCommand(gatt, CommandManager.getFirstCommand());
                 writeFirstStartCommand();
             }
-        }, 150);
+        }, 500);
     }
 
     private void writeCommand(BluetoothGatt bluetoothGatt, byte[] command) {
