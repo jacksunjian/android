@@ -270,7 +270,7 @@ public class CommandManager {
         index += commandSet.length;
         setValue(result, index, data);
         int sum = checkSum(result, 2);//帧头0x55 0xaa不需要
-        byte[] checkByte = getCharByte(~sum);
+        byte[] checkByte = BlueUtils.getCharByte(~sum);
         index += data.length;
         setValue(result, index, checkByte);
         Log.d("checkSum", toHexString(BlueUtils.getStringByIsoCharsetName(checkByte)));
@@ -291,21 +291,6 @@ public class CommandManager {
                 (byte) ((value >> 16) & 0xFF),
                 (byte) ((value >> 24) & 0xFF),
         };
-    }
-
-    public static byte[] getCharByte(int value) {
-        return new byte[]{
-                (byte) (value & 0xFF),
-                (byte) ((value >> 8) & 0xFF)
-        };
-    }
-
-    private static int getIntByByte(byte[] bytes, int startPosition, int endPosition) {
-        int toInt = 0;
-        for (int i = startPosition; i < endPosition; i++) {
-            toInt |= (bytes[i] & 0xFF) << (8 * (i - startPosition));
-        }
-        return toInt;
     }
 
     public static String toHexString(String originString) {
@@ -492,9 +477,9 @@ public class CommandManager {
         if (BluetoothConstant.USE_DEBUG) {
             Log.e("dataBeforeCheckSum", BlueUtils.bytesToHexString(data));
         }
-        int checkSum = ~checkSum(data, 2, data.length - 2); //校验后要取反
-        int dataSum = getIntByByte(data, data.length - 2, data.length);
-        return checkSum == dataSum;
+        int endPosition = data.length - 2;
+        byte[] checkBytes = BlueUtils.getCharByte(~checkSum(data, 2, endPosition));
+        return checkBytes[0] == data[endPosition] && checkBytes[1] == data[endPosition + 1];
     }
 
     public static byte[] getUnEncryptData(byte[] encryptData) {

@@ -246,4 +246,19 @@ public class BlueUtils {
         }
         return result;
     }
+
+    public static int getIntByByte(byte[] bytes, int startPosition, int endPosition) {
+        int toInt = 0;
+        for (int i = startPosition; i < endPosition; i++) {
+            toInt |= (bytes[i] & 0xFF) << (8 * (i - startPosition));
+        }
+        return toInt;
+    }
+
+    public static byte[] getCharByte(int value) {
+        return new byte[]{
+                (byte) (value & 0xFF),
+                (byte) ((value >> 8) & 0xFF)
+        };
+    }
 }
