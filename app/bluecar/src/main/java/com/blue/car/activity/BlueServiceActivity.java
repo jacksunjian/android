@@ -235,7 +235,10 @@ public class BlueServiceActivity extends BaseActivity {
         if (characteristic == null) {
             return null;
         }
-        bluetoothGatt.setCharacteristicNotification(characteristic, true);
+        boolean success = bluetoothGatt.setCharacteristicNotification(characteristic, true);
+        if (USE_DEBUG) {
+            Log.e("UUID_CHARACTER_RX", "notifyEnableResult:" + success);
+        }
         return characteristic;
     }
 
