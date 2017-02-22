@@ -221,4 +221,29 @@ public class BlueUtils {
         }
         return bytes;
     }
+
+    public static boolean equalBytes(byte[] src, byte[] dest, int offset, int length) {
+        for (int i = offset; i < length; i++) {
+            if (src[i] != dest[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static byte[] byteListToArrayByte(List<byte[]> list) {
+        int count = 0;
+        for (byte[] bytes : list) {
+            count += bytes.length;
+        }
+        byte[] result = new byte[count];
+        int destPos = 0;
+        for (int i = 0; i < list.size(); i++) {
+            if (i != 0) {
+                destPos += list.get(i - 1).length;
+            }
+            System.arraycopy(list.get(i), 0, result, destPos, list.get(i).length);
+        }
+        return result;
+    }
 }

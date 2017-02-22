@@ -15,6 +15,10 @@ public class StringUtils {
 
     static public String punctuation = "[`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
 
+    static public boolean isNullOrEmpty(final byte[] bytes) {
+        return (bytes == null || bytes.length <= 0);
+    }
+
     static public boolean isNullOrEmpty(final String string) {
         return (string == null || string.trim().length() <= 0);
     }

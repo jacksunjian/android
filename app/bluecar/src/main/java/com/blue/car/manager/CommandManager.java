@@ -11,8 +11,10 @@ import com.blue.car.model.RidingTimeCommandResp;
 import com.blue.car.model.SensitivityCommandResp;
 import com.blue.car.model.SpeedLimitResp;
 import com.blue.car.service.BlueUtils;
+import com.blue.car.utils.CollectionUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 public class CommandManager {
 
@@ -474,12 +476,9 @@ public class CommandManager {
         return resp;
     }
 
-    public static byte[] unEncryptAndCheckSumData(byte[] encryptData) {
+    public static byte[] unEncryptData(byte[] encryptData) {
         byte[] originData = getUnEncryptData(encryptData);
         if (originData == null) {
-            return null;
-        }
-        if (!checkVerificationCode(originData)) {
             return null;
         }
         return originData;
@@ -503,5 +502,18 @@ public class CommandManager {
             data[i] = (byte) EncryptDataManager.getUnEncryptData(0xFF & encryptData[i]);
         }
         return data;
+    }
+
+    public static boolean startWith(byte[] src, byte desc[]) {
+        return BlueUtils.equalBytes(src, desc, 0, desc.length);
+    }
+
+    public static boolean startWithStartFrameHead(byte[] src) {
+        return startWith(src, COMMAND_START);
+    }
+
+    public static boolean checkDataComplete(byte[] src) {
+        int dataLength = (src[2] & 0xFF) - 2;
+        return (COMMAND_START.length + 1 + 3 + dataLength + 2) == src.length;
     }
 }

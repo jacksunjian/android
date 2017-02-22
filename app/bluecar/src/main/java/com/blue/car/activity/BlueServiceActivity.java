@@ -27,6 +27,7 @@ import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.CollectionUtils;
 import com.blue.car.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,8 @@ public class BlueServiceActivity extends BaseActivity {
     private String command;
     private int firstCommandSendCount = 0;
     private boolean firstCommandResp = false;
+
+    private List<byte[]> commandDataList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,7 +201,7 @@ public class BlueServiceActivity extends BaseActivity {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (USE_DEBUG && status == BluetoothGatt.GATT_SUCCESS) {
-                final byte[] dataBytes = CommandManager.unEncryptAndCheckSumData(characteristic.getValue());
+                final byte[] dataBytes = CommandManager.unEncryptData(characteristic.getValue());
                 if (USE_DEBUG) {
                     Log.e("onCharacteristicRead", "status:" + status);
                     Log.e(TAG, "onCharRead " + gatt.getDevice().getName()
@@ -207,7 +210,8 @@ public class BlueServiceActivity extends BaseActivity {
                             + " -> "
                             + BlueUtils.bytesToHexString(dataBytes));
                 }
-                processCommandResp(dataBytes);
+                byte[] result = obtainData(dataBytes);
+                processCommandResp(result);
             }
         }
 
@@ -266,8 +270,32 @@ public class BlueServiceActivity extends BaseActivity {
         }
     }
 
+    private synchronized byte[] obtainData(byte[] data) {
+        boolean result = CommandManager.startWithStartFrameHead(data);
+        if (result) {
+            result = CommandManager.checkDataComplete(data);
+            if (result) {
+                return data;
+            }
+            commandDataList.add(data);
+            return null;
+        } else {
+            commandDataList.add(data);
+            List<byte[]> list = commandDataList;
+            commandDataList = new ArrayList<>();
+            return BlueUtils.byteListToArrayByte(list);
+        }
+    }
+
     private void processFirstCommandResp(byte[] resp) {
         getFirstCommandResp(true, true);
+        if (StringUtils.isNullOrEmpty(resp)) {
+            return;
+        }
+        boolean result = CommandManager.checkVerificationCode(resp);
+        if (USE_DEBUG) {
+            Log.e("checkVerificationCode", String.valueOf(result));
+        }
     }
 
     private synchronized boolean getFirstCommandResp(boolean needSet, boolean value) {
