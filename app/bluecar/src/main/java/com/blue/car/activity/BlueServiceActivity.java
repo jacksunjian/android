@@ -44,12 +44,12 @@ public class BlueServiceActivity extends BaseActivity {
             Manifest.permission.ACCESS_COARSE_LOCATION};
 
     private final static String UUID_STRING_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    private final static String UUID_STRING_CHARACTER = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-    private final static String UUID_STRING_CHARACTER2 = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String UUID_STRING_CHARACTER_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String UUID_STRING_CHARACTER_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
     public final static UUID UUID_SERVICE = UUID.fromString(UUID_STRING_SERVICE);
-    public final static UUID UUID_CHARACTER = UUID.fromString(UUID_STRING_CHARACTER);
-    public final static UUID UUID_CHARACTER2 = UUID.fromString(UUID_STRING_CHARACTER2);
+    public final static UUID UUID_CHARACTER_TX = UUID.fromString(UUID_STRING_CHARACTER_TX);
+    public final static UUID UUID_CHARACTER_RX = UUID.fromString(UUID_STRING_CHARACTER_RX);
 
     private Handler processHandler = new Handler();
 
@@ -182,6 +182,7 @@ public class BlueServiceActivity extends BaseActivity {
             if (USE_DEBUG) {
                 displayGattServices(bluetoothLeService.getSupportedGattServices());
             }
+            initRxCharacteristic(gatt);
             startFirstStartCommand();
         }
     };
@@ -225,6 +226,19 @@ public class BlueServiceActivity extends BaseActivity {
         }
     };
 
+    private BluetoothGattCharacteristic initRxCharacteristic(BluetoothGatt bluetoothGatt) {
+        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(UUID_SERVICE);
+        if (bluetoothGattService == null) {
+            return null;
+        }
+        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(UUID_CHARACTER_RX);
+        if (characteristic == null) {
+            return null;
+        }
+        bluetoothGatt.setCharacteristicNotification(characteristic, true);
+        return characteristic;
+    }
+
     private void processCommandResp(byte[] resp) {
         if (StringUtils.isNullOrEmpty(command) || commandMap.containsKey(command)) {
             return;
@@ -259,14 +273,14 @@ public class BlueServiceActivity extends BaseActivity {
         processHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (getFirstCommandResp(false, false) || firstCommandSendCount++ > 25) {
+                if (getFirstCommandResp(false, false) || firstCommandSendCount++ > 20) {
                     return;
                 }
                 BluetoothGatt gatt = bluetoothLeService.getBluetoothGatt();
                 writeCommand(gatt, CommandManager.getFirstCommand());
                 writeFirstStartCommand();
             }
-        }, 120);
+        }, 150);
     }
 
     private void writeCommand(BluetoothGatt bluetoothGatt, byte[] command) {
@@ -287,11 +301,10 @@ public class BlueServiceActivity extends BaseActivity {
         if (bluetoothGattService == null) {
             return null;
         }
-        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(UUID_CHARACTER);
+        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(UUID_CHARACTER_TX);
         if (characteristic == null) {
             return null;
         }
-        bluetoothGatt.setCharacteristicNotification(characteristic, true);
         return characteristic;
     }
 
