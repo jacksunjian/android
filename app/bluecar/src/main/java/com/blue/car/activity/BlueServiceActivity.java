@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
@@ -46,10 +47,12 @@ public class BlueServiceActivity extends BaseActivity {
     private final static String UUID_STRING_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     private final static String UUID_STRING_CHARACTER_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     private final static String UUID_STRING_CHARACTER_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+    private final static String UUID_STRING_CHARACTER_DESC = "00002902-0000-1000-8000-00805f9b34fb";
 
     public final static UUID UUID_SERVICE = UUID.fromString(UUID_STRING_SERVICE);
     public final static UUID UUID_CHARACTER_TX = UUID.fromString(UUID_STRING_CHARACTER_TX);
     public final static UUID UUID_CHARACTER_RX = UUID.fromString(UUID_STRING_CHARACTER_RX);
+    public static final UUID UUID_CHARACTER_DESC = UUID.fromString(UUID_STRING_CHARACTER_DESC);
 
     private Handler processHandler = new Handler();
 
@@ -238,6 +241,14 @@ public class BlueServiceActivity extends BaseActivity {
         boolean success = bluetoothGatt.setCharacteristicNotification(characteristic, true);
         if (USE_DEBUG) {
             Log.e("UUID_CHARACTER_RX", "notifyEnableResult:" + success);
+        }
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID_CHARACTER_DESC);
+        if (descriptor != null) {
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            success = bluetoothGatt.writeDescriptor(descriptor);
+            if (USE_DEBUG) {
+                Log.e("UUID_CHARACTER_RX", "notifyDescriptorResult:" + success);
+            }
         }
         return characteristic;
     }
