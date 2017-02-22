@@ -254,8 +254,7 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void processCommandResp(byte[] resp) {
-        if (resp == null || resp.length <= 0 ||
-                StringUtils.isNullOrEmpty(command) || commandMap.containsKey(command)) {
+        if (StringUtils.isNullOrEmpty(command) || !commandMap.containsKey(command)) {
             return;
         }
         switch (commandMap.get(command)) {
