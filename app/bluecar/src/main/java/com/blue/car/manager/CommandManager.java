@@ -11,6 +11,7 @@ import com.blue.car.model.RidingTimeCommandResp;
 import com.blue.car.model.SensitivityCommandResp;
 import com.blue.car.model.SpeedLimitResp;
 import com.blue.car.service.BlueUtils;
+import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.CollectionUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -487,6 +488,9 @@ public class CommandManager {
     public static boolean checkVerificationCode(byte[] data) {
         if (data == null || data.length <= 0) {
             return false;
+        }
+        if (BluetoothConstant.USE_DEBUG) {
+            Log.e("dataBeforeCheckSum", BlueUtils.bytesToHexString(data));
         }
         int checkSum = checkSum(data, 2, data.length - 2);
         int dataSum = getIntByByte(data, data.length - 2, data.length);

@@ -37,7 +37,7 @@ import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class BlueServiceActivity extends BaseActivity {
-    private static final boolean USE_DEBUG = true;
+    private static final boolean USE_DEBUG = BluetoothConstant.USE_DEBUG;
 
     private static final String TAG = BlueServiceActivity.class.getSimpleName();
 
