@@ -198,7 +198,7 @@ public class BlueServiceActivity extends BaseActivity {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             if (USE_DEBUG && status == BluetoothGatt.GATT_SUCCESS) {
-                final byte[] dataBytes = characteristic.getValue();
+                final byte[] dataBytes = CommandManager.unEncryptAndCheckSumData(characteristic.getValue());
                 if (USE_DEBUG) {
                     Log.e("onCharacteristicRead", "status:" + status);
                     Log.e(TAG, "onCharRead " + gatt.getDevice().getName()
@@ -254,7 +254,8 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void processCommandResp(byte[] resp) {
-        if (StringUtils.isNullOrEmpty(command) || commandMap.containsKey(command)) {
+        if (resp == null || resp.length <= 0 ||
+                StringUtils.isNullOrEmpty(command) || commandMap.containsKey(command)) {
             return;
         }
         switch (commandMap.get(command)) {
