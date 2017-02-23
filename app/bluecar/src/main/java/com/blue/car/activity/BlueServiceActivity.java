@@ -21,10 +21,12 @@ import android.widget.Toast;
 
 import com.blue.car.R;
 import com.blue.car.manager.CommandManager;
+import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.CollectionUtils;
+import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -200,16 +202,14 @@ public class BlueServiceActivity extends BaseActivity {
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (USE_DEBUG && status == BluetoothGatt.GATT_SUCCESS) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
                 final byte[] dataBytes = CommandManager.unEncryptData(characteristic.getValue());
-                if (USE_DEBUG) {
-                    Log.e("onCharacteristicRead", "status:" + status);
-                    Log.e(TAG, "onCharRead " + gatt.getDevice().getName()
-                            + " read "
-                            + characteristic.getUuid().toString()
-                            + " -> "
-                            + BlueUtils.bytesToHexString(dataBytes));
-                }
+                LogUtils.e("onCharacteristicRead", "status:" + status);
+                LogUtils.e(TAG, "onCharRead " + gatt.getDevice().getName()
+                        + " read "
+                        + characteristic.getUuid().toString()
+                        + " -> "
+                        + BlueUtils.bytesToHexString(dataBytes));
                 byte[] result = obtainData(dataBytes);
                 processCommandResp(result);
             }
@@ -221,14 +221,12 @@ public class BlueServiceActivity extends BaseActivity {
                                           int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 final byte[] bytes = characteristic.getValue();
-                if (USE_DEBUG) {
-                    Log.e("onCharacteristicWrite", "status:" + status);
-                    Log.e(TAG, "onCharWrite " + gatt.getDevice().getName()
-                            + " write "
-                            + characteristic.getUuid().toString()
-                            + " -> "
-                            + BlueUtils.bytesToHexString(bytes));
-                }
+                LogUtils.e("onCharacteristicWrite", "status:" + status);
+                LogUtils.e(TAG, "onCharWrite " + gatt.getDevice().getName()
+                        + " write "
+                        + characteristic.getUuid().toString()
+                        + " -> "
+                        + BlueUtils.bytesToHexString(bytes));
             }
         }
     };
@@ -243,16 +241,12 @@ public class BlueServiceActivity extends BaseActivity {
             return null;
         }
         boolean success = bluetoothGatt.setCharacteristicNotification(characteristic, true);
-        if (USE_DEBUG) {
-            Log.e("UUID_CHARACTER_RX", "notifyEnableResult:" + success);
-        }
+        LogUtils.e("UUID_CHARACTER_RX", "notifyEnableResult:" + success);
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID_CHARACTER_DESC);
         if (descriptor != null) {
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             success = bluetoothGatt.writeDescriptor(descriptor);
-            if (USE_DEBUG) {
-                Log.e("UUID_CHARACTER_RX", "notifyDescriptorResult:" + success);
-            }
+            LogUtils.e("UUID_CHARACTER_RX", "notifyDescriptorResult:" + success);
         }
         return characteristic;
     }
@@ -287,14 +281,16 @@ public class BlueServiceActivity extends BaseActivity {
         }
     }
 
-    private void processFirstCommandResp(byte[] resp) {
+    private void processFirstCommandResp(byte[] data) {
         getFirstCommandResp(true, true);
-        if (StringUtils.isNullOrEmpty(resp)) {
+        if (StringUtils.isNullOrEmpty(data)) {
             return;
         }
-        boolean result = CommandManager.checkVerificationCode(resp);
-        if (USE_DEBUG) {
-            Log.e("checkVerificationCode", String.valueOf(result));
+        boolean result = CommandManager.checkVerificationCode(data);
+        LogUtils.e("checkVerificationCode", String.valueOf(result));
+        if (result) {
+            FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
+            LogUtils.jsonLog(TAG, resp);
         }
     }
 
@@ -333,9 +329,7 @@ public class BlueServiceActivity extends BaseActivity {
         }
         characteristic.setValue(command);
         boolean success = bluetoothGatt.writeCharacteristic(characteristic);
-        if (USE_DEBUG) {
-            Log.e("sendCommand", "result:" + success);
-        }
+        LogUtils.e("sendCommand", "result:" + success);
     }
 
     private BluetoothGattCharacteristic getServiceCharacteristic(BluetoothGatt bluetoothGatt) {
