@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -19,10 +20,12 @@ import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.events.GattConnectStatusEvent;
 import com.blue.car.events.GattServiceDiscoveryEvent;
+import com.blue.car.utils.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -276,5 +279,37 @@ public class BluetoothLeService extends Service {
 
     public BluetoothGatt getBluetoothGatt() {
         return bluetoothGatt;
+    }
+
+    public BluetoothGattCharacteristic initNotifyCharacteristic(UUID serviceUUID,
+                                                                UUID characteristicUUID,
+                                                                UUID descriptorUUID) {
+        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(serviceUUID);
+        if (bluetoothGattService == null) {
+            return null;
+        }
+        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(characteristicUUID);
+        if (characteristic == null) {
+            return null;
+        }
+        bluetoothGatt.setCharacteristicNotification(characteristic, true);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(descriptorUUID);
+        if (descriptor != null) {
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            bluetoothGatt.writeDescriptor(descriptor);
+        }
+        return characteristic;
+    }
+
+    public BluetoothGattCharacteristic getCharacteristic(UUID serviceUUID, UUID characteristicUUID) {
+        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(serviceUUID);
+        if (bluetoothGattService == null) {
+            return null;
+        }
+        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(characteristicUUID);
+        if (characteristic == null) {
+            return null;
+        }
+        return characteristic;
     }
 }

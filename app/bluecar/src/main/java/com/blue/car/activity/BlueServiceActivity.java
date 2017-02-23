@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
@@ -19,12 +18,13 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
-import com.blue.car.events.GattConnectStatusEvent;
 import com.blue.car.events.GattServiceDiscoveryEvent;
 import com.blue.car.manager.CommandManager;
+import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
@@ -37,10 +37,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -54,30 +51,15 @@ public class BlueServiceActivity extends BaseActivity {
     private static final String[] COARSE_LOCATION_PERMS = new String[]{
             Manifest.permission.ACCESS_COARSE_LOCATION};
 
-    private final static String UUID_STRING_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-    private final static String UUID_STRING_CHARACTER_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-    private final static String UUID_STRING_CHARACTER_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-    private final static String UUID_STRING_CHARACTER_DESC = "00002902-0000-1000-8000-00805f9b34fb";
-
-    public final static UUID UUID_SERVICE = UUID.fromString(UUID_STRING_SERVICE);
-    public final static UUID UUID_CHARACTER_TX = UUID.fromString(UUID_STRING_CHARACTER_TX);
-    public final static UUID UUID_CHARACTER_RX = UUID.fromString(UUID_STRING_CHARACTER_RX);
-    public static final UUID UUID_CHARACTER_DESC = UUID.fromString(UUID_STRING_CHARACTER_DESC);
-
-    private Handler processHandler = new Handler();
-
-    private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeService bluetoothLeService = null;
+    private Handler processHandler = new Handler();
+    private CommandRespManager respManager = new CommandRespManager();
 
     private String deviceName;
     private String deviceAddress;
 
-    private Map<String, Integer> commandMap = new HashMap<>();
-    private String command;
     private int firstCommandSendCount = 0;
     private boolean firstCommandResp = false;
-
-    private List<byte[]> commandDataList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +113,7 @@ public class BlueServiceActivity extends BaseActivity {
 
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
 
         if (bluetoothAdapter == null) {
             Toast.makeText(this, "你的手机连蓝牙都没有，(#‵′)凸", Toast.LENGTH_SHORT).show();
@@ -146,14 +128,6 @@ public class BlueServiceActivity extends BaseActivity {
         }
     }
 
-    private void ensureBluetoothDiscoverable() {
-        if (bluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-            startActivity(discoverableIntent);
-        }
-    }
-
     private final ServiceConnection bluetoothServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -163,6 +137,7 @@ public class BlueServiceActivity extends BaseActivity {
                 return;
             }
             bluetoothLeService.connect(deviceAddress);
+            AppApplication.setBluetoothLeService(bluetoothLeService);
             showToast("onServiceConnecting");
         }
 
@@ -177,7 +152,10 @@ public class BlueServiceActivity extends BaseActivity {
         if (USE_DEBUG) {
             displayGattServices(bluetoothLeService.getSupportedGattServices());
         }
-        initRxCharacteristic(bluetoothLeService.getBluetoothGatt());
+        bluetoothLeService.initNotifyCharacteristic(
+                BluetoothConstant.UUID_SERVICE,
+                BluetoothConstant.UUID_CHARACTER_RX,
+                BluetoothConstant.UUID_CHARACTER_DESC);
         startFirstStartCommand();
     }
 
@@ -191,8 +169,8 @@ public class BlueServiceActivity extends BaseActivity {
                     + event.uuid.toString()
                     + " -> "
                     + BlueUtils.bytesToHexString(dataBytes));
-            byte[] result = obtainData(dataBytes);
-            processCommandResp(result);
+            byte[] result = respManager.obtainData(dataBytes);
+            respManager.processCommandResp(result);
         }
     }
 
@@ -209,68 +187,21 @@ public class BlueServiceActivity extends BaseActivity {
         }
     }
 
-    private BluetoothGattCharacteristic initRxCharacteristic(BluetoothGatt bluetoothGatt) {
-        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(UUID_SERVICE);
-        if (bluetoothGattService == null) {
-            return null;
-        }
-        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(UUID_CHARACTER_RX);
-        if (characteristic == null) {
-            return null;
-        }
-        boolean success = bluetoothGatt.setCharacteristicNotification(characteristic, true);
-        LogUtils.e("UUID_CHARACTER_RX", "notifyEnableResult:" + success);
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID_CHARACTER_DESC);
-        if (descriptor != null) {
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            success = bluetoothGatt.writeDescriptor(descriptor);
-            LogUtils.e("UUID_CHARACTER_RX", "notifyDescriptorResult:" + success);
-        }
-        return characteristic;
-    }
-
-    private void processCommandResp(byte[] resp) {
-        if (StringUtils.isNullOrEmpty(command) || !commandMap.containsKey(command)) {
-            return;
-        }
-        switch (commandMap.get(command)) {
-            case 1:
-                processFirstCommandResp(resp);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private synchronized byte[] obtainData(byte[] data) {
-        boolean result = CommandManager.startWithStartFrameHead(data);
-        if (result) {
-            result = CommandManager.checkDataComplete(data);
-            if (result) {
-                return data;
+    private CommandRespManager.OnDataCallback firstCommandCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            getFirstCommandResp(true, true);
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
             }
-            commandDataList.add(data);
-            return null;
-        } else {
-            commandDataList.add(data);
-            List<byte[]> list = commandDataList;
-            commandDataList = new ArrayList<>();
-            return BlueUtils.byteListToArrayByte(list);
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
+                LogUtils.jsonLog(TAG, resp);
+            }
         }
-    }
-
-    private void processFirstCommandResp(byte[] data) {
-        getFirstCommandResp(true, true);
-        if (StringUtils.isNullOrEmpty(data)) {
-            return;
-        }
-        boolean result = CommandManager.checkVerificationCode(data);
-        LogUtils.e("checkVerificationCode", String.valueOf(result));
-        if (result) {
-            FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
-            LogUtils.jsonLog(TAG, resp);
-        }
-    }
+    };
 
     private synchronized boolean getFirstCommandResp(boolean needSet, boolean value) {
         if (needSet) {
@@ -280,8 +211,8 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void startFirstStartCommand() {
-        command = new String(CommandManager.getFirstCommand());
-        commandMap.put(command, 1);
+        String command = new String(CommandManager.getFirstCommand());
+        respManager.setCommandRespCallBack(command, firstCommandCallback);
         writeFirstStartCommand();
     }
 
@@ -300,7 +231,7 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void writeCommand(BluetoothGatt bluetoothGatt, byte[] command) {
-        BluetoothGattCharacteristic characteristic = getServiceCharacteristic(bluetoothGatt);
+        BluetoothGattCharacteristic characteristic = getServiceCharacteristic();
         if (characteristic == null) {
             showToast("找不到服务的特征，无法操作");
             return;
@@ -310,16 +241,8 @@ public class BlueServiceActivity extends BaseActivity {
         LogUtils.e("sendCommand", "result:" + success);
     }
 
-    private BluetoothGattCharacteristic getServiceCharacteristic(BluetoothGatt bluetoothGatt) {
-        BluetoothGattService bluetoothGattService = bluetoothGatt.getService(UUID_SERVICE);
-        if (bluetoothGattService == null) {
-            return null;
-        }
-        BluetoothGattCharacteristic characteristic = bluetoothGattService.getCharacteristic(UUID_CHARACTER_TX);
-        if (characteristic == null) {
-            return null;
-        }
-        return characteristic;
+    private BluetoothGattCharacteristic getServiceCharacteristic() {
+        return bluetoothLeService.getCharacteristic(BluetoothConstant.UUID_SERVICE, BluetoothConstant.UUID_CHARACTER_TX);
     }
 
     private boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
