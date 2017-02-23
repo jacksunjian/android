@@ -12,9 +12,14 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.events.GattConnectStatusEvent;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -29,96 +34,49 @@ public class BluetoothLeService extends Service {
     private BluetoothAdapter bluetoothAdapter;
     private String bluetoothDeviceAddress;
     private BluetoothGatt bluetoothGatt;
-    private int mConnectionState = STATE_DISCONNECTED;
-
-    private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
-
-    private OnConnectListener mOnConnectListener;
-    private OnDisconnectListener mOnDisconnectListener;
-    private OnServiceDiscoverListener mOnServiceDiscoverListener;
-    private OnDataAvailableListener mOnDataAvailableListener;
-    private Context mContext;
-
-    public interface OnConnectListener {
-        void onConnect(BluetoothGatt gatt);
-
-        void onDisConnect(BluetoothGatt gatt);
-    }
-
-    public interface OnDisconnectListener {
-        void onDisconnect(BluetoothGatt gatt);
-    }
-
-    public interface OnServiceDiscoverListener {
-        void onServiceDiscover(BluetoothGatt gatt);
-    }
-
-    public interface OnDataAvailableListener {
-        void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
-
-        void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status);
-    }
-
-    public void setOnConnectListener(OnConnectListener l) {
-        mOnConnectListener = l;
-    }
-
-    public void setOnDisconnectListener(OnDisconnectListener l) {
-        mOnDisconnectListener = l;
-    }
-
-    public void setOnServiceDiscoverListener(OnServiceDiscoverListener l) {
-        mOnServiceDiscoverListener = l;
-    }
-
-    public void setOnDataAvailableListener(OnDataAvailableListener l) {
-        mOnDataAvailableListener = l;
-    }
-
-    private Handler mHandler;
-
-    public void setHandler(Handler handler) {
-        this.mHandler = handler;
-    }
 
     private void onGattConnect(BluetoothGatt gatt) {
-        if (mOnConnectListener != null) {
-            mOnConnectListener.onConnect(gatt);
-        }
+        GattConnectStatusEvent statusEvent = new GattConnectStatusEvent();
+        statusEvent.status = 1;
+        EventBus.getDefault().post(statusEvent);
     }
 
     private void onGattDisconnect(BluetoothGatt gatt) {
-        if (mOnConnectListener != null) {
-            mOnConnectListener.onDisConnect(gatt);
-        }
+        EventBus.getDefault().post(new GattConnectStatusEvent());
     }
 
     private void onServiceDiscover(BluetoothGatt gatt) {
-        if (mOnServiceDiscoverListener != null) {
-            mOnServiceDiscoverListener.onServiceDiscover(gatt);
-        }
+        EventBus.getDefault().post(new GattConnectStatusEvent());
     }
 
     private void onDataCharacteristicRead(BluetoothGatt gatt,
                                           BluetoothGattCharacteristic characteristic,
                                           int status) {
-        if (mOnDataAvailableListener != null) {
-            mOnDataAvailableListener.onCharacteristicRead(gatt, characteristic, status);
-        }
+        GattCharacteristicReadEvent readEvent = new GattCharacteristicReadEvent();
+        readEvent.status = status;
+        readEvent.uuid = characteristic.getUuid();
+        readEvent.data = characteristic.getValue();
+        EventBus.getDefault().post(readEvent);
     }
 
-    private void onDataCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        if (mOnDataAvailableListener != null) {
-            mOnDataAvailableListener.onCharacteristicWrite(gatt, characteristic, status);
-        }
+    private void onDataCharacteristicWrite(BluetoothGatt gatt,
+                                           BluetoothGattCharacteristic characteristic,
+                                           int status) {
+        GattCharacteristicWriteEvent writeEvent = new GattCharacteristicWriteEvent();
+        writeEvent.status = status;
+        writeEvent.uuid = characteristic.getUuid();
+        writeEvent.data = characteristic.getValue();
+        EventBus.getDefault().post(writeEvent);
     }
 
-    private void onDataCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-        if (mOnDataAvailableListener != null) {
-            mOnDataAvailableListener.onCharacteristicRead(gatt, characteristic, status);
-        }
+    private void onDataCharacteristicChanged(BluetoothGatt gatt,
+                                             BluetoothGattCharacteristic characteristic,
+                                             int status) {
+        GattCharacteristicReadEvent readEvent = new GattCharacteristicReadEvent();
+        readEvent.status = status;
+        readEvent.uuid = characteristic.getUuid();
+        readEvent.data = characteristic.getValue();
+        EventBus.getDefault().post(readEvent);
     }
 
     // Implements callback methods for GATT events that the app cares about.  For example,
@@ -174,6 +132,10 @@ public class BluetoothLeService extends Service {
         }
     }
 
+    //bindService流程，onCreate()--->onBind()
+    //重复调用bindService的话，onCreate(),onBind()这两个方法不会再执行。
+    //unbindService()以后，就会执行onUnbind()-->onDestroy()方法。
+    //大致的生命周期是：onCreate()--->onBind()--->onUnbind()-->onDestroy();
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -181,11 +143,38 @@ public class BluetoothLeService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        closeResource();
         return super.onUnbind(intent);
     }
 
+    //startService流程,onCreate->onStartCommand->onDestroy
+    //多次startService的话，只会走onStartCommand,方便你传数据intent进来
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        closeResource();
+        super.onDestroy();
+    }
+
     private final IBinder mBinder = new BluetoothLeBinder();
+
+    /*
+    要实现这样的需求：在activity中要得到service对象调用对象的方法，但同时又不希望activity finish的时候
+    service也被destroy了。
+    -->startService->bindService
+    那么在onPause方法中，执行unbindService()即可，只有onUnbind方法会执行，onDestroy不会执行
+    (Service依然存在，可通过isDestroy方法判断)，因为还有一个startService的启动方式存在。
+    如果要完全退出Service，那么就得执行unbindService()以及stopService（或者stopSelf）。
+    也许有人会问，那如果先执行stopService，会出现什么情况呢？
+    答案是：Service依然存在，可通过isDestroy方法判断，因为还有一个bindService的启动方式存在。*/
 
     /**
      * Initializes a reference to the local Bluetooth adapter.
@@ -229,7 +218,6 @@ public class BluetoothLeService extends Service {
                 && bluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing bluetoothGatt for connection.");
             if (bluetoothGatt.connect()) {
-                mConnectionState = STATE_CONNECTING;
                 return true;
             } else {
                 return false;
@@ -246,7 +234,6 @@ public class BluetoothLeService extends Service {
         bluetoothGatt = device.connectGatt(this, false, gattCallback);
         Log.d(TAG, "Trying to create a new connection.");
         bluetoothDeviceAddress = address;
-        mConnectionState = STATE_CONNECTING;
         return true;
     }
 
@@ -269,20 +256,6 @@ public class BluetoothLeService extends Service {
         }
         bluetoothGatt.close();
         bluetoothGatt = null;
-    }
-
-    public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
-        if (!isValidBluetooth()) {
-            return;
-        }
-        bluetoothGatt.readCharacteristic(characteristic);
-    }
-
-    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic, boolean enabled) {
-        if (!isValidBluetooth()) {
-            return;
-        }
-        bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
     }
 
     private boolean isValidBluetooth() {

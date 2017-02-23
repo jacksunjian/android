@@ -20,6 +20,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.blue.car.R;
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.events.GattConnectStatusEvent;
+import com.blue.car.events.GattServiceDiscoveryEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.service.BlueUtils;
@@ -28,6 +32,9 @@ import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.CollectionUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,13 +162,7 @@ public class BlueServiceActivity extends BaseActivity {
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 return;
             }
-
-            bluetoothLeService.setOnConnectListener(connectListener);
-            bluetoothLeService.setOnServiceDiscoverListener(serviceDiscoverListener);
-            bluetoothLeService.setOnDataAvailableListener(dataAvailableListener);
-            bluetoothLeService.setHandler(new Handler());
             bluetoothLeService.connect(deviceAddress);
-
             showToast("onServiceConnecting");
         }
 
@@ -171,65 +172,42 @@ public class BlueServiceActivity extends BaseActivity {
         }
     };
 
-    private BluetoothLeService.OnConnectListener connectListener = new BluetoothLeService.OnConnectListener() {
-        @Override
-        public void onConnect(BluetoothGatt gatt) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattServiceDiscoveryEvent(GattServiceDiscoveryEvent event) {
+        if (USE_DEBUG) {
+            displayGattServices(bluetoothLeService.getSupportedGattServices());
         }
+        initRxCharacteristic(bluetoothLeService.getBluetoothGatt());
+        startFirstStartCommand();
+    }
 
-        @Override
-        public void onDisConnect(BluetoothGatt gatt) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicRead", "status:" + event.status);
+            LogUtils.e(TAG, "onCharRead " + deviceName
+                    + " read "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+            byte[] result = obtainData(dataBytes);
+            processCommandResp(result);
         }
-    };
+    }
 
-    /**
-     * 搜索到BLE终端服务的事件
-     */
-    private BluetoothLeService.OnServiceDiscoverListener serviceDiscoverListener = new BluetoothLeService.OnServiceDiscoverListener() {
-        @Override
-        public void onServiceDiscover(BluetoothGatt gatt) {
-            if (USE_DEBUG) {
-                displayGattServices(bluetoothLeService.getSupportedGattServices());
-            }
-            initRxCharacteristic(gatt);
-            startFirstStartCommand();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
+            LogUtils.e(TAG, "onCharWrite " + deviceName
+                    + " write "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
         }
-    };
-
-    /**
-     * 收到BLE终端数据交互的事件
-     */
-    private BluetoothLeService.OnDataAvailableListener dataAvailableListener = new BluetoothLeService.OnDataAvailableListener() {
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                final byte[] dataBytes = CommandManager.unEncryptData(characteristic.getValue());
-                LogUtils.e("onCharacteristicRead", "status:" + status);
-                LogUtils.e(TAG, "onCharRead " + gatt.getDevice().getName()
-                        + " read "
-                        + characteristic.getUuid().toString()
-                        + " -> "
-                        + BlueUtils.bytesToHexString(dataBytes));
-                byte[] result = obtainData(dataBytes);
-                processCommandResp(result);
-            }
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt,
-                                          BluetoothGattCharacteristic characteristic,
-                                          int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                final byte[] bytes = characteristic.getValue();
-                LogUtils.e("onCharacteristicWrite", "status:" + status);
-                LogUtils.e(TAG, "onCharWrite " + gatt.getDevice().getName()
-                        + " write "
-                        + characteristic.getUuid().toString()
-                        + " -> "
-                        + BlueUtils.bytesToHexString(bytes));
-            }
-        }
-    };
+    }
 
     private BluetoothGattCharacteristic initRxCharacteristic(BluetoothGatt bluetoothGatt) {
         BluetoothGattService bluetoothGattService = bluetoothGatt.getService(UUID_SERVICE);
@@ -376,33 +354,19 @@ public class BlueServiceActivity extends BaseActivity {
         }
     }
 
-    private void processAvailableData(byte[] data) {
-        final byte[] dataBuf = data;
-        //method 1
-        int result = (dataBuf[9] & 0xFF) |
-                (dataBuf[8] & 0xFF) << 8 |
-                (dataBuf[7] & 0xFF) << 16;
-        //method 2
-        int result2 = BlueUtils.byteArrayToInt(dataBuf, 7, 3);
-        Log.e("data equal?", String.valueOf(result == result2));
-    }
-
     private void startIntentToDeviceScan() {
         Intent intent = new Intent(this, DeviceListActivity.class);
         startActivityForResult(intent, BluetoothConstant.REQUEST_CONNECT_DEVICE);
     }
 
+    private Intent getServiceIntent() {
+        return new Intent(this, BluetoothLeService.class);
+    }
+
     private void startServiceConnection() {
-        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        Intent gattServiceIntent = getServiceIntent();
+        startService(gattServiceIntent);
         bindService(gattServiceIntent, bluetoothServiceConnection, BIND_AUTO_CREATE);
-    }
-
-    private void showToast(int resId) {
-        showToast(getString(resId));
-    }
-
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -410,6 +374,7 @@ public class BlueServiceActivity extends BaseActivity {
         super.onDestroy();
         clearBluetoothLeService();
         unbindService(bluetoothServiceConnection);
+        stopService(getIntent());
     }
 
     private void clearBluetoothLeService() {

@@ -7,7 +7,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.blue.car.R;
+import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.ToastUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -41,6 +44,28 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     protected void onDestroy() {
         super.onDestroy();
         ButterKnife.unbind(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+        LogUtils.e("eventBus,","register");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+        LogUtils.e("eventBus,","unregister");
+    }
+
+    protected void showToast(int resId) {
+        showToast(getString(resId));
+    }
+
+    protected void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
