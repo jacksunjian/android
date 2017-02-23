@@ -33,4 +33,6 @@ dependencies {
     compile 'pub.devrel:easypermissions:0.2.1'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.afollestad.material-dialogs:commons:0.9.3.0'
+    compile 'com.alibaba:fastjson:1.1.56.android'
+    compile 'org.greenrobot:eventbus:3.0.0'
 }
