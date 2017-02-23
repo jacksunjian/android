@@ -18,6 +18,7 @@ import android.util.Log;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.events.GattConnectStatusEvent;
+import com.blue.car.events.GattServiceDiscoveryEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -45,8 +46,8 @@ public class BluetoothLeService extends Service {
         EventBus.getDefault().post(new GattConnectStatusEvent());
     }
 
-    private void onServiceDiscover(BluetoothGatt gatt) {
-        EventBus.getDefault().post(new GattConnectStatusEvent());
+    private void onServiceDiscovery(BluetoothGatt gatt) {
+        EventBus.getDefault().post(new GattServiceDiscoveryEvent());
     }
 
     private void onDataCharacteristicRead(BluetoothGatt gatt,
@@ -103,7 +104,7 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                onServiceDiscover(gatt);
+                onServiceDiscovery(gatt);
             } else {
                 Log.e(TAG, "onServicesDiscovered received: " + status);
             }
