@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -7,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.blue.car.R;
+import com.blue.car.service.BluetoothConstant;
+import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.ToastUtils;
 
@@ -21,7 +24,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 public abstract class BaseActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
     private static final int NOTHING_PERMISSIONS_REQUEST = -1000;
 
-    protected abstract Integer getLayoutId();
+    protected abstract int getLayoutId();
 
     protected abstract void initConfig();
 
@@ -50,14 +53,14 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
-        LogUtils.e("eventBus,","register");
+        LogUtils.e("eventBus,", "register");
     }
 
     @Override
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
-        LogUtils.e("eventBus,","unregister");
+        LogUtils.e("eventBus,", "unregister");
     }
 
     protected void showToast(int resId) {
@@ -66,6 +69,10 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
 
     protected void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    protected BluetoothGattCharacteristic getCommandWriteGattCharacteristic(BluetoothLeService bluetoothLeService) {
+        return bluetoothLeService.getCharacteristic(BluetoothConstant.UUID_SERVICE, BluetoothConstant.UUID_CHARACTER_TX);
     }
 
     @Override

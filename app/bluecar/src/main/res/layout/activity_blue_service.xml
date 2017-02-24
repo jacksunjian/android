@@ -8,8 +8,11 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
-    <TextView
+    <Button
+        android:id="@+id/test_other_command_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_centerInParent="true"
+        android:text="进入其他命令测试"
+        android:textSize="20sp" />
 </RelativeLayout>

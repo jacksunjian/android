@@ -39,6 +39,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -67,7 +69,7 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     @Override
-    protected Integer getLayoutId() {
+    protected int getLayoutId() {
         return R.layout.activity_blue_service;
     }
 
@@ -328,5 +330,11 @@ public class BlueServiceActivity extends BaseActivity {
             case COARSE_LOCATION_PERMS_REQUEST_CODE:
                 break;
         }
+    }
+
+    @OnClick(R.id.test_other_command_button)
+    void onOtherCommandTestClick() {
+        Intent intent = new Intent(this, TestActivity.class);
+        startActivity(intent);
     }
 }

@@ -20,7 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".activity.BlueServiceActivity">
+        <activity
+            android:name=".activity.BlueServiceActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,6 +31,8 @@
         </activity>
 
         <activity android:name=".activity.DeviceListActivity" />
+
+        <activity android:name=".activity.TestActivity" />
 
         <service android:name=".service.BluetoothLeService" />
 
