@@ -30,6 +30,7 @@ public class CommandManager {
 
     static final byte[] COMMAND_START = {0x55, (byte) 0xAA};
     static final byte COMMAND_SEND = 0x0A;
+    static final byte COMMAND_0C = 0x0C;
     static final byte COMMAND_RECEIVER = 0x0D;
 
     public static int checkSum(byte[] bytes, int startPosition) {
@@ -206,7 +207,7 @@ public class CommandManager {
 
     public static byte[] getBatteryInfoCommand() {
         //《55 AA 03 0C 01 31 16 A8 FF
-        return getSendCommand(new byte[]{0x16}, COMMAND_SEND, new byte[]{0x01, 0x31});
+        return getSendCommand(new byte[]{0x16}, COMMAND_0C, new byte[]{0x01, 0x31});
     }
 
     /*黑匣子读取步骤
