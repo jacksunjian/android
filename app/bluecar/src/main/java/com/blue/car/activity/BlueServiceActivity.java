@@ -15,6 +15,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -36,10 +38,8 @@ import com.blue.car.utils.StringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.Bind;
 import butterknife.OnClick;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -336,5 +336,15 @@ public class BlueServiceActivity extends BaseActivity {
     void onOtherCommandTestClick() {
         Intent intent = new Intent(this, TestActivity.class);
         startActivity(intent);
+    }
+
+    @OnClick(R.id.test_slide_up_image)
+    void onSlideUpToOnClick() {
+        ActivityOptionsCompat options =
+                ActivityOptionsCompat.makeCustomAnimation(this,
+                        R.anim.slide_bottom_in,
+                        R.anim.anim_none_alpha);
+        Intent intent = new Intent(this, SlideUpTestActivity.class);
+        ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 }

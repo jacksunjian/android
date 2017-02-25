@@ -49,18 +49,26 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         ButterKnife.unbind(this);
     }
 
+    protected void startRegisterEventBus() {
+        EventBus.getDefault().register(this);
+        LogUtils.e("eventBus,", "register");
+    }
+
+    protected void stopRegisterEventBus() {
+        EventBus.getDefault().unregister(this);
+        LogUtils.e("eventBus,", "unregister");
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-        EventBus.getDefault().register(this);
-        LogUtils.e("eventBus,", "register");
+        startRegisterEventBus();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        EventBus.getDefault().unregister(this);
-        LogUtils.e("eventBus,", "unregister");
+        stopRegisterEventBus();
     }
 
     protected void showToast(int resId) {
