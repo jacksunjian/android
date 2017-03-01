@@ -36,6 +36,8 @@
 
         <activity android:name=".activity.SlideUpTestActivity" />
 
+        <activity android:name=".activity.SearchActivity"></activity>
+
         <service android:name=".service.BluetoothLeService" />
 
     </application>
