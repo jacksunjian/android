@@ -33,14 +33,6 @@ public class SlideUpTestActivity extends BaseActivity {
     }
 
     @Override
-    protected void startRegisterEventBus() {
-    }
-
-    @Override
-    protected void stopRegisterEventBus() {
-    }
-
-    @Override
     public void finish() {
         super.finish();
         overridePendingTransition(0, R.anim.slide_top_out);

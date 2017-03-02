@@ -295,6 +295,18 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         clearBluetoothLeService();

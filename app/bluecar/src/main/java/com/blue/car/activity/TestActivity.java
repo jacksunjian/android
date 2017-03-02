@@ -137,4 +137,16 @@ public class TestActivity extends BaseActivity {
         characteristic.setValue(command);
         AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
+    }
 }

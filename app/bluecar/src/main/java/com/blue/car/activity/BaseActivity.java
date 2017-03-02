@@ -51,24 +51,10 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
 
     protected void startRegisterEventBus() {
         EventBus.getDefault().register(this);
-        LogUtils.e("eventBus,", "register");
     }
 
     protected void stopRegisterEventBus() {
         EventBus.getDefault().unregister(this);
-        LogUtils.e("eventBus,", "unregister");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        startRegisterEventBus();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        stopRegisterEventBus();
     }
 
     protected void showToast(int resId) {
