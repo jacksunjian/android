@@ -15,11 +15,23 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/search_iv"
+    <ProgressBar
+        android:id="@+id/search_pb"
         android:layout_marginTop="40dp"
         android:layout_gravity="center"
+        android:indeterminateDrawable="@drawable/progressbar_style"
         android:src="@mipmap/device_searching"
+        style="@style/Widget.MaterialProgressBar.ProgressBar.Large.NoPadding"
+        android:layout_width="150dp"
+        android:layout_height="150dp" />
+
+
+    <Button
+        android:id="@+id/enter_btn"
+        android:background="@android:color/holo_red_dark"
+        android:text="进入"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
