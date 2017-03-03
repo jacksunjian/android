@@ -44,13 +44,6 @@ public class SearchActivity extends BaseActivity {
 
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-
-    }
-
     @OnClick({R.id.search_pb, R.id.enter_btn})
     public void onClick(View view) {
         switch (view.getId()) {
