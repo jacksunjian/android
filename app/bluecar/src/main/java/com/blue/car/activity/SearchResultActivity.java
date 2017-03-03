@@ -35,19 +35,13 @@ public class SearchResultActivity extends BaseActivity {
 
     @Override
     protected void initView() {
+        lhTvTitle.setText("搜索结果");
 
     }
 
     @Override
     protected void initData() {
 
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
     }
 
     @OnClick(R.id.button_scan)
