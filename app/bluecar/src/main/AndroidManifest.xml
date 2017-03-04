@@ -32,7 +32,7 @@
 
         <activity android:name=".activity.SlideUpTestActivity" />
 
-        <activity android:name=".activity.SensorSettingActivity">
+        <activity android:name=".activity.SearchActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -55,6 +55,10 @@
             android:theme="@style/AppNoActionTheme" />
         <activity android:name=".activity.OtherSettingActivity"
             android:theme="@style/AppNoActionTheme"/>
+
+        <activity
+            android:name=".activity.SensorSettingActivity"
+            android:theme="@style/AppNoActionTheme" />
 
         <service android:name=".service.BluetoothLeService" />
 
