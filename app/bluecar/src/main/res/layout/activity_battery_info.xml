@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bgmaincolor"
+    android:orientation="vertical">
+    <include layout="@layout/layout_head"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="剩余电量"/>
+
+        <TextView
+            android:id="@+id/rest_battery_tv"
+            android:text="------"
+           style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="剩余百分比"/>
+
+        <TextView
+            android:id="@+id/rest_percent_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="电流"/>
+
+        <TextView
+            android:id="@+id/electric_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="电压"/>
+
+        <TextView
+            android:id="@+id/voltage_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="温度"/>
+
+        <TextView
+            android:id="@+id/temperature_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+
+
+</LinearLayout>
