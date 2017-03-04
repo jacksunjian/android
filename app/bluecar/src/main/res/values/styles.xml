@@ -44,4 +44,19 @@
         <item name="android:background">#ffffff</item>
         <item name="android:layout_height">1dp</item>
     </style>
+
+    <style name="switchRightStyle">
+        <item name="android:layout_width">70dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_centerVertical">true</item>
+    </style>
+
+    <style name="settingImageRightStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_centerVertical">true</item>
+    </style>
+
 </resources>

@@ -19,7 +19,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppNoActionTheme">
 
         <activity
             android:name=".activity.BlueServiceActivity"
@@ -32,7 +32,7 @@
 
         <activity android:name=".activity.SlideUpTestActivity" />
 
-        <activity android:name=".activity.SearchActivity">
+        <activity android:name=".activity.SensorSettingActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

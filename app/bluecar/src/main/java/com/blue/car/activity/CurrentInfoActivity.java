@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.blue.car.R;
+import com.blue.car.utils.UniversalViewUtils;
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -52,11 +53,7 @@ public class CurrentInfoActivity extends BaseActivity {
     }
 
     private void initNormalInfoLayout(int parentId, String leftText, String rightText) {
-        ViewGroup viewGroup = (ViewGroup) findViewById(parentId);
-        TextView leftTextView = (TextView) viewGroup.findViewById(R.id.info_left_text);
-        TextView rightTextView = (TextView) viewGroup.findViewById(R.id.info_right_text);
-        leftTextView.setText(leftText);
-        rightTextView.setText(rightText);
+        UniversalViewUtils.initNormalInfoLayout(this, parentId, leftText, rightText);
     }
 
     @Override

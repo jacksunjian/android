@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="85dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:id="@+id/info_left_text"
+            style="@style/settingTextLeftStyle"
+            android:layout_marginLeft="0dp" />
+
+        <TextView
+            android:id="@+id/info_right_text"
+            style="@style/settingTextRightStyle"
+            android:layout_alignTop="@+id/info_left_text"
+            android:layout_marginRight="0dp" />
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/info_seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_below="@+id/info_left_text"
+            android:layout_marginTop="45dp"
+            android:max="100" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/white" />
+
+</RelativeLayout>

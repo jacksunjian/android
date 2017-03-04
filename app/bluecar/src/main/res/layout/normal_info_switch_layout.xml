@@ -9,15 +9,14 @@
         style="@style/settingTextLeftStyle"
         android:layout_marginLeft="0dp" />
 
-    <TextView
-        android:id="@+id/info_right_text"
-        style="@style/settingTextRightStyle"
-        android:layout_marginRight="0dp" />
+    <Switch
+        android:id="@+id/info_right_switch"
+        style="@style/switchRightStyle" />
 
     <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
+        style="@style/dividerStyle"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/white" />
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp" />
 
 </RelativeLayout>

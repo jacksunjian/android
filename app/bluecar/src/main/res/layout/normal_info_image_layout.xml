@@ -9,9 +9,9 @@
         style="@style/settingTextLeftStyle"
         android:layout_marginLeft="0dp" />
 
-    <TextView
-        android:id="@+id/info_right_text"
-        style="@style/settingTextRightStyle"
+    <ImageView
+        android:id="@+id/info_right_image"
+        style="@style/settingImageRightStyle"
         android:layout_marginRight="0dp" />
 
     <View
