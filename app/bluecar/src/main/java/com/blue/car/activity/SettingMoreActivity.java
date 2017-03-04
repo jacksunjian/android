@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -40,6 +41,7 @@ public class SettingMoreActivity extends BaseActivity {
     RelativeLayout batterySettingRl;
     @Bind(R.id.blackSetting_rl)
     RelativeLayout blackSettingRl;
+    Intent it;
 
     @Override
     protected int getLayoutId() {
@@ -72,6 +74,8 @@ public class SettingMoreActivity extends BaseActivity {
             case R.id.lightSetting_rl:
                 break;
             case R.id.speedSetting_rl:
+                 it = new Intent(this, SpeedControlActivity.class);
+                startActivity(it);
                 break;
             case R.id.sensorSetting_rl:
                 break;
@@ -82,6 +86,8 @@ public class SettingMoreActivity extends BaseActivity {
             case R.id.infoSetting_rl:
                 break;
             case R.id.batterySetting_rl:
+                 it = new Intent(this, BatteryInfoActivity.class);
+                startActivity(it);
                 break;
             case R.id.blackSetting_rl:
                 break;
