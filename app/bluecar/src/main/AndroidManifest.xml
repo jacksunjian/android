@@ -39,9 +39,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity android:name=".activity.MainActivity"/>
         <activity android:name=".activity.SpeedControlActivity"/>
         <activity android:name=".activity.SettingMoreActivity"/>
+
+        <activity
+            android:name=".activity.CurrentInfoActivity"
+            android:theme="@style/AppNoActionTheme" />
 
         <service android:name=".service.BluetoothLeService" />
 
