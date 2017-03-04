@@ -13,7 +13,6 @@
         android:gravity="center_vertical">
 
         <Button
-
             android:id="@+id/lh_btn_back"
             android:layout_width="44dp"
             android:layout_height="44dp"
@@ -29,10 +28,11 @@
         android:layout_alignParentRight="true"
         android:clickable="true"
         android:gravity="center_vertical"
-        android:visibility="gone">
+        >
 
         <ImageView
             android:id="@+id/iv_right"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:background="@mipmap/shezhi_btn"
             android:layout_height="wrap_content"
@@ -50,7 +50,6 @@
         android:clickable="true"
         android:gravity="right|center_vertical"
         android:paddingRight="12dp"
-        android:textColor=""
         android:textSize="30px"
         />
 
