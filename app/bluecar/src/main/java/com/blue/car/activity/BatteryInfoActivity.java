@@ -1,7 +1,6 @@
 package com.blue.car.activity;
 
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatSeekBar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -17,21 +16,27 @@ import butterknife.OnClick;
  * Created by Administrator on 2017/3/4.
  */
 
-public class SpeedControlActivity extends BaseActivity {
+public class BatteryInfoActivity extends BaseActivity {
     @Bind(R.id.lh_btn_back)
     Button lhBtnBack;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
     @Bind(R.id.lh_tv_title)
     TextView lhTvTitle;
-    @Bind(R.id.speed_tv)
-    TextView speedTv;
-    @Bind(R.id.speed_control_seekbar)
-    AppCompatSeekBar speedControlSeekbar;
+    @Bind(R.id.rest_battery_tv)
+    TextView restBatteryTv;
+    @Bind(R.id.rest_percent_tv)
+    TextView restPercentTv;
+    @Bind(R.id.electric_tv)
+    TextView electricTv;
+    @Bind(R.id.voltage_tv)
+    TextView voltageTv;
+    @Bind(R.id.temperature_tv)
+    TextView temperatureTv;
 
     @Override
     protected int getLayoutId() {
-        return R.layout.activity_speedcontrol;
+        return R.layout.activity_battery_info;
     }
 
     @Override
@@ -41,7 +46,7 @@ public class SpeedControlActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        lhTvTitle.setText("车速设置");
+        lhTvTitle.setText("电池信息");
     }
 
     @Override
