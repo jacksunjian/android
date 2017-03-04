@@ -47,6 +47,14 @@
         <activity
             android:name=".activity.CurrentInfoActivity"
             android:theme="@style/AppNoActionTheme" />
+        <activity
+            android:name=".activity.BatteryInfoActivity"
+            android:theme="@style/AppNoActionTheme" />
+        <activity
+            android:name=".activity.BlueSettingActivity"
+            android:theme="@style/AppNoActionTheme" />
+        <activity android:name=".activity.OtherSettingActivity"
+            android:theme="@style/AppNoActionTheme"/>
 
         <service android:name=".service.BluetoothLeService" />
 

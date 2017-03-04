@@ -42,6 +42,7 @@
 
     <TextView
        android:visibility="gone"
+        android:textColor="@color/white"
         android:id="@+id/tv_right"
         android:layout_width="78dp"
         android:layout_height="match_parent"

@@ -1,9 +1,9 @@
 package com.blue.car.activity;
 
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatSeekBar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -17,21 +17,25 @@ import butterknife.OnClick;
  * Created by Administrator on 2017/3/4.
  */
 
-public class SpeedControlActivity extends BaseActivity {
+public class BlueSettingActivity extends BaseActivity {
     @Bind(R.id.lh_btn_back)
     Button lhBtnBack;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
+    @Bind(R.id.ll_right)
+    LinearLayout llRight;
+    @Bind(R.id.tv_right)
+    TextView tvRight;
     @Bind(R.id.lh_tv_title)
     TextView lhTvTitle;
-    @Bind(R.id.speed_tv)
-    TextView speedTv;
-    @Bind(R.id.speed_control_seekbar)
-    AppCompatSeekBar speedControlSeekbar;
+    @Bind(R.id.name_et)
+    EditText nameEt;
+    @Bind(R.id.secret_et)
+    EditText secretEt;
 
     @Override
     protected int getLayoutId() {
-        return R.layout.activity_speedcontrol;
+        return R.layout.activity_blue_setting;
     }
 
     @Override
@@ -41,7 +45,9 @@ public class SpeedControlActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        lhTvTitle.setText("车速设置");
+        lhTvTitle.setText("蓝牙设置");
+        tvRight.setVisibility(View.VISIBLE);
+        tvRight.setText("确定");
     }
 
     @Override
@@ -50,13 +56,17 @@ public class SpeedControlActivity extends BaseActivity {
     }
 
 
-    @OnClick({R.id.lh_btn_back, R.id.ll_back})
+    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.ll_right, R.id.tv_right})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
 
             case R.id.ll_back:
                 onBackPressed();
+                break;
+            case R.id.ll_right:
+
+            case R.id.tv_right:
                 break;
         }
     }
