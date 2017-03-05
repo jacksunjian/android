@@ -5,9 +5,11 @@ import android.support.v7.widget.AppCompatSeekBar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.blue.car.R;
+import com.blue.car.utils.UniversalViewUtils;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -24,10 +26,7 @@ public class SpeedControlActivity extends BaseActivity {
     LinearLayout llBack;
     @Bind(R.id.lh_tv_title)
     TextView lhTvTitle;
-    @Bind(R.id.speed_tv)
-    TextView speedTv;
-    @Bind(R.id.speed_control_seekbar)
-    AppCompatSeekBar speedControlSeekbar;
+
 
     @Override
     protected int getLayoutId() {
@@ -42,6 +41,21 @@ public class SpeedControlActivity extends BaseActivity {
     @Override
     protected void initView() {
         lhTvTitle.setText("车速设置");
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值", 60, new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+
     }
 
     @Override

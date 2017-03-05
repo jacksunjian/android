@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.blue.car.R;
@@ -14,24 +13,20 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
- * Created by Administrator on 2017/3/4.
+ * Created by Administrator on 2017/3/5.
  */
 
-public class OtherSettingActivity extends BaseActivity {
+public class BlackSettingActivity extends BaseActivity {
     @Bind(R.id.lh_btn_back)
     Button lhBtnBack;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
     @Bind(R.id.lh_tv_title)
     TextView lhTvTitle;
-    @Bind(R.id.can_off_switch)
-    Switch canOffSwitch;
-    @Bind(R.id.can_warn_switch)
-    Switch canWarnSwitch;
 
     @Override
     protected int getLayoutId() {
-        return R.layout.activity_other_setting;
+        return R.layout.activity_black_setting;
     }
 
     @Override
@@ -41,15 +36,13 @@ public class OtherSettingActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        lhTvTitle.setText("其他设置");
+        lhTvTitle.setText("黑匣子信息");
     }
 
     @Override
     protected void initData() {
 
     }
-
-
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {

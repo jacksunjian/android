@@ -72,24 +72,36 @@ public class SettingMoreActivity extends BaseActivity {
                 onBackPressed();
                 break;
             case R.id.lightSetting_rl:
+                it = new Intent(this, LightSettingActivity.class);
+                startActivity(it);
                 break;
             case R.id.speedSetting_rl:
                  it = new Intent(this, SpeedControlActivity.class);
                 startActivity(it);
                 break;
             case R.id.sensorSetting_rl:
+                it = new Intent(this, SensorSettingActivity.class);
+                startActivity(it);
                 break;
             case R.id.blueSetting_rl:
+                it = new Intent(this, BlueSettingActivity.class);
+                startActivity(it);
                 break;
             case R.id.othersSetting_rl:
+                it = new Intent(this, OtherSettingActivity.class);
+                startActivity(it);
                 break;
             case R.id.infoSetting_rl:
+                it = new Intent(this, DeviceInfoActivity.class);
+                startActivity(it);
                 break;
             case R.id.batterySetting_rl:
                  it = new Intent(this, BatteryInfoActivity.class);
                 startActivity(it);
                 break;
             case R.id.blackSetting_rl:
+                it = new Intent(this, BlackSettingActivity.class);
+                startActivity(it);
                 break;
         }
     }

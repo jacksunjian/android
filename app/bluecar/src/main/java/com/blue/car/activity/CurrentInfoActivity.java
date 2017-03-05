@@ -1,9 +1,12 @@
 package com.blue.car.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.blue.car.R;
@@ -16,6 +19,15 @@ public class CurrentInfoActivity extends BaseActivity {
 
     @Bind(R.id.lh_tv_title)
     TextView actionBarTitle;
+    @Bind(R.id.iv_right)
+    ImageView ivRight;
+    int isSpeedControl;
+    @Bind(R.id.speed_limit)
+    ImageView speedLimit;
+    @Bind(R.id.more_info)
+    ImageView moreInfo;
+    @Bind(R.id.remote_setting)
+    ImageView remoteSetting;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,8 +46,17 @@ public class CurrentInfoActivity extends BaseActivity {
 
     @Override
     protected void initView() {
+        isSpeedControl = getIntent().getIntExtra("isLimit", -1);
         initActionBarLayout();
         initInfoLayout();
+        if (isSpeedControl == 0) {
+            speedLimit.setBackgroundResource(R.mipmap.xiansu_off);
+            isSpeedControl = 1;
+        } else {
+            speedLimit.setBackgroundResource(R.mipmap.xiansu_on);
+            isSpeedControl = 0;
+        }
+
     }
 
     private void initActionBarLayout() {
@@ -62,15 +83,32 @@ public class CurrentInfoActivity extends BaseActivity {
     }
 
     private void processSpeedLimitClick() {
+        if (isSpeedControl == 0) {
+            speedLimit.setBackgroundResource(R.mipmap.xiansu_on);
+            isSpeedControl = 1;
+        } else {
+            speedLimit.setBackgroundResource(R.mipmap.xiansu_off);
+            isSpeedControl = 0;
+        }
     }
 
     private void processRemoteSettingClick() {
+        Intent it_blue = new Intent(this, BlueControlActivity.class);
+        startActivity(it_blue);
     }
 
     private void processLoadMoreInfoClick() {
+        ActivityOptionsCompat options =
+                ActivityOptionsCompat.makeCustomAnimation(this,
+                        R.anim.slide_top_out,
+                        R.anim.anim_none_alpha);
+        Intent intent = new Intent(this, MainActivity.class);
+        ActivityCompat.startActivity(this, intent, options.toBundle());
+
+
     }
 
-    @OnClick({R.id.speed_limit, R.id.more_info, R.id.remote_setting})
+    @OnClick({R.id.speed_limit, R.id.more_info, R.id.remote_setting, R.id.iv_right})
     void bottomFunPanelClick(View view) {
         switch (view.getId()) {
             case R.id.speed_limit:
@@ -82,6 +120,11 @@ public class CurrentInfoActivity extends BaseActivity {
             case R.id.remote_setting:
                 processRemoteSettingClick();
                 break;
+            case R.id.iv_right:
+                Intent it = new Intent(this, SettingMoreActivity.class);
+                startActivity(it);
+                break;
         }
     }
+
 }

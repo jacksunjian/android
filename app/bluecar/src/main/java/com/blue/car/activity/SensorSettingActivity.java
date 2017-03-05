@@ -3,7 +3,9 @@ package com.blue.car.activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -13,12 +15,17 @@ import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.UniversalViewUtils;
 
 import butterknife.Bind;
+import butterknife.OnClick;
 
 public class SensorSettingActivity extends BaseActivity {
 
 
     @Bind(R.id.lh_tv_title)
     TextView actionBarTitle;
+    @Bind(R.id.lh_btn_back)
+    Button lhBtnBack;
+    @Bind(R.id.ll_back)
+    LinearLayout llBack;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,5 +123,16 @@ public class SensorSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
 
+    }
+
+    @OnClick({R.id.lh_btn_back, R.id.ll_back})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.lh_btn_back:
+
+            case R.id.ll_back:
+                onBackPressed();
+                break;
+        }
     }
 }

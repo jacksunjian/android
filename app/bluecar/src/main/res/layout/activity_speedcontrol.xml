@@ -5,25 +5,22 @@
     android:background="@color/bgmaincolor"
     android:orientation="vertical">
     <include layout="@layout/layout_head"/>
-<RelativeLayout
-    style="@style/settingRelativeStyle">
-    <TextView
-        android:text="限速模式限速值"
-       style="@style/settingTextLeftStyle" />
-    <TextView
-        android:id="@+id/speed_tv"
-        android:text="------"
-       style="@style/settingTextRightStyle" />
-</RelativeLayout>
-
-    <android.support.v7.widget.AppCompatSeekBar
-        android:id="@+id/speed_control_seekbar"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <View
-        android:layout_marginTop="40dp"
-        style="@style/dividerStyle"/>
+            <include
+                android:id="@+id/speedg_control"
+                layout="@layout/normal_info_seekbar_layout" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>
