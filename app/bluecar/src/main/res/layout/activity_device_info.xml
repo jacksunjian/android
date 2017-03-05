@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bgmaincolor"
+    android:orientation="vertical">
+
+<include layout="@layout/layout_head"/>
+
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="当前速度"/>
+
+        <TextView
+            android:id="@+id/current_speed_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            android:id="@+id/average_speed_tv"
+            style="@style/settingTextLeftStyle"
+            android:text="平均速度"/>
+
+        <TextView
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="总里程"/>
+
+        <TextView
+            android:id="@+id/allmile_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            android:id="@+id/this_mile_tv"
+            style="@style/settingTextLeftStyle"
+            android:text="本次里程"/>
+
+        <TextView
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="本次运行时间"/>
+
+        <TextView
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            android:id="@+id/temperature_tv"
+            style="@style/settingTextLeftStyle"
+            android:text="温度"/>
+
+        <TextView
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:text="最高速度"/>
+
+        <TextView
+            android:id="@+id/top_speed_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+
+</LinearLayout>
