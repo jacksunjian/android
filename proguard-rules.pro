@@ -35,8 +35,6 @@
 -dontwarn com.squareup.**
 -dontwarn com.raizlabs.**
 
--dontwarn butterknife.internal.ButterKnifeProcessor
-
 -dontwarn com.onyx.android.sdk.ui.dialog.DialogLoading
 -dontwarn com.onyx.android.sdk.ui.dialog.DialogReaderMenu
 -dontwarn com.onyx.android.sdk.scribble.request.shape.PenStateChangeRequest
@@ -49,12 +47,13 @@
 
 -keep class * implements java.io.Serializable { *; }
 
--keepnames class org.greenrobot.eventbus.** { *; }
-
 -keepattributes *Annotation*
 -keepclassmembers class ** {
     @org.greenrobot.eventbus.Subscribe <methods>;
 }
+
+#for eventBus
+-keepnames class org.greenrobot.eventbus.** { *; }
 -keep enum org.greenrobot.eventbus.ThreadMode { *; }
 
 -keep class * extends com.raizlabs.android.dbflow.config.DatabaseHolder { *; }
@@ -72,17 +71,16 @@
 -keep class **$$ViewBinder { *; }
 -keepclasseswithmembernames class * { @butterknife.* <methods>; }
 -keepclasseswithmembernames class * { @butterknife.* <fields>; }
-
-# for aliyun-oss
--keep class com.alibaba.sdk.android.oss.** { *; }
--dontwarn org.apache.commons.codec.binary.**
-
-# for ebookservice
--keep class org.slf4j.** { *; }
--dontwarn org.htmlcleaner.**
--dontwarn nl.siegmann.epublib.**
--dontnote org.apache.**
--dontnote org.jsoup
+-keep class butterknife.** { *; }
+-dontwarn butterknife.internal.**
+-dontwarn butterknife.internal.ButterKnifeProcessor
+-keep class **$$ViewBinder { *; }
+-keepclasseswithmembernames class * {
+    @butterknife.* <fields>;
+}
+-keepclasseswithmembernames class * {
+    @butterknife.* <methods>;
+}
 
 # for wechat
 -keep class com.tencent.mm.opensdk.** { *; }
