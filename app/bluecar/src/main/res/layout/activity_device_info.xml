@@ -23,11 +23,12 @@
     <RelativeLayout
         style="@style/settingRelativeStyle">
         <TextView
-            android:id="@+id/average_speed_tv"
+
             style="@style/settingTextLeftStyle"
             android:text="平均速度"/>
 
         <TextView
+            android:id="@+id/average_speed_tv"
             android:text="------"
             style="@style/settingTextRightStyle" />
     </RelativeLayout>
@@ -49,13 +50,16 @@
     <RelativeLayout
         style="@style/settingRelativeStyle">
         <TextView
-            android:id="@+id/this_mile_tv"
+
             style="@style/settingTextLeftStyle"
             android:text="本次里程"/>
 
         <TextView
+            android:id="@+id/this_mile_tv"
             android:text="------"
-            style="@style/settingTextRightStyle" />
+            style="@style/settingTextRightStyle"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
     <View
         style="@style/dividerStyle"/>
@@ -66,6 +70,7 @@
             android:text="本次运行时间"/>
 
         <TextView
+            android:id="@+id/per_runTime"
             android:text="------"
             style="@style/settingTextRightStyle" />
     </RelativeLayout>
@@ -74,11 +79,12 @@
     <RelativeLayout
         style="@style/settingRelativeStyle">
         <TextView
-            android:id="@+id/temperature_tv"
+
             style="@style/settingTextLeftStyle"
             android:text="温度"/>
 
         <TextView
+            android:id="@+id/temperature_tv"
             android:text="------"
             style="@style/settingTextRightStyle" />
     </RelativeLayout>

@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
@@ -63,6 +64,13 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
 
     protected void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+
+    protected void writeCommand(byte[] command) {
+        BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
+        characteristic.setValue(command);
+        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
     }
 
     protected BluetoothGattCharacteristic getCommandWriteGattCharacteristic(BluetoothLeService bluetoothLeService) {

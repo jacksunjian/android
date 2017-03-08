@@ -2,6 +2,7 @@ package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.blue.car.AppApplication;
@@ -82,12 +83,16 @@ public class TestActivity extends BaseActivity {
 
     @OnClick(R.id.main_func_command_test_button)
     void onMainFucButtonOnClick() {
-        startMainFuncCommand();
+       // startMainFuncCommand();
+        Intent intent = new Intent(this,DeviceInfoActivity.class);
+        startActivity(intent);
     }
 
     @OnClick(R.id.battery_command_test_button)
     void onBatteryInfoOnClick() {
-        startBatteryQueryCommand();
+     //   startBatteryQueryCommand();
+        Intent intent = new Intent(this,BatteryInfoActivity.class);
+        startActivity(intent);
     }
 
     private void startMainFuncCommand() {
@@ -132,11 +137,11 @@ public class TestActivity extends BaseActivity {
         }
     };
 
-    private void writeCommand(byte[] command) {
-        BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
-        characteristic.setValue(command);
-        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
-    }
+//    private void writeCommand(byte[] command) {
+//        BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
+//        characteristic.setValue(command);
+//        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
+//    }
 
     @Override
     public void onStart() {
