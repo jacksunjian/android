@@ -455,9 +455,13 @@ public class CommandManager {
         BatteryInfoCommandResp resp = new BatteryInfoCommandResp();
         resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.remainPercent = BlueUtils.byteArrayToInt(originData, 8, 2);
-        resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 10, 2);
-        resp.voltage = BlueUtils.byteArrayToInt(originData, 12, 2);
-        resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
+        resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 10, 2)/1000;
+        resp.voltage = BlueUtils.byteArrayToInt(originData, 12, 2)/100;
+        int tmp1 = BlueUtils.byteArrayToInt(originData, 14,1);
+        int tmp2 = BlueUtils.byteArrayToInt(originData, 15,1);
+        resp.temperature = (tmp1 + tmp2) / 2 - 20;
+
+     //   resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
         resp.remainForFuture = BlueUtils.getNewBytes(originData, 16, 10);
         resp.state = BlueUtils.byteArrayToInt(originData, 26, 2);
         return resp;
