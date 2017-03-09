@@ -6,6 +6,7 @@ import android.util.Log;
 import com.blue.car.model.BatteryInfoCommandResp;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.model.LedCommandResp;
+import com.blue.car.model.LockConditionInfoCommandResp;
 import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.model.RidingTimeCommandResp;
 import com.blue.car.model.SensitivityCommandResp;
@@ -404,8 +405,11 @@ public class CommandManager {
     07 00
     13 FF
     */
-    public static byte[] getLockConditionCommandResp(byte[] originData) {
-        return BlueUtils.getNewBytes(originData, 6, 2);
+    public static LockConditionInfoCommandResp getLockConditionCommandResp(byte[] originData) {
+        LockConditionInfoCommandResp resp = new LockConditionInfoCommandResp();
+          resp.alarmStatus = BlueUtils.byteArrayToInt(originData, 6, 2);
+        return resp;
+
     }
 
     /*55 AA 1C 0D 01 C6
@@ -455,8 +459,8 @@ public class CommandManager {
         BatteryInfoCommandResp resp = new BatteryInfoCommandResp();
         resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.remainPercent = BlueUtils.byteArrayToInt(originData, 8, 2);
-        resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 10, 2)/1000;
-        resp.voltage = BlueUtils.byteArrayToInt(originData, 12, 2)/100;
+        resp.electricCurrent = (BlueUtils.byteArrayToInt(originData, 10, 2)*1.0f)/1000;
+        resp.voltage = (BlueUtils.byteArrayToInt(originData, 12, 2)*1.0f)/100;
         int tmp1 = BlueUtils.byteArrayToInt(originData, 14,1);
         int tmp2 = BlueUtils.byteArrayToInt(originData, 15,1);
         resp.temperature = (tmp1 + tmp2) / 2 - 20;
