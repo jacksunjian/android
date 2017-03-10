@@ -84,7 +84,7 @@ public class TestActivity extends BaseActivity {
     @OnClick(R.id.main_func_command_test_button)
     void onMainFucButtonOnClick() {
        // startMainFuncCommand();
-        Intent intent = new Intent(this,DeviceInfoActivity.class);
+        Intent intent = new Intent(this,OtherSettingActivity.class);
         startActivity(intent);
     }
 

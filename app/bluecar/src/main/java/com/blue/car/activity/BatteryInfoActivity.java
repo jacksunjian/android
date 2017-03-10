@@ -120,13 +120,6 @@ public class BatteryInfoActivity extends BaseActivity {
    }
 
 
-
-//    private void writeCommand(byte[] command) {
-//        BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
-//        characteristic.setValue(command);
-//        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
-//    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
         if (event.status == BluetoothGatt.GATT_SUCCESS) {

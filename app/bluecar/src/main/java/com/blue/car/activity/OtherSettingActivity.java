@@ -2,8 +2,10 @@ package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -42,6 +44,7 @@ public class OtherSettingActivity extends BaseActivity {
     Switch canWarnSwitch;
     private CommandRespManager respManager = new CommandRespManager();
     private static final String TAG = OtherSettingActivity.class.getSimpleName();
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_other_setting;
@@ -60,14 +63,38 @@ public class OtherSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
         getLockConditionInfo();
+
+        canOffSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    byte[] command = CommandManager.getLockSystemStartCommand();
+                    respManager.setCommandRespCallBack(new String(command), null);
+                    writeCommand(command);
+                }
+            }
+        });
+        canWarnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    byte[] command = CommandManager.getLockSystemNotAlarmCommand();
+                    respManager.setCommandRespCallBack(new String(command), null);
+                    writeCommand(command);
+                }
+            }
+        });
+
+
+
     }
 
     private void getLockConditionInfo() {
         byte[] command = CommandManager.getLockConditionCommand();
         respManager.setCommandRespCallBack(new String(command), lockInfoRespCallback);
         writeCommand(command);
-
     }
+
     private CommandRespManager.OnDataCallback lockInfoRespCallback = new CommandRespManager.OnDataCallback() {
         @Override
         public void resp(byte[] data) {
@@ -85,13 +112,9 @@ public class OtherSettingActivity extends BaseActivity {
     };
 
     private void updateView(LockConditionInfoCommandResp resp) {
-       if(resp.isOnCondition(2)) {
-           //canOffSwitch.set
-       }else{
-
-       }
-
-
+        Log.e("sunjian", "获取了");
+        canOffSwitch.setChecked(resp.isLockCanOff());
+        canWarnSwitch.setChecked(resp.isLockNotWarn());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -133,4 +156,17 @@ public class OtherSettingActivity extends BaseActivity {
                 break;
         }
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
+    }
+
 }
