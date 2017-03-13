@@ -1,6 +1,8 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -57,7 +59,10 @@ public class SpeedControlActivity extends BaseActivity {
     @Override
     protected void initView() {
         lhTvTitle.setText("车速设置");
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值", 15, new SeekBar.OnSeekBarChangeListener() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("speedLimit", Context.MODE_PRIVATE);
+        int speed = sharedPreferences.getInt("limit",  0  );
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值", speed, new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             }
@@ -68,7 +73,11 @@ public class SpeedControlActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                writeSpeedLimitCommand(seekBar.getProgress());
+                SharedPreferences.Editor editor = getSharedPreferences("speedLimit",MODE_PRIVATE).edit();
+                editor.putInt("limit", seekBar.getProgress());
+                editor.commit();
+
+                writeSpeedLimitCommand(seekBar.getProgress()*1000);
             }
         });
         ViewGroup seekBarViewGroup = (ViewGroup) findViewById(R.id.speedg_control);
@@ -96,6 +105,7 @@ public class SpeedControlActivity extends BaseActivity {
             LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
                 speedLimitResp = CommandManager.getSpeedLimitCommandResp(data);
+
                 LogUtils.jsonLog("speedLimitResp", speedLimitResp);
                 updateView(speedLimitResp);
             }
@@ -159,5 +169,16 @@ public class SpeedControlActivity extends BaseActivity {
                 onBackPressed();
                 break;
         }
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
     }
 }
