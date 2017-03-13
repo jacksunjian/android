@@ -1,7 +1,6 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,7 +23,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -32,6 +30,8 @@ import butterknife.OnClick;
  */
 
 public class OtherSettingActivity extends BaseActivity {
+    private static final String TAG = OtherSettingActivity.class.getSimpleName();
+
     @Bind(R.id.lh_btn_back)
     Button lhBtnBack;
     @Bind(R.id.ll_back)
@@ -42,8 +42,9 @@ public class OtherSettingActivity extends BaseActivity {
     Switch canOffSwitch;
     @Bind(R.id.can_warn_switch)
     Switch canWarnSwitch;
+
     private CommandRespManager respManager = new CommandRespManager();
-    private static final String TAG = OtherSettingActivity.class.getSimpleName();
+    private LockConditionInfoCommandResp lockCommandResp;
 
     @Override
     protected int getLayoutId() {
@@ -52,41 +53,43 @@ public class OtherSettingActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
-
     }
 
     @Override
     protected void initView() {
         lhTvTitle.setText("其他设置");
+        initSwitchView();
     }
 
-    @Override
-    protected void initData() {
-        getLockConditionInfo();
-
+    private void initSwitchView() {
         canOffSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    byte[] command = CommandManager.getLockSystemStartCommand();
-                    respManager.setCommandRespCallBack(new String(command), null);
-                    writeCommand(command);
+                if (lockCommandResp != null) {
+                    lockCommandResp.setLockCanPowerOff(isChecked);
+                    writeLockCanDoCommand(lockCommandResp.getAlarmStatus());
                 }
             }
         });
         canWarnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    byte[] command = CommandManager.getLockSystemNotAlarmCommand();
-                    respManager.setCommandRespCallBack(new String(command), null);
-                    writeCommand(command);
+                if (lockCommandResp != null) {
+                    lockCommandResp.setLockCanWarn(isChecked);
+                    writeLockCanDoCommand(lockCommandResp.getAlarmStatus());
                 }
             }
         });
+    }
 
+    @Override
+    protected void initData() {
+        getLockConditionInfo();
+    }
 
-
+    private void writeLockCanDoCommand(int status) {
+        byte[] command = CommandManager.getLockConditionSettingCommand(status);
+        writeCommand(command);
     }
 
     private void getLockConditionInfo() {
@@ -104,9 +107,9 @@ public class OtherSettingActivity extends BaseActivity {
             boolean result = CommandManager.checkVerificationCode(data);
             LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
-                LockConditionInfoCommandResp resp = CommandManager.getLockConditionCommandResp(data);
-                LogUtils.jsonLog("batteryResp", resp);
-                updateView(resp);
+                lockCommandResp = CommandManager.getLockConditionCommandResp(data);
+                LogUtils.jsonLog("batteryResp", lockCommandResp);
+                updateView(lockCommandResp);
             }
         }
     };
@@ -144,7 +147,6 @@ public class OtherSettingActivity extends BaseActivity {
                     + BlueUtils.bytesToHexString(dataBytes));
         }
     }
-
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {

@@ -135,14 +135,9 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x02}, COMMAND_SEND, new byte[]{0x01, (byte) 0xD3});
     }
 
-    public static byte[] getLockSystemStartCommand() {
-        //《55 AA 04 0A 03 D3 13 00 08 FF
-        return getSendCommand(new byte[]{0x13, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xD3});
-    }
-
-    public static byte[] getLockSystemNotAlarmCommand() {
-        //《55 AA 04 0A 03 D3 03 00 18 FF
-        return getSendCommand(new byte[]{0x03, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xD3});
+    public static byte[] getLockConditionSettingCommand(int status) {
+        //for example《55 AA 04 0A 03 D3 13 00 08 FF
+        return getSendCommand(BlueUtils.getCharByte(status), COMMAND_SEND, new byte[]{0x03, (byte) 0xD3});
     }
 
     public static byte[] getLedCommand() {

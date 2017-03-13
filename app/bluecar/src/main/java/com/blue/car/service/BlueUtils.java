@@ -261,4 +261,20 @@ public class BlueUtils {
                 (byte) ((value >> 8) & 0xFF)
         };
     }
+
+    public static boolean isOnCondition(int data, int n) {
+        return (data & (1 << n)) == (1 << n);
+    }
+
+    public static boolean isOffCondition(int data, int n) {
+        return (data & (1 << n)) != (1 << n);
+    }
+
+    public static void setCondition(int data, int n, boolean enable) {
+        if (enable) {
+            data |= 1 << n;
+        } else {
+            data &= ~(1 << n);
+        }
+    }
 }
