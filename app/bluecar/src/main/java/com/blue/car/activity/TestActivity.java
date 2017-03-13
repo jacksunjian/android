@@ -1,12 +1,12 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 
-import com.blue.car.AppApplication;
 import com.blue.car.R;
+import com.blue.car.custom.SpeedMainView;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
@@ -14,19 +14,25 @@ import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.BatteryInfoCommandResp;
 import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.service.BlueUtils;
-import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Random;
+
+import butterknife.Bind;
 import butterknife.OnClick;
 
 public class TestActivity extends BaseActivity {
     private static final String TAG = TestActivity.class.getSimpleName();
 
+    @Bind(R.id.speed_view)
+    SpeedMainView speedView;
+
     private CommandRespManager respManager = new CommandRespManager();
+    private Handler handler = new Handler();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,7 +56,23 @@ public class TestActivity extends BaseActivity {
 
     @Override
     protected void initData() {
+        testSpeedView();
+    }
 
+    private Random random = new Random();
+
+    private Runnable testSpeedViewRunnable = new Runnable() {
+        @Override
+        public void run() {
+            float value = random.nextInt(30);
+            speedView.setSpeed(value);
+            speedView.setBatteryProgress(value * 133.33f);
+            testSpeedView();
+        }
+    };
+
+    private void testSpeedView() {
+        handler.postDelayed(testSpeedViewRunnable, 1000);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -71,7 +93,7 @@ public class TestActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
         if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            final byte[] dataBytes = event.data;
             LogUtils.e("onCharacteristicWrite", "status:" + event.status);
             LogUtils.e(TAG, "onCharWrite "
                     + " write "
@@ -83,16 +105,13 @@ public class TestActivity extends BaseActivity {
 
     @OnClick(R.id.main_func_command_test_button)
     void onMainFucButtonOnClick() {
-       // startMainFuncCommand();
-        Intent intent = new Intent(this,SensorSettingActivity.class);
-        startActivity(intent);
+        startMainFuncCommand();
+        handler.removeCallbacks(testSpeedViewRunnable);
     }
 
     @OnClick(R.id.battery_command_test_button)
     void onBatteryInfoOnClick() {
-     //   startBatteryQueryCommand();
-        Intent intent = new Intent(this,BatteryInfoActivity.class);
-        startActivity(intent);
+        startBatteryQueryCommand();
     }
 
     private void startMainFuncCommand() {
@@ -118,6 +137,7 @@ public class TestActivity extends BaseActivity {
             if (result) {
                 MainFuncCommandResp resp = CommandManager.getMainFuncCommandResp(data);
                 LogUtils.jsonLog("mainFuncResp", resp);
+                updateSpeedMainView(resp);
             }
         }
     };
@@ -133,15 +153,26 @@ public class TestActivity extends BaseActivity {
             if (result) {
                 BatteryInfoCommandResp resp = CommandManager.getBatteryInfoCommandResp(data);
                 LogUtils.jsonLog("batteryResp", resp);
+                updateBatteryView(resp);
             }
         }
     };
 
-//    private void writeCommand(byte[] command) {
-//        BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
-//        characteristic.setValue(command);
-//        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
-//    }
+    private void updateSpeedMainView(MainFuncCommandResp resp) {
+        if (resp == null) {
+            return;
+        }
+        speedView.setBatteryPercent(resp.remainBatteryPercent * 1.0f / 100);
+        speedView.setSpeed(resp.speed);
+        speedView.setPerMileage(resp.perMileage);
+    }
+
+    private void updateBatteryView(BatteryInfoCommandResp resp) {
+        if (resp == null) {
+            return;
+        }
+        speedView.setBatteryPercent(resp.remainPercent * 1.0f / 100);
+    }
 
     @Override
     public void onStart() {
@@ -153,5 +184,11 @@ public class TestActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacks(testSpeedViewRunnable);
     }
 }

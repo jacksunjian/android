@@ -13,10 +13,6 @@ import com.blue.car.model.SensitivityCommandResp;
 import com.blue.car.model.SpeedLimitResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
-import com.blue.car.utils.CollectionUtils;
-
-import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 public class CommandManager {
 
@@ -352,17 +348,17 @@ public class CommandManager {
         resp.warningCode = BlueUtils.byteArrayToInt(originData, 8, 2);
         resp.sysStatus = BlueUtils.byteArrayToInt(originData, 10, 2);
         resp.workMode = BlueUtils.byteArrayToInt(originData, 12, 2);
-        resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 14, 2);
-        resp.speed = BlueUtils.byteArrayToInt(originData, 16, 2);
-        resp.averageSpeed = BlueUtils.byteArrayToInt(originData, 18, 2);
-        resp.totalMileage = BlueUtils.byteArrayToInt(originData, 20, 4);
-        resp.perMileage = BlueUtils.byteArrayToInt(originData, 24, 2);
+        resp.remainBatteryPercent = BlueUtils.byteArrayToInt(originData, 14, 2);
+        resp.speed = BlueUtils.byteArrayToInt(originData, 16, 2) * 1.0f / 1000;
+        resp.averageSpeed = BlueUtils.byteArrayToInt(originData, 18, 2) * 1.0f / 1000;
+        resp.totalMileage = BlueUtils.byteArrayToInt(originData, 20, 4) * 1.0f / 1000;
+        resp.perMileage = BlueUtils.byteArrayToInt(originData, 24, 2) * 1.0f / 100;
         resp.perRunTime = BlueUtils.byteArrayToInt(originData, 26, 2);
-        resp.temperature = BlueUtils.byteArrayToInt(originData, 28, 2);
+        resp.temperature = BlueUtils.byteArrayToInt(originData, 28, 2) * 1.0f / 10;
         resp.speedLimit = BlueUtils.byteArrayToInt(originData, 30, 2);
         resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 32, 2);
         resp.remain = BlueUtils.getNewBytes(originData, 34, 2);
-        resp.maxAbsSpeed = BlueUtils.byteArrayToInt(originData, 36, 2);
+        resp.maxAbsSpeed = BlueUtils.byteArrayToInt(originData, 36, 2) * 1.0f / 1000;
         return resp;
     }
 
@@ -402,7 +398,7 @@ public class CommandManager {
     */
     public static LockConditionInfoCommandResp getLockConditionCommandResp(byte[] originData) {
         LockConditionInfoCommandResp resp = new LockConditionInfoCommandResp();
-          resp.alarmStatus = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.alarmStatus = BlueUtils.byteArrayToInt(originData, 6, 2);
         return resp;
 
     }
@@ -454,13 +450,13 @@ public class CommandManager {
         BatteryInfoCommandResp resp = new BatteryInfoCommandResp();
         resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.remainPercent = BlueUtils.byteArrayToInt(originData, 8, 2);
-        resp.electricCurrent = (BlueUtils.byteArrayToInt(originData, 10, 2)*1.0f)/1000;
-        resp.voltage = (BlueUtils.byteArrayToInt(originData, 12, 2)*1.0f)/100;
-        int tmp1 = BlueUtils.byteArrayToInt(originData, 14,1);
-        int tmp2 = BlueUtils.byteArrayToInt(originData, 15,1);
+        resp.electricCurrent = (BlueUtils.byteArrayToInt(originData, 10, 2) * 1.0f) / 1000;
+        resp.voltage = (BlueUtils.byteArrayToInt(originData, 12, 2) * 1.0f) / 100;
+        int tmp1 = BlueUtils.byteArrayToInt(originData, 14, 1);
+        int tmp2 = BlueUtils.byteArrayToInt(originData, 15, 1);
         resp.temperature = (tmp1 + tmp2) / 2 - 20;
 
-     //   resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
+        //   resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
         resp.remainForFuture = BlueUtils.getNewBytes(originData, 16, 10);
         resp.state = BlueUtils.byteArrayToInt(originData, 26, 2);
         return resp;
