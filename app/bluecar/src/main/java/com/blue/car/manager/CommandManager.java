@@ -86,9 +86,9 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x04}, COMMAND_SEND, new byte[]{0x01, 0x73});
     }
 
-    public static byte[] getLimitSpeedSettingCommand(int data) {
+    public static byte[] getLimitSpeedSettingCommand(int speedLimitValue) {
         // 《55 AA 04 0A 03 74 88 13 DF FE
-        return getSendCommand(BlueUtils.getCharByte(data), COMMAND_SEND, new byte[]{0x03, 0x74});
+        return getSendCommand(BlueUtils.getCharByte(speedLimitValue * 1000), COMMAND_SEND, new byte[]{0x03, 0x74});
     }
 
     public static byte[] getSensitivityCommand() {
@@ -373,7 +373,7 @@ public class CommandManager {
     6F FE*/
     public static SpeedLimitResp getSpeedLimitCommandResp(@NonNull byte[] originData) {
         SpeedLimitResp resp = new SpeedLimitResp();
-        resp.speed = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.speed = BlueUtils.byteArrayToInt(originData, 6, 2) / 1000;
         resp.speedLimit = BlueUtils.byteArrayToInt(originData, 8, 2) / 1000;
         return resp;
     }
