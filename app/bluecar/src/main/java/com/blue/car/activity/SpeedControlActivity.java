@@ -8,11 +8,13 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.alibaba.fastjson.JSON;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
+import com.blue.car.manager.PreferenceManager;
 import com.blue.car.model.SpeedLimitResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
@@ -51,13 +53,20 @@ public class SpeedControlActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
-
+        String resp = PreferenceManager.getSpeedLimitResp(this);
+        if (StringUtils.isNotBlank(resp)) {
+            speedLimitResp = JSON.parseObject(resp, SpeedLimitResp.class);
+        }
     }
 
     @Override
     protected void initView() {
         lhTvTitle.setText("车速设置");
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值", 15, new SeekBar.OnSeekBarChangeListener() {
+        initSpeedLimitSeekBar();
+    }
+
+    private void initSpeedLimitSeekBar() {
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值", 0, new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             }
@@ -73,6 +82,10 @@ public class SpeedControlActivity extends BaseActivity {
         });
         ViewGroup seekBarViewGroup = (ViewGroup) findViewById(R.id.speedg_control);
         speedLimitSeekBar = UniversalViewUtils.getSeekBarView(seekBarViewGroup);
+        if (speedLimitResp != null) {
+            speedLimitSeekBar.setMax(30);
+            speedLimitSeekBar.setProgress(speedLimitResp.speedLimit);
+        }
     }
 
     @Override
@@ -82,11 +95,11 @@ public class SpeedControlActivity extends BaseActivity {
 
     private void getSpeedLimitInfo() {
         byte[] command = CommandManager.getQueryLimitSpeedCommand();
-        respManager.setCommandRespCallBack(new String(command), lockInfoRespCallback);
+        respManager.setCommandRespCallBack(new String(command), speedLimitRespCallback);
         writeCommand(command);
     }
 
-    private CommandRespManager.OnDataCallback lockInfoRespCallback = new CommandRespManager.OnDataCallback() {
+    private CommandRespManager.OnDataCallback speedLimitRespCallback = new CommandRespManager.OnDataCallback() {
         @Override
         public void resp(byte[] data) {
             if (StringUtils.isNullOrEmpty(data)) {
@@ -97,19 +110,30 @@ public class SpeedControlActivity extends BaseActivity {
             if (result) {
                 speedLimitResp = CommandManager.getSpeedLimitCommandResp(data);
                 LogUtils.jsonLog("speedLimitResp", speedLimitResp);
+                saveSpeedLimitResp();
                 updateView(speedLimitResp);
             }
         }
     };
 
     private void updateView(SpeedLimitResp resp) {
+        if (resp == null) {
+            return;
+        }
         speedLimitSeekBar.setProgress(resp.speedLimit);
+    }
+
+    private void saveSpeedLimitResp() {
+        if (speedLimitResp != null) {
+            PreferenceManager.saveSpeedLimitResp(this, JSON.toJSONString(speedLimitResp));
+        }
     }
 
     private void writeSpeedLimitCommand(int value) {
         byte[] command = CommandManager.getLimitSpeedSettingCommand(value);
         writeCommand(command);
         speedLimitSettingCommand = new String(command);
+        speedLimitResp.speedLimit = value;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -148,7 +172,20 @@ public class SpeedControlActivity extends BaseActivity {
         if (new String(dataBytes).equals(speedLimitSettingCommand)) {
             showToast("骑行限速值设置成功");
             getSpeedLimitInfo();
+            saveSpeedLimitResp();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
     }
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
