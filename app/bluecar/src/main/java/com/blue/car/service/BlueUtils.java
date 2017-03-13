@@ -270,11 +270,12 @@ public class BlueUtils {
         return (data & (1 << n)) != (1 << n);
     }
 
-    public static void setCondition(int data, int n, boolean enable) {
+    public static int setCondition(int data, int n, boolean enable) {
         if (enable) {
             data |= 1 << n;
         } else {
             data &= ~(1 << n);
         }
+        return data;
     }
 }

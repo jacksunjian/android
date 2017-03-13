@@ -42,6 +42,6 @@ public class LockConditionInfoCommandResp {
     }
 
     public void setCondition(int n, boolean enable) {
-        BlueUtils.setCondition(alarmStatus, n, enable);
+        alarmStatus = BlueUtils.setCondition(alarmStatus, n, enable);
     }
 }
