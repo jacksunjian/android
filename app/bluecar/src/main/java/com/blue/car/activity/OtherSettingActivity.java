@@ -138,7 +138,7 @@ public class OtherSettingActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
         if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            final byte[] dataBytes = event.data;
             LogUtils.e("onCharacteristicWrite", "status:" + event.status);
             LogUtils.e(TAG, "onCharWrite "
                     + " write "

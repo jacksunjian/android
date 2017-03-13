@@ -1,5 +1,7 @@
 package com.blue.car.activity;
 
+import android.bluetooth.BluetoothGatt;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -11,8 +13,16 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.blue.car.R;
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.manager.CommandManager;
+import com.blue.car.manager.CommandRespManager;
+import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.UniversalViewUtils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -26,7 +36,8 @@ public class SensorSettingActivity extends BaseActivity {
     Button lhBtnBack;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
-
+    private static final String TAG = "SensorSettingActivity";
+    private CommandRespManager respManager = new CommandRespManager();
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +92,7 @@ public class SensorSettingActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
         Switch ridingSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.riding_sensitivity_auto_regulation,
@@ -124,6 +136,50 @@ public class SensorSettingActivity extends BaseActivity {
     protected void initData() {
 
     }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicRead", "status:" + event.status);
+            LogUtils.e(TAG, "onCharRead "
+                    + " read "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+            byte[] result = respManager.obtainData(dataBytes);
+            respManager.processCommandResp(result);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            // final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            final byte[] dataBytes = event.data;
+            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
+            LogUtils.e(TAG, "onCharWrite "
+                    + " write "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+        //    processWriteEvent(dataBytes);
+        }
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
+    }
+    
+    
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {
