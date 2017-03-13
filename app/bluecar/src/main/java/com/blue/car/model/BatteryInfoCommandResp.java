@@ -4,8 +4,8 @@ public class BatteryInfoCommandResp {
 
     public int remainBatteryElectricity;
     public int remainPercent;
-    public int electricCurrent;
-    public int voltage;
+    public float electricCurrent;
+    public float voltage;
     public int temperature;
     public byte[] remainForFuture = new byte[10];
     public int state;

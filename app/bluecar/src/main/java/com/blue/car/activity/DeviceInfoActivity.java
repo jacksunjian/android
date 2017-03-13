@@ -91,16 +91,22 @@ public class DeviceInfoActivity extends BaseActivity {
             if (result) {
                 MainFuncCommandResp resp = CommandManager.getMainFuncCommandResp(data);
                 LogUtils.jsonLog("deviceInfoResp", resp);
-                currentSpeedTv.setText("" + resp.speed);
-                averageSpeedTv.setText("" + resp.averageSpeed);
-                allmileTv.setText("" + resp.totalMileage);
-                thisMileTv.setText("" + resp.perMileage);
-                perRunTime.setText(""+resp.perRunTime);
-                temperatureTv.setText("" + resp.temperature);
-                topSpeedTv.setText("" + resp.speedLimit);
+                updateDeviceInfoView(resp);
             }
         }
     };
+
+
+    private void updateDeviceInfoView(MainFuncCommandResp resp){
+        currentSpeedTv.setText("" + resp.speed);
+        averageSpeedTv.setText("" + resp.averageSpeed);
+        allmileTv.setText("" + resp.totalMileage);
+        thisMileTv.setText("" + resp.perMileage);
+        perRunTime.setText(""+resp.perRunTime);
+        temperatureTv.setText("" + resp.temperature);
+        topSpeedTv.setText("" + resp.speedLimit);
+    }
+
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -54,13 +54,13 @@
              />
 
         <ImageView
-            android:id="@+id/showMore_iv"
+            android:id="@+id/suo_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="22dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:src="@mipmap/shanghua_btn" />
+            android:src="@mipmap/suo_off" />
 
         <ImageView
             android:id="@+id/blueControl_iv"

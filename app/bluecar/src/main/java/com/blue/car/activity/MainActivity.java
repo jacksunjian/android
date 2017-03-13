@@ -35,8 +35,7 @@ public class MainActivity extends BaseActivity {
     TextView isLimitTv;
     @Bind(R.id.idspeedControl_iv)
     ImageView idspeedControlIv;
-    @Bind(R.id.showMore_iv)
-    ImageView showMoreIv;
+
     @Bind(R.id.blueControl_iv)
     ImageView blueControlIv;
     int isSpeedControl = 0;
@@ -44,6 +43,8 @@ public class MainActivity extends BaseActivity {
     int isLock = 0;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
+    @Bind(R.id.suo_iv)
+    ImageView suoIv;
 
     @Override
     protected int getLayoutId() {
@@ -69,7 +70,7 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    @OnClick({R.id.iv_right, R.id.ll_right, R.id.speed_iv, R.id.idspeedControl_iv, R.id.showMore_iv, R.id.blueControl_iv})
+    @OnClick({R.id.iv_right, R.id.ll_right, R.id.speed_iv, R.id.idspeedControl_iv, R.id.suo_iv, R.id.blueControl_iv})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_right:
@@ -97,15 +98,16 @@ public class MainActivity extends BaseActivity {
                     isLimitTv.setVisibility(View.GONE);
                 }
                 break;
-            case R.id.showMore_iv:
-                ActivityOptionsCompat options =
-                        ActivityOptionsCompat.makeCustomAnimation(this,
-                                R.anim.slide_bottom_in,
-                                R.anim.anim_none_alpha);
-                Intent intent = new Intent(this, CurrentInfoActivity.class);
-                intent.putExtra("isLimit",isSpeedControl);
-                ActivityCompat.startActivity(this, intent, options.toBundle());
+            case R.id.suo_iv:
                 break;
+//                ActivityOptionsCompat options =
+//                        ActivityOptionsCompat.makeCustomAnimation(this,
+//                                R.anim.slide_bottom_in,
+//                                R.anim.anim_none_alpha);
+//                Intent intent = new Intent(this, CurrentInfoActivity.class);
+//                intent.putExtra("isLimit", isSpeedControl);
+//                ActivityCompat.startActivity(this, intent, options.toBundle());
+//                break;
             case R.id.blueControl_iv:
                 Intent it_blue = new Intent(this, BlueControlActivity.class);
                 startActivity(it_blue);
@@ -118,5 +120,9 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         // TODO: add setContentView(...) invocation
         ButterKnife.bind(this);
+    }
+
+    @OnClick(R.id.suo_iv)
+    public void onClick() {
     }
 }

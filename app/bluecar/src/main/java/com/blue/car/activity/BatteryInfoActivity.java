@@ -3,6 +3,9 @@ package com.blue.car.activity;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.util.LogWriter;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -50,7 +53,8 @@ public class BatteryInfoActivity extends BaseActivity {
     private static final String TAG = BatteryInfoActivity.class.getSimpleName();
 
     private CommandRespManager respManager = new CommandRespManager();
-
+    private Handler mHandler = new Handler();
+    int k = 0;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_battery_info;
@@ -58,7 +62,6 @@ public class BatteryInfoActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
-
     }
 
     @Override
@@ -69,6 +72,18 @@ public class BatteryInfoActivity extends BaseActivity {
     @Override
     protected void initData() {
         startBatteryQueryCommand();
+//        mHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                startBatteryQueryCommand();
+//                k++;
+//                if (k < 20) {
+//                    mHandler.postDelayed(this, 350);
+//                }
+//
+//            }
+//        });
+
     }
 
     private void startBatteryQueryCommand() {
@@ -89,22 +104,21 @@ public class BatteryInfoActivity extends BaseActivity {
             if (result) {
                 BatteryInfoCommandResp resp = CommandManager.getBatteryInfoCommandResp(data);
                 LogUtils.jsonLog("batteryResp", resp);
-
-                restBatteryTv.setText(""+resp.remainBatteryElectricity+"mAh");
-                restPercentTv.setText(""+resp.remainPercent+"%");
-                electricTv.setText(""+resp.electricCurrent+"A");
-                voltageTv.setText(""+resp.voltage+"V");
-                temperatureTv.setText(""+resp.temperature+"℃");
+                updateBatteryView(resp);
             }
         }
     };
 
 
-//    private void writeCommand(byte[] command) {
-//        BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
-//        characteristic.setValue(command);
-//        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
-//    }
+   private void updateBatteryView(BatteryInfoCommandResp resp){
+       restBatteryTv.setText("" + resp.remainBatteryElectricity + "mAh");
+       restPercentTv.setText("" + resp.remainPercent + "%");
+       electricTv.setText("" + resp.electricCurrent + "A");
+       voltageTv.setText("" + resp.voltage + "V");
+       temperatureTv.setText("" + resp.temperature + "℃");
+
+   }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
@@ -133,8 +147,6 @@ public class BatteryInfoActivity extends BaseActivity {
                     + BlueUtils.bytesToHexString(dataBytes));
         }
     }
-
-
 
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
