@@ -69,23 +69,23 @@ public class UniversalViewUtils {
         return rightTextView;
     }
 
-    private static TextView getLeftTextView(ViewGroup viewGroup) {
+    public static TextView getLeftTextView(ViewGroup viewGroup) {
         return (TextView) viewGroup.findViewById(R.id.info_left_text);
     }
 
-    private static TextView getRightTextView(ViewGroup viewGroup) {
+    public static TextView getRightTextView(ViewGroup viewGroup) {
         return (TextView) viewGroup.findViewById(R.id.info_right_text);
     }
 
-    private static ImageView getRightImageView(ViewGroup viewGroup) {
+    public static ImageView getRightImageView(ViewGroup viewGroup) {
         return (ImageView) viewGroup.findViewById(R.id.info_right_image);
     }
 
-    private static SeekBar getSeekBarView(ViewGroup viewGroup) {
+    public static SeekBar getSeekBarView(ViewGroup viewGroup) {
         return (SeekBar) viewGroup.findViewById(R.id.info_seek_bar);
     }
 
-    private static Switch getSwitchView(ViewGroup viewGroup) {
+    public static Switch getSwitchView(ViewGroup viewGroup) {
         return (Switch) viewGroup.findViewById(R.id.info_right_switch);
     }
 }
