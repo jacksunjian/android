@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.bluetooth.BluetoothGatt;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -11,6 +12,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.blue.car.R;
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.manager.CommandManager;
+import com.blue.car.manager.CommandRespManager;
+import com.blue.car.service.BlueUtils;
+import com.blue.car.utils.LogUtils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -45,6 +55,8 @@ public class MainActivity extends BaseActivity {
     LinearLayout llBack;
     @Bind(R.id.suo_iv)
     ImageView suoIv;
+    private CommandRespManager respManager = new CommandRespManager();
+    private static final String TAG = "MainActivity";
 
     @Override
     protected int getLayoutId() {
@@ -92,13 +104,20 @@ public class MainActivity extends BaseActivity {
                     idspeedControlIv.setBackgroundResource(R.mipmap.xiansu_on);
                     isSpeedControl = 1;
                     isLimitTv.setVisibility(View.VISIBLE);
+                    writeLimitSpeedCommand();
                 } else {
                     idspeedControlIv.setBackgroundResource(R.mipmap.xiansu_off);
                     isSpeedControl = 0;
                     isLimitTv.setVisibility(View.GONE);
+                    writeUnLimitSpeedCommand();
                 }
                 break;
             case R.id.suo_iv:
+
+                writeLockCarCommand();
+
+                writeUnLockCarCommand();
+
                 break;
 //                ActivityOptionsCompat options =
 //                        ActivityOptionsCompat.makeCustomAnimation(this,
@@ -115,14 +134,66 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
+    private void writeUnLimitSpeedCommand() {
+        byte[] command = CommandManager.getUnLimitSpeedCommand();
+        writeCommand(command);
     }
 
-    @OnClick(R.id.suo_iv)
-    public void onClick() {
+    private void writeLimitSpeedCommand() {
+        byte[] command = CommandManager.getLimitSpeedCommand();
+        writeCommand(command);
+        
     }
+
+    private void writeUnLockCarCommand() {
+        byte[] command = CommandManager.getUnLockCarCommand();
+        writeCommand(command);
+    }
+
+    private void writeLockCarCommand() {
+        byte[] command = CommandManager.getLockCarCommand();
+        writeCommand(command);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicRead", "status:" + event.status);
+            LogUtils.e(TAG, "onCharRead "
+                    + " read "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+            byte[] result = respManager.obtainData(dataBytes);
+            respManager.processCommandResp(result);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
+            LogUtils.e(TAG, "onCharWrite "
+                    + " write "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+        }
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
+    }
+
+
+
 }

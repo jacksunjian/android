@@ -1,8 +1,11 @@
 package com.blue.car.activity;
 
+import android.bluetooth.BluetoothGatt;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -11,8 +14,18 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.blue.car.R;
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.manager.CommandManager;
+import com.blue.car.manager.CommandRespManager;
+import com.blue.car.model.SensitivityCommandResp;
+import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
+import com.blue.car.utils.StringUtils;
 import com.blue.car.utils.UniversalViewUtils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -26,7 +39,13 @@ public class SensorSettingActivity extends BaseActivity {
     Button lhBtnBack;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
+    private static final String TAG = "SensorSettingActivity";
+    Switch turningSwitch,ridingSwitch;
+    SeekBar turningSeekBar,ridingSeekBar;
 
+    private CommandRespManager respManager = new CommandRespManager();
+
+    SensitivityCommandResp sensitivityCommandResp;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +100,7 @@ public class SensorSettingActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
         Switch ridingSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.riding_sensitivity_auto_regulation,
@@ -118,12 +138,102 @@ public class SensorSettingActivity extends BaseActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
+
+        ViewGroup turningViewGroup = (ViewGroup) findViewById(R.id.turning_sensitivity_auto_regulation);
+        turningSwitch = UniversalViewUtils.getSwitchView(turningViewGroup);
+
+
+        ViewGroup ridingViewGroup = (ViewGroup) findViewById(R.id.riding_sensitivity_auto_regulation);
+        ridingSwitch = UniversalViewUtils.getSwitchView(ridingViewGroup);
+
+        ViewGroup turningseekBarViewGroup = (ViewGroup) findViewById(R.id.turning_sensitivity);
+        turningSeekBar = UniversalViewUtils.getSeekBarView(turningseekBarViewGroup);
+
+        ViewGroup ridingseekBarViewGroup = (ViewGroup) findViewById(R.id.riding_sensitivity);
+        ridingSeekBar = UniversalViewUtils.getSeekBarView(ridingseekBarViewGroup);
+
+
     }
 
     @Override
     protected void initData() {
+        getSensorInfo();
+    }
+
+    private void getSensorInfo() {
+        byte[] command = CommandManager.getSensitivityCommand();
+        respManager.setCommandRespCallBack(new String(command), sensorInfoRespCallback);
+        writeCommand(command);
+    }
+
+    private CommandRespManager.OnDataCallback sensorInfoRespCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                sensitivityCommandResp = CommandManager.getSensitivityCommandResp(data);
+                LogUtils.jsonLog("speedLimitResp", sensitivityCommandResp);
+               // saveSensitivityResp();
+                updateView(sensitivityCommandResp);
+            }
+        }
+    };
+
+
+    private void updateView(SensitivityCommandResp sensitivityCommandResp) {
+
+
+
 
     }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicRead", "status:" + event.status);
+            LogUtils.e(TAG, "onCharRead "
+                    + " read "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+            byte[] result = respManager.obtainData(dataBytes);
+            respManager.processCommandResp(result);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            // final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            final byte[] dataBytes = event.data;
+            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
+            LogUtils.e(TAG, "onCharWrite "
+                    + " write "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+        //    processWriteEvent(dataBytes);
+        }
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        startRegisterEventBus();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopRegisterEventBus();
+    }
+    
+    
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {

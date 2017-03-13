@@ -6,4 +6,14 @@ public class SensitivityCommandResp {
     public int balanceInPowerMode;
     public byte[] remainA;
     public int remainB;
+
+
+    public boolean isAutoRidingSensityAdjust(){
+        return ridingSensitivity == 101;
+    }
+
+    public boolean isAutoTurningSensityAdjust(){
+        return turningSensitivity == 101;
+    }
+
 }
