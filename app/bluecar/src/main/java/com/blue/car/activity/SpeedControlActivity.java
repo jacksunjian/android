@@ -81,7 +81,7 @@ public class SpeedControlActivity extends BaseActivity {
     }
 
     private void getSpeedLimitInfo() {
-        byte[] command = CommandManager.getLimitSpeedCommand();
+        byte[] command = CommandManager.getQueryLimitSpeedCommand();
         respManager.setCommandRespCallBack(new String(command), lockInfoRespCallback);
         writeCommand(command);
     }
