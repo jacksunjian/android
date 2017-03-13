@@ -75,7 +75,7 @@ public class OtherSettingActivity extends BaseActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (lockCommandResp != null) {
-                    lockCommandResp.setLockCanWarn(isChecked);
+                    lockCommandResp.setLockNotWarn(isChecked);
                     writeLockCanDoCommand(lockCommandResp.getAlarmStatus());
                 }
             }

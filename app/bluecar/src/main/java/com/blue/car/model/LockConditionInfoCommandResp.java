@@ -26,11 +26,11 @@ public class LockConditionInfoCommandResp {
     }
 
     public boolean isLockNotWarn() {
-        return isOffCondition(3);
+        return isOnCondition(3);
     }
 
-    public void setLockCanWarn(boolean canWarn) {
-        setCondition(3, canWarn);
+    public void setLockNotWarn(boolean notWarn) {
+        setCondition(3, notWarn);
     }
 
     public boolean isOnCondition(int n) {

@@ -23,7 +23,7 @@
     <RelativeLayout
         style="@style/settingRelativeStyle">
         <TextView
-            android:text="锁车有警告"
+            android:text="锁车不警告"
             style="@style/settingTextLeftStyle" />
         <Switch
             android:id="@+id/can_warn_switch"
