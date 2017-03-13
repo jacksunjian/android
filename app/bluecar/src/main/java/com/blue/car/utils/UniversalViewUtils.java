@@ -58,12 +58,16 @@ public class UniversalViewUtils {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                if (listener != null) {
+                    listener.onStartTrackingTouch(seekBar);
+                }
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                if (listener != null) {
+                    listener.onStopTrackingTouch(seekBar);
+                }
             }
         });
         return rightTextView;
