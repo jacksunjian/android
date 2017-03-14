@@ -41,7 +41,7 @@ public class SensorSettingActivity extends BaseActivity {
     LinearLayout llBack;
     private static final String TAG = "SensorSettingActivity";
     Switch turningSwitch, ridingSwitch;
-    SeekBar turningSeekBar, ridingSeekBar,balanceSeekBar;
+    SeekBar turningSeekBar, ridingSeekBar, balanceSeekBar;
 
     private CommandRespManager respManager = new CommandRespManager();
 
@@ -192,7 +192,6 @@ public class SensorSettingActivity extends BaseActivity {
     }
 
 
-
     @Override
     protected void initData() {
         getSensorInfo();
@@ -264,8 +263,22 @@ public class SensorSettingActivity extends BaseActivity {
                     + event.uuid.toString()
                     + " -> "
                     + BlueUtils.bytesToHexString(dataBytes));
-            //    processWriteEvent(dataBytes);
+            processWriteEvent(dataBytes);
         }
+    }
+
+    private void processWriteEvent(byte[] dataBytes) {
+        if (dataBytes.equals(CommandManager.getOpenTurnSensitivityCommand())) {
+            turningSeekBar.setEnabled(false);
+        } else if (dataBytes.equals(CommandManager.getCloseTurnSensitivityCommand())) {
+            turningSeekBar.setEnabled(true);
+        } else if (dataBytes.equals(CommandManager.getOpenRidingSensitivityCommand())) {
+            ridingSeekBar.setEnabled(false);
+        } else if (dataBytes.equals(CommandManager.getCloseRidingSensitivityCommand())) {
+            ridingSeekBar.setEnabled(true);
+        }
+
+
     }
 
     @Override
