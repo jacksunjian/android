@@ -96,12 +96,24 @@ public class CommandManager {
         return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
     }
 
-    public static byte[] getOpenTurnSensitivityCommand() {
+    public static byte[] getCloseTurnSensitivityCommand() {
         //《55 AA 04 0A 03 A1 32 00 1B FF
         return getTurnSensitivityCommand(new byte[]{0x32, 0x00});
     }
 
-    public static byte[] getCloseTurnSensitivityCommand() {
+    public static byte[] setTurnSensitivityCommand(int speedTurnValue) {
+        // 《55 AA 04 0A 03 A1 32 00 1B FF
+        return getSendCommand(BlueUtils.getCharByte(speedTurnValue), COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
+    }
+
+    public static byte[] setRidingSensitivityCommand(int ridingTurnValue) {
+        // 《55 AA 04 0A 03 A2 32 00 1A FF
+        return getSendCommand(BlueUtils.getCharByte(ridingTurnValue), COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
+    }
+
+
+
+    public static byte[] getOpenTurnSensitivityCommand() {
         //《55 AA 04 0A 03 A1 65 00 E8 FE
         return getTurnSensitivityCommand(new byte[]{0x65, 0x00});
     }
@@ -110,12 +122,12 @@ public class CommandManager {
         return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
     }
 
-    public static byte[] getOpenRidingSensitivityCommand() {
+    public static byte[] getCloseRidingSensitivityCommand() {
         //《55 AA 04 0A 03 A2 32 00 1A FF
         return getRidingSensitivityCommand(new byte[]{0x32, 0x00});
     }
 
-    public static byte[] getCloseRidingSensitivityCommand() {
+    public static byte[] getOpenRidingSensitivityCommand() {
         //《55 AA 04 0A 03 A2 65 00 E7 FE
         return getRidingSensitivityCommand(new byte[]{0x65, 0x00});
     }

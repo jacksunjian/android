@@ -16,4 +16,8 @@ public class SensitivityCommandResp {
         return turningSensitivity == 101;
     }
 
+    public boolean isEnableRidingSeekBar(){return ridingSensitivity != 101;}
+
+    public boolean isEnableTurningSeekBar(){return turningSensitivity != 101;}
+
 }

@@ -32,4 +32,14 @@
         android:layout_height="match_parent"
         android:layout_margin="15dp" />
 
+    <Button
+        android:id="@+id/test_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:text="测试"
+        android:textSize="19sp" />
+
 </LinearLayout>
