@@ -31,6 +31,38 @@
 
     </RelativeLayout>
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="60dp"
+        android:layout_marginBottom="17dp"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/speed_limit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/xiansu_off" />
+
+        <ImageView
+            android:id="@+id/lock_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@id/speed_limit"
+            android:src="@mipmap/suo_off" />
+
+        <ImageView
+            android:id="@+id/remote_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@id/lock_iv"
+            android:src="@mipmap/yaokong" />
+
+    </RelativeLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -42,58 +74,70 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <include
-                android:id="@+id/per_riding_time"
-                layout="@layout/normal_info_text_layout" />
+            <RelativeLayout
+                android:id="@+id/info_rl"
+                android:minHeight="74dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    style="@style/settingTextLeftStyle"
+                    android:layout_marginLeft="0dp"
+                    android:text="信息"/>
 
-            <include
-                android:id="@+id/total_meter"
-                layout="@layout/normal_info_text_layout" />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:src="@mipmap/gengduo"/>
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:background="@android:color/white" />
 
-            <include
-                android:id="@+id/per_meter"
-                layout="@layout/normal_info_text_layout" />
 
-            <include
-                android:id="@+id/car_temperature"
-                layout="@layout/normal_info_text_layout" />
+            <RelativeLayout
+                android:id="@+id/setting_rl"
+                android:minHeight="74dp"
+                android:layout_marginRight="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    style="@style/settingTextLeftStyle"
+                    android:layout_marginLeft="0dp"
+                    android:text="设置"/>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:src="@mipmap/gengduo"/>
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:background="@android:color/white" />
 
             <include
                 android:id="@+id/average_speed"
+                layout="@layout/normal_info_text_layout" />
+            <include
+                android:id="@+id/per_meter"
+                layout="@layout/normal_info_text_layout" />
+            <include
+                android:id="@+id/rest_ridemeter"
                 layout="@layout/normal_info_text_layout" />
 
         </LinearLayout>
 
     </ScrollView>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="17dp"
-        android:layout_marginLeft="17dp"
-        android:layout_marginRight="17dp"
-        android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/speed_limit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-             />
 
-        <ImageView
-            android:id="@+id/more_info"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:src="@mipmap/xiahua_btn" />
-
-        <ImageView
-            android:id="@+id/remote_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:src="@mipmap/yaokong" />
-
-    </RelativeLayout>
 
 </LinearLayout>
