@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -92,11 +93,12 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] command;
                 if (isChecked) {
                     command = CommandManager.getOpenTurnSensitivityCommand();
-                    turnOnSensorSettingCommand=new String(command);
+                    turnOnSensorSettingCommand=BlueUtils.bytesToAscii(command,0,command.length);
                 } else {
                     command = CommandManager.getCloseTurnSensitivityCommand();
-                    turnoffSensorSettingCommand =new String(command);
+                    turnoffSensorSettingCommand =BlueUtils.bytesToAscii(command,0,command.length);
                 }
+                Log.e("sunjianturn-onWrite", BlueUtils.bytesToHexString(command));
                 writeCommand(command);
 
             }
@@ -126,11 +128,12 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] ridingCommand;
                 if (isChecked) {
                     ridingCommand = CommandManager.getOpenRidingSensitivityCommand();
-                    ridingOnSensorSettingCommand=new String(ridingCommand);
+                    ridingOnSensorSettingCommand=BlueUtils.bytesToAscii(ridingCommand,0,ridingCommand.length);
                 } else {
                     ridingCommand = CommandManager.getCloseRidingSensitivityCommand();
-                    ridingOffSensorSettingCommand =new String(ridingCommand);
+                    ridingOffSensorSettingCommand =BlueUtils.bytesToAscii(ridingCommand,0,ridingCommand.length);
                 }
+                Log.e("sunjianride-onWrite", BlueUtils.bytesToHexString(ridingCommand));
                 writeCommand(ridingCommand);
             }
         });
@@ -275,15 +278,29 @@ public class SensorSettingActivity extends BaseActivity {
         if (dataBytes == null || dataBytes.length <= 0) {
             return;
         }
-        if (new String(dataBytes).equals(turnOnSensorSettingCommand) ) {
+        String command =BlueUtils.bytesToAscii(dataBytes,0,dataBytes.length);
+        Log.e("sunjian-ridingSwitch", command);
+        if (command.equals(turnOnSensorSettingCommand) ) {
+            //55 AA 04 0A 03 A1 65 00 E8 FE
+            showToast("转向开启");
             turningSeekBar.setEnabled(false);
-        } else if (new String(dataBytes).equals(turnoffSensorSettingCommand)) {
+        } else if (command.equals(turnoffSensorSettingCommand)) {
+            //55 AA 04 0A 03 A1 32 00 1B FF
             turningSeekBar.setEnabled(true);
-        } else if (new String(dataBytes).equals(ridingOnSensorSettingCommand)) {
+            showToast("转向关闭");
+            turningSeekBar.setProgress(50);
+        } else if (command.equals(ridingOnSensorSettingCommand)) {
+            //55 AA 04 0A 03 A2 65 00 E7 FE
             ridingSeekBar.setEnabled(false);
-        } else if (new String(dataBytes).equals(ridingOffSensorSettingCommand)) {
+            showToast("骑行开启");
+        } else if (command.equals(ridingOffSensorSettingCommand)) {
+            //55 AA 04 0A 03 A2 32 00 1A FF
             ridingSeekBar.setEnabled(true);
+            showToast("骑行关闭");
+            ridingSeekBar.setProgress(50);
         }
+
+
     }
 
     @Override
