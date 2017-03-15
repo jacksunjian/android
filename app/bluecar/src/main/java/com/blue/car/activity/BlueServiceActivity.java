@@ -365,7 +365,7 @@ public class BlueServiceActivity extends BaseActivity {
 
     @OnClick(R.id.remote_setting_img)
     void onRemoteSettingImgClick() {
-        gotoIntent(SensorSettingActivity.class);
+        gotoIntent(BlueControlActivity.class);
     }
 
     private void gotoIntent(Class gotoClass) {

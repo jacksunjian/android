@@ -2,15 +2,53 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bgmaincolor"
+    android:background="@drawable/gray_mirror_background"
     android:orientation="vertical">
-    <include layout="@layout/layout_head"/>
 
-<ImageView
-    android:layout_gravity="center"
-    android:layout_marginTop="40dp"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:src="@mipmap/blue_control"/>
+    <include layout="@layout/layout_head" />
+
+    <!--<ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"
+        android:src="@mipmap/blue_control" />-->
+
+    <TextView
+        android:id="@+id/speed_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="22dp"
+        android:text="00.0"
+        android:textColor="@android:color/holo_blue_bright"
+        android:textSize="56sp"
+        android:textStyle="italic" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/remote_background" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/remote_button" />
+
+        <com.blue.car.custom.RotationImageView
+            android:id="@+id/remote_control_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/remote_arrow" />
+
+    </FrameLayout>
 
 </LinearLayout>
