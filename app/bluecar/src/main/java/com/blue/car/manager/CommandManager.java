@@ -92,13 +92,13 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x0A}, COMMAND_SEND, new byte[]{0x01, (byte) 0xA1});
     }
 
-    public static byte[] getTurnSensitivityCommand(byte[] commandData) {
-        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
-    }
+//    public static byte[] getTurnSensitivityCommand(byte[] commandData) {
+//        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
+//    }
 
     public static byte[] getCloseTurnSensitivityCommand() {
         //《55 AA 04 0A 03 A1 32 00 1B FF
-        return getTurnSensitivityCommand(new byte[]{0x32, 0x00});
+        return getSendCommand(new byte[]{0x32, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
     }
 
     public static byte[] setTurnSensitivityCommand(int speedTurnValue) {
@@ -115,21 +115,21 @@ public class CommandManager {
 
     public static byte[] getOpenTurnSensitivityCommand() {
         //《55 AA 04 0A 03 A1 65 00 E8 FE
-        return getTurnSensitivityCommand(new byte[]{0x65, 0x00});
+        return getSendCommand(new byte[]{0x65, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
     }
 
-    public static byte[] getRidingSensitivityCommand(byte[] commandData) {
-        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
-    }
+//    public static byte[] getRidingSensitivityCommand(byte[] commandData) {
+//        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
+//    }
 
     public static byte[] getCloseRidingSensitivityCommand() {
         //《55 AA 04 0A 03 A2 32 00 1A FF
-        return getRidingSensitivityCommand(new byte[]{0x32, 0x00});
+        return getSendCommand(new byte[]{0x32, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
     }
 
     public static byte[] getOpenRidingSensitivityCommand() {
         //《55 AA 04 0A 03 A2 65 00 E7 FE
-        return getRidingSensitivityCommand(new byte[]{0x65, 0x00});
+        return getSendCommand(new byte[]{0x65, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
     }
 
     public static byte[] getPowerBalanceSettingCommand(byte[] commandData) {
