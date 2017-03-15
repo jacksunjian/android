@@ -2,10 +2,42 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bgmaincolor"
+    android:background="@drawable/gray_mirror_background"
     android:orientation="vertical">
-<include layout="@layout/layout_head"/>
 
+    <include layout="@layout/layout_head" />
 
+    <FrameLayout
+        android:id="@+id/color_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="28dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:clickable="false"
+            android:focusableInTouchMode="false"
+            android:src="@drawable/lightset_02" />
+
+        <com.blue.car.custom.RotationImageView
+            android:id="@+id/color_control_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/lightset_01" />
+
+    </FrameLayout>
+
+    <View
+        android:id="@+id/color_select_view"
+        android:layout_width="140dp"
+        android:layout_height="70dp"
+        android:layout_below="@+id/color_panel"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="40dp"
+        android:background="#FFFF0000" />
 
 </LinearLayout>
