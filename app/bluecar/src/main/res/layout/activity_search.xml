@@ -44,6 +44,6 @@
         android:gravity="center"
         android:text="重新搜索"
         android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:textSize="19sp" />
 
 </LinearLayout>
