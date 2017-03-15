@@ -1,67 +1,66 @@
 package com.blue.car.activity;
 
-import android.Manifest;
-import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 
 import com.blue.car.AppApplication;
 import com.blue.car.R;
+import com.blue.car.custom.SpeedMainView;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.events.GattServiceDiscoveryEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.FirstStartCommandResp;
-import com.blue.car.service.BlueUtils;
+import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
-import com.blue.car.utils.CollectionUtils;
+import com.blue.car.utils.BluetoothGattUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.List;
-
+import butterknife.Bind;
 import butterknife.OnClick;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 public class BlueServiceActivity extends BaseActivity {
     private static final boolean USE_DEBUG = BluetoothConstant.USE_DEBUG;
 
     private static final String TAG = BlueServiceActivity.class.getSimpleName();
 
-    private static final int COARSE_LOCATION_PERMS_REQUEST_CODE = 1011;
-    private static final String[] COARSE_LOCATION_PERMS = new String[]{
-            Manifest.permission.ACCESS_COARSE_LOCATION};
+    @Bind(R.id.speed_view)
+    SpeedMainView speedMainView;
 
     private BluetoothLeService bluetoothLeService = null;
     private Handler processHandler = new Handler();
     private CommandRespManager respManager = new CommandRespManager();
+
+    private GestureDetectorCompat gestureDetector;
+    private int scaledTouchSlop = 100;
+    private int scaledMinimumFlingVelocity = 0;
 
     private String deviceName;
     private String deviceAddress;
 
     private int firstCommandSendCount = 0;
     private boolean firstCommandResp = false;
+
+    private boolean intentToOtherBefore = false;
+    private int firstCommandDelay = 500;
+    private int mainFuncCommandDelay = 350;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,59 +74,21 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
+        gestureDetector = new GestureDetectorCompat(this, new MyGestureListener());
+        scaledTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
+        scaledMinimumFlingVelocity = ViewConfiguration.get(this).getScaledMinimumFlingVelocity();
     }
 
     @Override
     protected void initView() {
-
+        speedMainView.setValueAnimatorDuration(mainFuncCommandDelay - 30);
     }
 
     @Override
     protected void initData() {
-        requestPermission();
-    }
-
-    @Override
-    protected int getPermissionRequestCode() {
-        return COARSE_LOCATION_PERMS_REQUEST_CODE;
-    }
-
-    @AfterPermissionGranted(COARSE_LOCATION_PERMS_REQUEST_CODE)
-    private void requestPermission() {
-        String[] perms = COARSE_LOCATION_PERMS;
-        if (EasyPermissions.hasPermissions(this, perms)) {
-            afterPermissionGranted();
-        } else {
-            EasyPermissions.requestPermissions(this, getString(R.string.request_coarse_location_permission_rationale),
-                    COARSE_LOCATION_PERMS_REQUEST_CODE, perms);
-        }
-    }
-
-    private void afterPermissionGranted() {
-        initBluetooth();
-    }
-
-    private void initBluetooth() {
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "你的手机不支持低功耗蓝牙4.0", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "你的手机连蓝牙都没有，(#‵′)凸", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, BluetoothConstant.REQUEST_ENABLE_BT);
-        } else {
-            startIntentToDeviceScan();
-        }
+        deviceName = getIntent().getStringExtra(BluetoothConstant.EXTRAS_DEVICE_NAME);
+        deviceAddress = getIntent().getStringExtra(BluetoothConstant.EXTRA_DEVICE_ADDRESS);
+        startServiceConnection();
     }
 
     private final ServiceConnection bluetoothServiceConnection = new ServiceConnection() {
@@ -140,7 +101,7 @@ public class BlueServiceActivity extends BaseActivity {
             }
             bluetoothLeService.connect(deviceAddress);
             AppApplication.setBluetoothLeService(bluetoothLeService);
-            showToast("onServiceConnecting");
+            showToast("蓝牙服务连接成功");
         }
 
         @Override
@@ -152,7 +113,7 @@ public class BlueServiceActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattServiceDiscoveryEvent(GattServiceDiscoveryEvent event) {
         if (USE_DEBUG) {
-            displayGattServices(bluetoothLeService.getSupportedGattServices());
+            BluetoothGattUtils.displayGattServices(bluetoothLeService.getSupportedGattServices());
         }
         bluetoothLeService.initNotifyCharacteristic(
                 BluetoothConstant.UUID_SERVICE,
@@ -163,14 +124,8 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
-        if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
-            LogUtils.e("onCharacteristicRead", "status:" + event.status);
-            LogUtils.e(TAG, "onCharRead " + deviceName
-                    + " read "
-                    + event.uuid.toString()
-                    + " -> "
-                    + BlueUtils.bytesToHexString(dataBytes));
+        byte[] dataBytes = printGattCharacteristicReadEvent(event);
+        if (dataBytes != null) {
             byte[] result = respManager.obtainData(dataBytes);
             respManager.processCommandResp(result);
         }
@@ -178,29 +133,22 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
-        if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
-            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
-            LogUtils.e(TAG, "onCharWrite " + deviceName
-                    + " write "
-                    + event.uuid.toString()
-                    + " -> "
-                    + BlueUtils.bytesToHexString(dataBytes));
-        }
+        printGattCharacteristicWriteEvent(event);
     }
 
     private CommandRespManager.OnDataCallback firstCommandCallback = new CommandRespManager.OnDataCallback() {
         @Override
         public void resp(byte[] data) {
-            getFirstCommandResp(true, true);
             if (StringUtils.isNullOrEmpty(data)) {
                 return;
             }
             boolean result = CommandManager.checkVerificationCode(data);
             LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
+                getFirstCommandResp(true, true);
                 FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
                 LogUtils.jsonLog(TAG, resp);
+                startMainFuncCommand();
             }
         }
     };
@@ -225,64 +173,54 @@ public class BlueServiceActivity extends BaseActivity {
                 if (getFirstCommandResp(false, false) || firstCommandSendCount++ > 10) {
                     return;
                 }
-                BluetoothGatt gatt = bluetoothLeService.getBluetoothGatt();
-                writeCommand(gatt, CommandManager.getFirstCommand());
+                writeCommand(CommandManager.getFirstCommand());
                 writeFirstStartCommand();
             }
-        }, 500);
+        }, firstCommandDelay);
     }
 
-    private void writeCommand(BluetoothGatt bluetoothGatt, byte[] command) {
-        BluetoothGattCharacteristic characteristic = getServiceCharacteristic();
-        if (characteristic == null) {
-            showToast("找不到服务的特征，无法操作");
+    private void updateSpeedView(MainFuncCommandResp resp) {
+        if (resp == null) {
             return;
         }
-        characteristic.setValue(command);
-        boolean success = bluetoothGatt.writeCharacteristic(characteristic);
-        LogUtils.e("sendCommand", "result:" + success);
+        speedMainView.setBatteryPercent(resp.remainBatteryPercent * 1.0f / 100);
+        speedMainView.setSpeed(resp.speed);
+        speedMainView.setPerMileage(resp.perMileage);
     }
 
-    private BluetoothGattCharacteristic getServiceCharacteristic() {
-        return bluetoothLeService.getCharacteristic(BluetoothConstant.UUID_SERVICE, BluetoothConstant.UUID_CHARACTER_TX);
-    }
-
-    private boolean hasProperty(BluetoothGattCharacteristic characteristic, int property) {
-        return (characteristic.getProperties() & property) != 0;
-    }
-
-    private void displayCharacteristics(List<BluetoothGattCharacteristic> gattCharacteristicList) {
-        if (CollectionUtils.isNullOrEmpty(gattCharacteristicList)) {
-            return;
+    private CommandRespManager.OnDataCallback mainCommandCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                MainFuncCommandResp resp = CommandManager.getMainFuncCommandResp(data);
+                LogUtils.jsonLog(TAG, resp);
+                updateSpeedView(resp);
+            }
         }
-        for (int i = 0; i < gattCharacteristicList.size(); i++) {
-            BluetoothGattCharacteristic bluetoothGattCharacteristic = gattCharacteristicList.get(i);
-            Log.e((i + 1) + ",---gattCharacteristic", "------------------------");
-            Log.e("---uuid", bluetoothGattCharacteristic.getUuid().toString());
-            Log.e("---canRead", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_READ)));
-            Log.e("---canWrite", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_WRITE)));
-            Log.e("---canWrite_no_response", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)));
-            Log.e("---canNotify", String.valueOf(hasProperty(bluetoothGattCharacteristic, BluetoothGattCharacteristic.PROPERTY_NOTIFY)));
-        }
+    };
+
+    private void startMainFuncCommand() {
+        String command = new String(CommandManager.getMainFuncCommand());
+        respManager.setCommandRespCallBack(command, mainCommandCallback);
+        writeMainFuncCommand();
     }
 
-    private void displayGattServices(List<BluetoothGattService> gattServiceList) {
-        if (CollectionUtils.isNullOrEmpty(gattServiceList)) {
-            return;
-        }
-        for (int i = 0; i < gattServiceList.size(); i++) {
-            BluetoothGattService bluetoothGattService = gattServiceList.get(i);
-            Log.e((i + 1) + ".gattService", "------------------------");
-            Log.e("uuid:", bluetoothGattService.getUuid().toString());
-            Log.e("type:", String.valueOf(bluetoothGattService.getType()));
-            displayCharacteristics(bluetoothGattService.getCharacteristics());
-        }
+    private void writeMainFuncCommand() {
+        processHandler.postDelayed(writeMainFunCommandRunnable, mainFuncCommandDelay);
     }
 
-    private void startIntentToDeviceScan() {
-        Intent intent = new Intent(this, DeviceListActivity.class);
-        startActivityForResult(intent, BluetoothConstant.REQUEST_CONNECT_DEVICE);
-    }
+    Runnable writeMainFunCommandRunnable = new Runnable() {
+        @Override
+        public void run() {
+            writeCommand(CommandManager.getMainFuncCommand());
+            writeMainFuncCommand();
+        }
+    };
 
     private Intent getServiceIntent() {
         return new Intent(this, BluetoothLeService.class);
@@ -295,6 +233,15 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (intentToOtherBefore) {
+            intentToOtherBefore = false;
+            startMainFuncCommand();
+        }
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         startRegisterEventBus();
@@ -304,6 +251,10 @@ public class BlueServiceActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+        try {
+            processHandler.removeCallbacks(writeMainFunCommandRunnable);
+        } catch (Exception e) {
+        }
     }
 
     @Override
@@ -322,41 +273,58 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case BluetoothConstant.REQUEST_CONNECT_DEVICE:
-                if (resultCode == Activity.RESULT_OK) {
-                    deviceName = data.getStringExtra(BluetoothConstant.EXTRAS_DEVICE_NAME);
-                    deviceAddress = data.getStringExtra(BluetoothConstant.EXTRA_DEVICE_ADDRESS);
-                    showToast(deviceAddress);
-                    startServiceConnection();
-                }
-                break;
-            case BluetoothConstant.REQUEST_ENABLE_BT:
-                if (resultCode == Activity.RESULT_OK) {
-                    Toast.makeText(this, "蓝牙请求开启通过议案", Toast.LENGTH_SHORT).show();
-                    startIntentToDeviceScan();
-                }
-                break;
-            case COARSE_LOCATION_PERMS_REQUEST_CODE:
-                break;
-        }
+    public boolean onTouchEvent(MotionEvent event) {
+        gestureDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
     }
 
-    @OnClick(R.id.test_other_command_button)
-    void onOtherCommandTestClick() {
-        Intent intent = new Intent(this, TestActivity.class);
+    @OnClick(R.id.speed_limit_img)
+    void onSpeedLimitImgClick() {
+    }
+
+    @OnClick(R.id.lock_off_img)
+    void onLockImgClick() {
+    }
+
+    @OnClick(R.id.remote_setting_img)
+    void onRemoteSettingImgClick() {
+        gotoIntent(SensorSettingActivity.class);
+    }
+
+    private void gotoIntent(Class gotoClass) {
+        intentToOtherBefore = true;
+        Intent intent = new Intent(this, gotoClass);
         startActivity(intent);
     }
 
-    @OnClick(R.id.test_slide_up_image)
-    void onSlideUpToOnClick() {
+    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent event) {
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2,
+                               float velocityX, float velocityY) {
+            float y = e2.getY() - e1.getY();
+            if (y < -scaledTouchSlop
+                    && Math.abs(velocityX) < Math.abs(velocityY)
+                    && Math.abs(velocityY) > scaledMinimumFlingVelocity) {
+                actionGestureFlingUp();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private void actionGestureFlingUp() {
         ActivityOptionsCompat options =
                 ActivityOptionsCompat.makeCustomAnimation(this,
                         R.anim.slide_bottom_in,
                         R.anim.anim_none_alpha);
-        Intent intent = new Intent(this, SlideUpTestActivity.class);
+        Intent intent = new Intent(this, CurrentInfoActivity.class);
         ActivityCompat.startActivity(this, intent, options.toBundle());
+        intentToOtherBefore = true;
     }
 }

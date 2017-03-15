@@ -222,6 +222,24 @@ public class BlueUtils {
         return bytes;
     }
 
+    public static byte[] getNewBytes(byte[]... bytesSet) {
+        if (bytesSet == null || bytesSet.length <= 0) {
+            return null;
+        }
+        int totalCount = 0;
+        for (byte[] bytes : bytesSet) {
+            totalCount += bytes.length;
+        }
+        byte[] totalBytes = new byte[totalCount];
+        int index = 0;
+        for (byte[] bytes : bytesSet) {
+            for (byte aByte : bytes) {
+                totalBytes[index++] = aByte;
+            }
+        }
+        return totalBytes;
+    }
+
     public static boolean equalBytes(byte[] src, byte[] dest, int offset, int length) {
         for (int i = offset; i < length; i++) {
             if (src[i] != dest[i]) {

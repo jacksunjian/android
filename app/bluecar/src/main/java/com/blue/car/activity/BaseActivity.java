@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +10,10 @@ import android.widget.Toast;
 
 import com.blue.car.AppApplication;
 import com.blue.car.R;
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.manager.CommandManager;
+import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.LogUtils;
@@ -75,6 +80,34 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
 
     protected BluetoothGattCharacteristic getCommandWriteGattCharacteristic(BluetoothLeService bluetoothLeService) {
         return bluetoothLeService.getCharacteristic(BluetoothConstant.UUID_SERVICE, BluetoothConstant.UUID_CHARACTER_TX);
+    }
+
+    protected byte[] printGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            if (BluetoothConstant.USE_DEBUG) {
+                LogUtils.e("onCharacteristicRead", "status:" + event.status);
+                LogUtils.e(getClass().getSimpleName(), "onCharRead "
+                        + " read "
+                        + event.uuid.toString()
+                        + " -> "
+                        + BlueUtils.bytesToHexString(dataBytes));
+            }
+            return dataBytes;
+        }
+        return null;
+    }
+
+    protected void printGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        if (BluetoothConstant.USE_DEBUG && event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = event.data;
+            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
+            LogUtils.e(getClass().getSimpleName(), "onCharWrite "
+                    + " write "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+        }
     }
 
     @Override

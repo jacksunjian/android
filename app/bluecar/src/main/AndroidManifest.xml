@@ -23,14 +23,7 @@
 
         <activity
             android:name=".activity.BlueServiceActivity"
-            android:launchMode="singleTask">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:launchMode="singleTask" />
 
         <activity android:name=".activity.DeviceListActivity" />
 
@@ -41,8 +34,13 @@
         <activity android:name=".activity.SlideUpTestActivity" />
 
         <activity android:name=".activity.SearchActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
+
         <activity android:name=".activity.MainActivity" />
         <activity android:name=".activity.SpeedControlActivity" />
         <activity android:name=".activity.SettingMoreActivity" />
