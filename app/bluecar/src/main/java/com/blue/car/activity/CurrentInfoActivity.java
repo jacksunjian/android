@@ -3,8 +3,6 @@ package com.blue.car.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,10 +22,11 @@ public class CurrentInfoActivity extends BaseActivity {
     int isSpeedControl;
     @Bind(R.id.speed_limit)
     ImageView speedLimit;
-    @Bind(R.id.more_info)
-    ImageView moreInfo;
+
     @Bind(R.id.remote_setting)
     ImageView remoteSetting;
+    @Bind(R.id.lock_iv)
+    ImageView lockIv;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,16 +60,14 @@ public class CurrentInfoActivity extends BaseActivity {
 
     private void initActionBarLayout() {
         findViewById(R.id.ll_back).setVisibility(View.GONE);
-        findViewById(R.id.iv_right).setVisibility(View.VISIBLE);
+     //   findViewById(R.id.iv_right).setVisibility(View.VISIBLE);
         actionBarTitle.setText("Balance");
     }
 
     private void initInfoLayout() {
-        initNormalInfoLayout(R.id.per_riding_time, "本次骑行时间", "58s");
-        initNormalInfoLayout(R.id.total_meter, "总里程", "6.5km");
-        initNormalInfoLayout(R.id.per_meter, "本次行程", "0.0km");
-        initNormalInfoLayout(R.id.car_temperature, "车体温度", "16.1℃");
         initNormalInfoLayout(R.id.average_speed, "平均速度", "0.0km/h");
+        initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0km");
+        initNormalInfoLayout(R.id.rest_ridemeter, "剩余行驶里程", "58s");
     }
 
     private void initNormalInfoLayout(int parentId, String leftText, String rightText) {
@@ -97,34 +94,37 @@ public class CurrentInfoActivity extends BaseActivity {
         startActivity(it_blue);
     }
 
-    private void processLoadMoreInfoClick() {
-        ActivityOptionsCompat options =
-                ActivityOptionsCompat.makeCustomAnimation(this,
-                        R.anim.slide_top_out,
-                        R.anim.anim_none_alpha);
-        Intent intent = new Intent(this, MainActivity.class);
-        ActivityCompat.startActivity(this, intent, options.toBundle());
-
-
+    private void processLockClick() {
+//        ActivityOptionsCompat options =
+//                ActivityOptionsCompat.makeCustomAnimation(this,
+//                        R.anim.slide_top_out,
+//                        R.anim.anim_none_alpha);
+//        Intent intent = new Intent(this, MainActivity.class);
+//        ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 
-    @OnClick({R.id.speed_limit, R.id.more_info, R.id.remote_setting, R.id.iv_right})
+    @OnClick({R.id.speed_limit, R.id.lock_iv, R.id.remote_setting,R.id.info_rl, R.id.setting_rl})
     void bottomFunPanelClick(View view) {
         switch (view.getId()) {
             case R.id.speed_limit:
                 processSpeedLimitClick();
                 break;
-            case R.id.more_info:
-                processLoadMoreInfoClick();
+            case R.id.lock_iv:
+                processLockClick();
                 break;
             case R.id.remote_setting:
                 processRemoteSettingClick();
                 break;
-            case R.id.iv_right:
+//            case R.id.iv_right:
+//                Intent it = new Intent(this, SettingMoreActivity.class);
+//                startActivity(it);
+//                break;
+            case R.id.info_rl:
+                break;
+            case R.id.setting_rl:
                 Intent it = new Intent(this, SettingMoreActivity.class);
                 startActivity(it);
                 break;
         }
     }
-
-}
+    }
