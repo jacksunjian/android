@@ -9,20 +9,26 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
-import com.blue.car.R;
-
 public class RotationImageView extends ImageView {
 
     private float nowRotation = 0;
+    private int rotationDiff = 0;
+
     private Matrix bitmapMatrix = new Matrix();
     private Matrix tempMatrix = new Matrix();
-    private Matrix savedMatrix = new Matrix();
     private Bitmap rotationBitmap;
 
-    private OnRotationSelectListener listener;
+    private OnRotationSelectListener rotationSelectListener;
+    private OnMoveScaleChangedListener onMoveScaleChangedListener;
 
     public interface OnRotationSelectListener {
         void OnRotation(float rotation);
+    }
+
+    public interface OnMoveScaleChangedListener {
+        void onScaleChanged(float xScale, float yScale);
+
+        void onLongScaleChanged(float xScale, float yScale);
     }
 
     public RotationImageView(Context context) {
@@ -56,14 +62,14 @@ public class RotationImageView extends ImageView {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                savedMatrix.set(bitmapMatrix);
+                tempMatrix.set(bitmapMatrix);
                 break;
             case MotionEvent.ACTION_MOVE:
-                tempMatrix.set(savedMatrix);
-                nowRotation = getRotation(event);
+                nowRotation = getRotation(event) + rotationDiff;
                 tempMatrix.setRotate(nowRotation, getWidth() / 2, getHeight() / 2);
                 bitmapMatrix.set(tempMatrix);
                 invalidate();
+                invokeMoveScaleChangeListener();
                 break;
             case MotionEvent.ACTION_UP:
                 invokeRotationListener();
@@ -72,32 +78,36 @@ public class RotationImageView extends ImageView {
         return true;
     }
 
+    private float xPos, yPos;
+
     private float getRotation(MotionEvent event) {
-        float xPos = event.getX();
-        float yPos = event.getY();
-        float xDiff;
-        float yDiff;
+        xPos = event.getX();
+        yPos = event.getY();
+        float xDiff, yDiff;
         double radians;
         float degrees;
-        if (xPos > getWidth() / 2) {
-            xDiff = xPos - getWidth() / 2;
-            if (yPos >= getHeight() / 2) {
-                yDiff = yPos - getHeight() / 2;
+        int halfWidth = getWidth() / 2;
+        int halfHeight = getHeight() / 2;
+
+        if (xPos > halfWidth) {
+            xDiff = xPos - halfWidth;
+            if (yPos >= halfHeight) {
+                yDiff = yPos - halfHeight;
                 radians = Math.atan2(yDiff, xDiff);
                 degrees = (float) Math.toDegrees(radians);
             } else {
-                yDiff = getHeight() / 2 - yPos;
+                yDiff = halfHeight - yPos;
                 radians = Math.atan2(yDiff, xDiff);
                 degrees = 360 - (float) Math.toDegrees(radians);
             }
         } else {
-            xDiff = getWidth() / 2 - xPos;
-            if (yPos >= getHeight() / 2) {
-                yDiff = yPos - getHeight() / 2;
+            xDiff = halfWidth - xPos;
+            if (yPos >= halfHeight) {
+                yDiff = yPos - halfHeight;
                 radians = Math.atan2(yDiff, xDiff);
                 degrees = 180 - (float) Math.toDegrees(radians);
             } else {
-                yDiff = getHeight() / 2 - yPos;
+                yDiff = halfHeight - yPos;
                 radians = Math.atan2(yDiff, xDiff);
                 degrees = 180 + (float) Math.toDegrees(radians);
             }
@@ -113,8 +123,25 @@ public class RotationImageView extends ImageView {
     }
 
     private void invokeRotationListener() {
-        if (listener != null) {
-            listener.OnRotation(nowRotation);
+        if (rotationSelectListener != null) {
+            rotationSelectListener.OnRotation(nowRotation);
+        }
+    }
+
+    private void invokeMoveScaleChangeListener() {
+        if (onMoveScaleChangedListener != null) {
+            int width = getWidth();
+            int height = getHeight();
+            float xTempPos = xPos;
+            float yTempPos = yPos;
+            if (xPos > width) {
+                xTempPos = width;
+            }
+            if (yPos > height) {
+                yTempPos = height;
+            }
+            onMoveScaleChangedListener.onScaleChanged((xTempPos - width / 2) / (width / 2), (height / 2 - yTempPos) / (height / 2));
+            onMoveScaleChangedListener.onLongScaleChanged(xTempPos / width, yTempPos / height);
         }
     }
 
@@ -123,10 +150,26 @@ public class RotationImageView extends ImageView {
     }
 
     public OnRotationSelectListener getRotationSelectListener() {
-        return listener;
+        return rotationSelectListener;
     }
 
     public void setRotationSelectListener(OnRotationSelectListener listener) {
-        this.listener = listener;
+        this.rotationSelectListener = listener;
+    }
+
+    public void setOnMoveScaleChangedListener(OnMoveScaleChangedListener listener) {
+        this.onMoveScaleChangedListener = listener;
+    }
+
+    public OnMoveScaleChangedListener getOnMoveScaleChangedListener() {
+        return this.onMoveScaleChangedListener;
+    }
+
+    public int getRotationDiff() {
+        return rotationDiff;
+    }
+
+    public void setRotationDiff(int rotationDiff) {
+        this.rotationDiff = rotationDiff;
     }
 }

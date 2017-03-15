@@ -36,6 +36,7 @@
 
         <activity android:name=".activity.TestActivity" />
         <activity android:name=".activity.ColorTestActivity" />
+        <activity android:name=".activity.RemoteTestActivity" />
 
         <activity android:name=".activity.SlideUpTestActivity" />
 
