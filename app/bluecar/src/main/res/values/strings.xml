@@ -17,4 +17,11 @@
     <string name="wifi_dialog_title">WiFi连接</string>
     <string name="wifi_dialog_content">无网络连接，是否打开WiFi？</string>
 
+    <string name="warning_normal">车辆运行正常</string>
+
+    <string name="mode_normal">正常模式</string>
+    <string name="mode_speed_limit">限速模式</string>
+    <string name="mode_lock">锁车模式</string>
+    <string name="mode_remote">遥控模式</string>
+
 </resources>
