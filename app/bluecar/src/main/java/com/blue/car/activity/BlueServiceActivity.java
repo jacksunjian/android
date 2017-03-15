@@ -14,6 +14,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.blue.car.AppApplication;
 import com.blue.car.R;
@@ -49,6 +50,11 @@ public class BlueServiceActivity extends BaseActivity {
     ImageView speedLimitView;
     @Bind(R.id.lock_off_img)
     ImageView lockOffView;
+
+    @Bind(R.id.mode_desc_tv)
+    TextView modeDescTv;
+    @Bind(R.id.system_status_tv)
+    TextView sysStatusTv;
 
     private BluetoothLeService bluetoothLeService = null;
     private Handler processHandler = new Handler();

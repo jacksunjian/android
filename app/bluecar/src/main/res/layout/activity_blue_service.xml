@@ -12,11 +12,37 @@
         android:layout_height="match_parent"
         android:layout_margin="15dp" />
 
+    <TextView
+        android:id="@+id/system_status_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/speed_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/button_rect_circle_black_background"
+        android:gravity="center"
+        android:minWidth="180dp"
+        android:padding="10dp"
+        android:text="@string/warning_normal"
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/mode_desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/system_status_tv"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="13dp"
+        android:text="@string/mode_normal"
+        android:textColor="@android:color/holo_orange_light"
+        android:textSize="17sp" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="17dp"
+        android:layout_marginBottom="12dp"
         android:layout_marginLeft="34dp"
         android:layout_marginRight="34dp"
         android:gravity="center_vertical">
