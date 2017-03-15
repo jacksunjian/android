@@ -40,9 +40,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="12dp"
-        android:background="@drawable/button_state"
+        android:background="@drawable/button_rect_circle_transparent_background_white_stroke"
         android:gravity="center"
         android:text="重新搜索"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        android:textSize="18sp" />
 
 </LinearLayout>

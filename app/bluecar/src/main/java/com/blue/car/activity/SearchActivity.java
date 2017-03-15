@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.view.View;
 import android.widget.AdapterView;
@@ -118,6 +120,8 @@ public class SearchActivity extends BaseActivity {
 
     private void initDeviceListView() {
         pairedListView.setAdapter(pairedDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.device_list_item));
+        pairedListView.setDivider(new ColorDrawable(Color.WHITE));
+        pairedListView.setDividerHeight(1);
         pairedListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
