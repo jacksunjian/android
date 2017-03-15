@@ -47,7 +47,7 @@ public class SensorSettingActivity extends BaseActivity {
 
     SensitivityCommandResp sensitivityCommandResp;
 
-    private String turnSensorSettingCommand;
+    private String turnOnSensorSettingCommand,turnoffSensorSettingCommand,ridingOnSensorSettingCommand,ridingOffSensorSettingCommand;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,8 +92,10 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] command;
                 if (isChecked) {
                     command = CommandManager.getOpenTurnSensitivityCommand();
+                    turnOnSensorSettingCommand=new String(command);
                 } else {
                     command = CommandManager.getCloseTurnSensitivityCommand();
+                    turnoffSensorSettingCommand =new String(command);
                 }
                 writeCommand(command);
 
@@ -124,8 +126,10 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] ridingCommand;
                 if (isChecked) {
                     ridingCommand = CommandManager.getOpenRidingSensitivityCommand();
+                    ridingOnSensorSettingCommand=new String(ridingCommand);
                 } else {
                     ridingCommand = CommandManager.getCloseRidingSensitivityCommand();
+                    ridingOffSensorSettingCommand =new String(ridingCommand);
                 }
                 writeCommand(ridingCommand);
             }
@@ -268,17 +272,18 @@ public class SensorSettingActivity extends BaseActivity {
     }
 
     private void processWriteEvent(byte[] dataBytes) {
-        if (dataBytes.equals(CommandManager.getOpenTurnSensitivityCommand())) {
+        if (dataBytes == null || dataBytes.length <= 0) {
+            return;
+        }
+        if (new String(dataBytes).equals(turnOnSensorSettingCommand) ) {
             turningSeekBar.setEnabled(false);
-        } else if (dataBytes.equals(CommandManager.getCloseTurnSensitivityCommand())) {
+        } else if (new String(dataBytes).equals(turnoffSensorSettingCommand)) {
             turningSeekBar.setEnabled(true);
-        } else if (dataBytes.equals(CommandManager.getOpenRidingSensitivityCommand())) {
+        } else if (new String(dataBytes).equals(ridingOnSensorSettingCommand)) {
             ridingSeekBar.setEnabled(false);
-        } else if (dataBytes.equals(CommandManager.getCloseRidingSensitivityCommand())) {
+        } else if (new String(dataBytes).equals(ridingOffSensorSettingCommand)) {
             ridingSeekBar.setEnabled(true);
         }
-
-
     }
 
     @Override
