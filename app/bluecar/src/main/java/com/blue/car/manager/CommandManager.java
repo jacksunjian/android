@@ -153,6 +153,13 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x1A}, COMMAND_SEND, new byte[]{0x01, (byte) 0xC6});
     }
 
+    // color: 0~239 其中纯红0，纯绿80，纯蓝160
+    public static byte[] getLedColorSettingCommand(int color) {
+        //《55 AA 04 0A 03 C8 F0 D9 5D FD
+        byte[] commandData = new byte[]{(byte) 0xF0, BlueUtils.intToByte(color)};
+        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC8});
+    }
+
     /*设置氛围灯模式0-9分别代表关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3*/
     public static byte[] getAmbientLightSettingCommand(int mode) {
         //《55 AA 04 0A 03 C6 09 00 28 FF
