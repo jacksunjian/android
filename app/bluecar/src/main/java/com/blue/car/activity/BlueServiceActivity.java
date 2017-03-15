@@ -25,6 +25,7 @@ import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.model.MainFuncCommandResp;
+import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.BluetoothGattUtils;
@@ -66,6 +67,11 @@ public class BlueServiceActivity extends BaseActivity {
     private boolean intentToOtherBefore = false;
     private int firstCommandDelay = 500;
     private int mainFuncCommandDelay = 350;
+
+    private String unLimitSpeedCommand;
+    private String limitSpeedCommand;
+    private String unLockCarCommand;
+    private String lockCarCommand;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +145,23 @@ public class BlueServiceActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
         printGattCharacteristicWriteEvent(event);
+        processWriteEvent(event.data);
+    }
+
+    private void processWriteEvent(byte[] bytes) {
+        if (bytes == null || bytes.length <= 0) {
+            return;
+        }
+        String command = BlueUtils.bytesToAscii(bytes);
+        if (command.equals(unLimitSpeedCommand)) {
+            speedLimitView.setImageResource(R.mipmap.xiansu_off);
+        } else if (command.equals(limitSpeedCommand)) {
+            speedLimitView.setImageResource(R.mipmap.xiansu_on);
+        } else if (command.equals(unLockCarCommand)) {
+            lockOffView.setImageResource(R.mipmap.suo_off);
+        } else if (command.equals(lockCarCommand)) {
+            lockOffView.setImageResource(R.mipmap.suo_on);
+        }
     }
 
     private CommandRespManager.OnDataCallback firstCommandCallback = new CommandRespManager.OnDataCallback() {
@@ -199,6 +222,8 @@ public class BlueServiceActivity extends BaseActivity {
         lockOffView.setImageResource(resp.isLockConditionStatus() ? R.mipmap.suo_on : R.mipmap.suo_off);
     }
 
+    private MainFuncCommandResp mainFuncResp;
+
     private CommandRespManager.OnDataCallback mainCommandCallback = new CommandRespManager.OnDataCallback() {
         @Override
         public void resp(byte[] data) {
@@ -208,10 +233,10 @@ public class BlueServiceActivity extends BaseActivity {
             boolean result = CommandManager.checkVerificationCode(data);
             LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
-                MainFuncCommandResp resp = CommandManager.getMainFuncCommandResp(data);
-                LogUtils.jsonLog(TAG, resp);
-                updateSpeedView(resp);
-                updateOtherView(resp);
+                mainFuncResp = CommandManager.getMainFuncCommandResp(data);
+                LogUtils.jsonLog(TAG, mainFuncResp);
+                updateSpeedView(mainFuncResp);
+                updateOtherView(mainFuncResp);
             }
         }
     };
@@ -233,6 +258,30 @@ public class BlueServiceActivity extends BaseActivity {
             writeMainFuncCommand();
         }
     };
+
+    private void writeUnLimitSpeedCommand() {
+        byte[] command = CommandManager.getUnLimitSpeedCommand();
+        unLimitSpeedCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+
+    private void writeLimitSpeedCommand() {
+        byte[] command = CommandManager.getLimitSpeedCommand();
+        limitSpeedCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+
+    private void writeUnLockCarCommand() {
+        byte[] command = CommandManager.getUnLockCarCommand();
+        unLockCarCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+
+    private void writeLockCarCommand() {
+        byte[] command = CommandManager.getLockCarCommand();
+        lockCarCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
 
     private Intent getServiceIntent() {
         return new Intent(this, BluetoothLeService.class);
@@ -292,10 +341,26 @@ public class BlueServiceActivity extends BaseActivity {
 
     @OnClick(R.id.speed_limit_img)
     void onSpeedLimitImgClick() {
+        if (mainFuncResp == null) {
+            return;
+        }
+        if (mainFuncResp.isSpeedLimitStatus()) {
+            writeUnLimitSpeedCommand();
+        } else {
+            writeLimitSpeedCommand();
+        }
     }
 
     @OnClick(R.id.lock_off_img)
     void onLockImgClick() {
+        if (mainFuncResp == null) {
+            return;
+        }
+        if (mainFuncResp.isLockConditionStatus()) {
+            writeUnLockCarCommand();
+        } else {
+            writeLockCarCommand();
+        }
     }
 
     @OnClick(R.id.remote_setting_img)
