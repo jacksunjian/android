@@ -40,12 +40,15 @@ public class SensorSettingActivity extends BaseActivity {
     @Bind(R.id.ll_back)
     LinearLayout llBack;
     private static final String TAG = "SensorSettingActivity";
-    Switch turningSwitch,ridingSwitch;
-    SeekBar turningSeekBar,ridingSeekBar;
+    Switch turningSwitch, ridingSwitch;
+    SeekBar turningSeekBar, ridingSeekBar, balanceSeekBar;
 
     private CommandRespManager respManager = new CommandRespManager();
 
     SensitivityCommandResp sensitivityCommandResp;
+
+    private String turnOnSensorSettingCommand,turnoffSensorSettingCommand,ridingOnSensorSettingCommand,ridingOffSensorSettingCommand;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +89,16 @@ public class SensorSettingActivity extends BaseActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 LogUtils.e("turningSensitivity", "checked:" + isChecked);
+                byte[] command;
+                if (isChecked) {
+                    command = CommandManager.getOpenTurnSensitivityCommand();
+                    turnOnSensorSettingCommand=new String(command);
+                } else {
+                    command = CommandManager.getCloseTurnSensitivityCommand();
+                    turnoffSensorSettingCommand =new String(command);
+                }
+                writeCommand(command);
+
             }
         });
         UniversalViewUtils.initNormalSeekBarLayout(this, R.id.turning_sensitivity, "转向灵敏度", 45, new SeekBar.OnSeekBarChangeListener() {
@@ -100,6 +113,7 @@ public class SensorSettingActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                writeTurnSensonrCommand(seekBar.getProgress());
 
             }
         });
@@ -109,6 +123,15 @@ public class SensorSettingActivity extends BaseActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 LogUtils.e("ridingSensitivity", "checked:" + isChecked);
+                byte[] ridingCommand;
+                if (isChecked) {
+                    ridingCommand = CommandManager.getOpenRidingSensitivityCommand();
+                    ridingOnSensorSettingCommand=new String(ridingCommand);
+                } else {
+                    ridingCommand = CommandManager.getCloseRidingSensitivityCommand();
+                    ridingOffSensorSettingCommand =new String(ridingCommand);
+                }
+                writeCommand(ridingCommand);
             }
         });
         UniversalViewUtils.initNormalSeekBarLayout(this, R.id.riding_sensitivity, "骑行灵敏度", 60, new SeekBar.OnSeekBarChangeListener() {
@@ -122,6 +145,7 @@ public class SensorSettingActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                writeRideSensonrCommand(seekBar.getProgress());
             }
         });
 
@@ -136,6 +160,7 @@ public class SensorSettingActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 
@@ -152,8 +177,24 @@ public class SensorSettingActivity extends BaseActivity {
         ViewGroup ridingseekBarViewGroup = (ViewGroup) findViewById(R.id.riding_sensitivity);
         ridingSeekBar = UniversalViewUtils.getSeekBarView(ridingseekBarViewGroup);
 
+        ViewGroup balanceseekBarViewGroup = (ViewGroup) findViewById(R.id.power_balance);
+        balanceSeekBar = UniversalViewUtils.getSeekBarView(balanceseekBarViewGroup);
+
 
     }
+
+    private void writeRideSensonrCommand(int progress) {
+        byte[] command = CommandManager.setRidingSensitivityCommand(progress);
+        writeCommand(command);
+    }
+
+    private void writeTurnSensonrCommand(int progress) {
+        byte[] command = CommandManager.setTurnSensitivityCommand(progress);
+        writeCommand(command);
+//        speedLimitSettingCommand = new String(command);
+//        speedLimitResp.speedLimit = value;
+    }
+
 
     @Override
     protected void initData() {
@@ -177,17 +218,26 @@ public class SensorSettingActivity extends BaseActivity {
             if (result) {
                 sensitivityCommandResp = CommandManager.getSensitivityCommandResp(data);
                 LogUtils.jsonLog("speedLimitResp", sensitivityCommandResp);
-               // saveSensitivityResp();
+                // saveSensitivityResp();
                 updateView(sensitivityCommandResp);
             }
         }
     };
 
 
-    private void updateView(SensitivityCommandResp sensitivityCommandResp) {
+    private void updateView(SensitivityCommandResp resp) {
+        if (resp == null) {
+            return;
+        }
+        turningSwitch.setChecked(resp.isAutoTurningSensityAdjust());
+        turningSeekBar.setEnabled(resp.isEnableTurningSeekBar());
+        turningSeekBar.setProgress(resp.turningSensitivity);
 
+        ridingSwitch.setChecked(resp.isAutoRidingSensityAdjust());
+        ridingSeekBar.setEnabled(resp.isEnableRidingSeekBar());
+        ridingSeekBar.setProgress(resp.ridingSensitivity);
 
-
+        balanceSeekBar.setProgress(resp.balanceInPowerMode);
 
     }
 
@@ -210,7 +260,6 @@ public class SensorSettingActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
         if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            // final byte[] dataBytes = CommandManager.unEncryptData(event.data);
             final byte[] dataBytes = event.data;
             LogUtils.e("onCharacteristicWrite", "status:" + event.status);
             LogUtils.e(TAG, "onCharWrite "
@@ -218,9 +267,25 @@ public class SensorSettingActivity extends BaseActivity {
                     + event.uuid.toString()
                     + " -> "
                     + BlueUtils.bytesToHexString(dataBytes));
-        //    processWriteEvent(dataBytes);
+            processWriteEvent(dataBytes);
         }
     }
+
+    private void processWriteEvent(byte[] dataBytes) {
+        if (dataBytes == null || dataBytes.length <= 0) {
+            return;
+        }
+        if (new String(dataBytes).equals(turnOnSensorSettingCommand) ) {
+            turningSeekBar.setEnabled(false);
+        } else if (new String(dataBytes).equals(turnoffSensorSettingCommand)) {
+            turningSeekBar.setEnabled(true);
+        } else if (new String(dataBytes).equals(ridingOnSensorSettingCommand)) {
+            ridingSeekBar.setEnabled(false);
+        } else if (new String(dataBytes).equals(ridingOffSensorSettingCommand)) {
+            ridingSeekBar.setEnabled(true);
+        }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -232,8 +297,7 @@ public class SensorSettingActivity extends BaseActivity {
         super.onStop();
         stopRegisterEventBus();
     }
-    
-    
+
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {

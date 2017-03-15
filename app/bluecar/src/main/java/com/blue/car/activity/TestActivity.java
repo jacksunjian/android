@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.Button;
 
 import com.blue.car.R;
 import com.blue.car.custom.SpeedMainView;
@@ -30,6 +31,8 @@ public class TestActivity extends BaseActivity {
 
     @Bind(R.id.speed_view)
     SpeedMainView speedView;
+    @Bind(R.id.test_button)
+    Button testButton;
 
     private CommandRespManager respManager = new CommandRespManager();
     private Handler handler = new Handler();
@@ -190,5 +193,11 @@ public class TestActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(testSpeedViewRunnable);
+    }
+
+    @OnClick(R.id.test_button)
+    public void onClick() {
+        Intent intent = new Intent(this,SensorSettingActivity.class);
+        startActivity(intent);
     }
 }
