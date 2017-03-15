@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
+import android.widget.ImageView;
 
 import com.blue.car.AppApplication;
 import com.blue.car.R;
@@ -43,6 +44,10 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Bind(R.id.speed_view)
     SpeedMainView speedMainView;
+    @Bind(R.id.speed_limit_img)
+    ImageView speedLimitView;
+    @Bind(R.id.lock_off_img)
+    ImageView lockOffView;
 
     private BluetoothLeService bluetoothLeService = null;
     private Handler processHandler = new Handler();
@@ -189,6 +194,11 @@ public class BlueServiceActivity extends BaseActivity {
         speedMainView.setPerMileage(resp.perMileage);
     }
 
+    private void updateOtherView(MainFuncCommandResp resp) {
+        speedLimitView.setImageResource(resp.isSpeedLimitStatus() ? R.mipmap.xiansu_on : R.mipmap.xiansu_on);
+        lockOffView.setImageResource(resp.isLockConditionStatus() ? R.mipmap.suo_on : R.mipmap.suo_off);
+    }
+
     private CommandRespManager.OnDataCallback mainCommandCallback = new CommandRespManager.OnDataCallback() {
         @Override
         public void resp(byte[] data) {
@@ -201,6 +211,7 @@ public class BlueServiceActivity extends BaseActivity {
                 MainFuncCommandResp resp = CommandManager.getMainFuncCommandResp(data);
                 LogUtils.jsonLog(TAG, resp);
                 updateSpeedView(resp);
+                updateOtherView(resp);
             }
         }
     };

@@ -210,7 +210,7 @@ public class SpeedMainView extends View {
         }
     }
 
-    public void setSpeedLimit(int limitValue) {
+    public void setSpeedLimit(float limitValue) {
         this.speedLimit = limitValue;
         setSpeed(speed);
     }
