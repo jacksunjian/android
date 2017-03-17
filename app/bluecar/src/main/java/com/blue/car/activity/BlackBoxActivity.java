@@ -119,13 +119,17 @@ public class BlackBoxActivity extends BaseActivity {
     private void processBlackBoxCommandResp(BlackBoxCommandResp resp) {
         updateView(resp);
         if (resp.time == 0xFFFFFF && resp.code == 0xFFFF && resp.additional == 0xFFFF) {
-            stopSendBlackBoxCommand = true;
-            blackBoxCommandIndex = BLACK_BOX_START;
-            startUnLockCommand();
+            stopBlackAndUnlock();
         }
         if (!stopSendBlackBoxCommand) {
             startBlackBoxCommand(blackBoxCommandIndex += 4);
         }
+    }
+
+    private void stopBlackAndUnlock(){
+        stopSendBlackBoxCommand = true;
+        blackBoxCommandIndex = BLACK_BOX_START;
+        startUnLockCommand();
     }
 
     private void updateView(BlackBoxCommandResp resp) {
@@ -154,7 +158,7 @@ public class BlackBoxActivity extends BaseActivity {
             startBlackBoxCommand(blackBoxCommandIndex);
         } else if (command.equals(blackBoxCommand)) {
             if (BlueUtils.byteArrayToInt(dataBytes, 5, 2) >= BLACK_BOX_END - 4) {
-                stopSendBlackBoxCommand = true;
+                stopBlackAndUnlock();
             }
         } else if (command.equals(unLockCommand)) {
             showToast("信息收集完毕，车子解锁");
