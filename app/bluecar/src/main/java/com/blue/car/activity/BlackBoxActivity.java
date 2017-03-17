@@ -118,7 +118,7 @@ public class BlackBoxActivity extends BaseActivity {
 
     private void processBlackBoxCommandResp(BlackBoxCommandResp resp) {
         updateView(resp);
-        if (resp.time == 0xFFFFFF && resp.code == 0xFFFF && resp.additional == 0xFFFF) {
+        if (resp.time == 0xFFFFFFFF && resp.code == 0xFFFF && resp.additional == 0xFFFF) {
             stopBlackAndUnlock();
         }
         if (!stopSendBlackBoxCommand) {
