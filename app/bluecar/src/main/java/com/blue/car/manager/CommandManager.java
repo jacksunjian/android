@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.blue.car.model.BatteryInfoCommandResp;
+import com.blue.car.model.BlackBoxCommandResp;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.model.LedCommandResp;
 import com.blue.car.model.LockConditionInfoCommandResp;
@@ -224,8 +225,14 @@ public class CommandManager {
     /*黑匣子读取步骤
     1.锁车
     2.黑匣子读取
-    3.解锁*/
-    //待定
+    3.解锁
+    2字节命令为：04 00开始
+    */
+    public static byte[] getBlackBoxCommand(int data) {
+        //《55 AA 04 0A 05 00 04 08 E0 FF
+        byte[] dataBytes = BlueUtils.getCharByte(data);
+        return getSendCommand(new byte[]{dataBytes[1], 0x08}, COMMAND_SEND, new byte[]{0x05, dataBytes[0]});
+    }
 
     public static byte[] getRemoteControlModeCommand() {
         //《55 AA 03 0A 01 B2 08 3D FF
@@ -480,6 +487,14 @@ public class CommandManager {
         //   resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
         resp.remainForFuture = BlueUtils.getNewBytes(originData, 16, 10);
         resp.state = BlueUtils.byteArrayToInt(originData, 26, 2);
+        return resp;
+    }
+
+    public static BlackBoxCommandResp getBlackBoxCommandResp(@NonNull byte[] originData) {
+        BlackBoxCommandResp resp = new BlackBoxCommandResp();
+        resp.time = BlueUtils.byteArrayToLong(originData, 7, 4);
+        resp.code = BlueUtils.byteArrayToInt(originData, 11, 2);
+        resp.additional = BlueUtils.byteArrayToInt(originData, 13, 2);
         return resp;
     }
 

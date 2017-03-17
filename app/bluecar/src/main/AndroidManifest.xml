@@ -52,6 +52,7 @@
         <activity android:name=".activity.BlackSettingActivity" />
         <activity android:name=".activity.LightSettingActivity" />
         <activity android:name=".activity.BlueControlActivity" />
+        <activity android:name=".activity.BlackBoxActivity"/>
 
         <activity
             android:name=".activity.SensorSettingActivity"
