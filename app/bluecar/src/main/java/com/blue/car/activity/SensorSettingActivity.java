@@ -48,7 +48,7 @@ public class SensorSettingActivity extends BaseActivity {
 
     SensitivityCommandResp sensitivityCommandResp;
 
-    private String turnOnSensorSettingCommand,turnoffSensorSettingCommand,ridingOnSensorSettingCommand,ridingOffSensorSettingCommand;
+    private String turnOnSensorSettingCommand, turnoffSensorSettingCommand, ridingOnSensorSettingCommand, ridingOffSensorSettingCommand;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,10 +93,10 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] command;
                 if (isChecked) {
                     command = CommandManager.getOpenTurnSensitivityCommand();
-                    turnOnSensorSettingCommand=BlueUtils.bytesToAscii(command,0,command.length);
+                    turnOnSensorSettingCommand = BlueUtils.bytesToAscii(command, 0, command.length);
                 } else {
                     command = CommandManager.getCloseTurnSensitivityCommand();
-                    turnoffSensorSettingCommand =BlueUtils.bytesToAscii(command,0,command.length);
+                    turnoffSensorSettingCommand = BlueUtils.bytesToAscii(command, 0, command.length);
                 }
                 Log.e("sunjianturn-onWrite", BlueUtils.bytesToHexString(command));
                 writeCommand(command);
@@ -128,10 +128,10 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] ridingCommand;
                 if (isChecked) {
                     ridingCommand = CommandManager.getOpenRidingSensitivityCommand();
-                    ridingOnSensorSettingCommand=BlueUtils.bytesToAscii(ridingCommand,0,ridingCommand.length);
+                    ridingOnSensorSettingCommand = BlueUtils.bytesToAscii(ridingCommand, 0, ridingCommand.length);
                 } else {
                     ridingCommand = CommandManager.getCloseRidingSensitivityCommand();
-                    ridingOffSensorSettingCommand =BlueUtils.bytesToAscii(ridingCommand,0,ridingCommand.length);
+                    ridingOffSensorSettingCommand = BlueUtils.bytesToAscii(ridingCommand, 0, ridingCommand.length);
                 }
                 Log.e("sunjianride-onWrite", BlueUtils.bytesToHexString(ridingCommand));
                 writeCommand(ridingCommand);
@@ -278,9 +278,9 @@ public class SensorSettingActivity extends BaseActivity {
         if (dataBytes == null || dataBytes.length <= 0) {
             return;
         }
-        String command =BlueUtils.bytesToAscii(dataBytes,0,dataBytes.length);
+        String command = BlueUtils.bytesToAscii(dataBytes, 0, dataBytes.length);
         Log.e("sunjian-ridingSwitch", command);
-        if (command.equals(turnOnSensorSettingCommand) ) {
+        if (command.equals(turnOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A1 65 00 E8 FE
             showToast("转向开启");
             turningSeekBar.setEnabled(false);

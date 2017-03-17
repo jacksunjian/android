@@ -111,8 +111,8 @@ public class BatteryInfoActivity extends BaseActivity {
 
 
    private void updateBatteryView(BatteryInfoCommandResp resp){
-       restBatteryTv.setText("" + resp.remainBatteryElectricity + "mAh");
-       restPercentTv.setText("" + resp.remainPercent + "%");
+       restBatteryTv.setText(resp.remainBatteryElectricity + "mAh");
+       restPercentTv.setText( resp.remainPercent + "%");
        electricTv.setText("" + resp.electricCurrent + "A");
        voltageTv.setText("" + resp.voltage + "V");
        temperatureTv.setText("" + resp.temperature + "℃");

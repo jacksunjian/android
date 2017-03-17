@@ -145,4 +145,37 @@ public class StringUtils {
         input = input.substring(start, end + 1);
         return input;
     }
+
+   public static  String dealSpeedFormat(float speed){
+       return String.format("%.1fkm/h",speed);
+
+   }
+
+    public static  String dealMileFormat(float mile){
+        return String.format("%.1fkm",mile);
+
+    }
+
+    public static  String dealTempFormat(float temp){
+        return String.format("%.1f℃",temp);
+
+    }
+
+    /**
+     * 获取小时/分钟/秒
+     *
+     * @param second 秒
+     * @return 包含小时、分钟、秒的时间字符串，例如3小时23分钟13秒。
+     */
+    public static String getHour(int second) {
+        int hour = second / 60 / 60;
+        int minute = (second - hour * 60 * 60) / 60;
+        int sec = (second - hour * 60 * 60) - minute * 60;
+
+        return hour + ":" + minute + ":" + sec + "";
+
+    }
+
+
+
 }
