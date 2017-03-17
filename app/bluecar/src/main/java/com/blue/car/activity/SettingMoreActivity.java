@@ -100,7 +100,7 @@ public class SettingMoreActivity extends BaseActivity {
                 startActivity(it);
                 break;
             case R.id.blackSetting_rl:
-                it = new Intent(this, BlackSettingActivity.class);
+                it = new Intent(this, BlackBoxActivity.class);
                 startActivity(it);
                 break;
         }
