@@ -80,6 +80,7 @@ public class DeviceInfoActivity extends BaseActivity {
         writeCommand(command);
     }
 
+
     private CommandRespManager.OnDataCallback deviceInfoRespCallback = new CommandRespManager.OnDataCallback() {
         @Override
         public void resp(byte[] data) {
@@ -98,13 +99,14 @@ public class DeviceInfoActivity extends BaseActivity {
 
 
     private void updateDeviceInfoView(MainFuncCommandResp resp){
-        currentSpeedTv.setText("" + resp.speed);
-        averageSpeedTv.setText("" + resp.averageSpeed);
-        allmileTv.setText("" + resp.totalMileage);
-        thisMileTv.setText("" + resp.perMileage);
-        perRunTime.setText(""+resp.perRunTime);
-        temperatureTv.setText("" + resp.temperature);
-        topSpeedTv.setText("" + resp.speedLimit);
+        currentSpeedTv.setText(StringUtils.dealSpeedFormat(resp.speed));
+        averageSpeedTv.setText(StringUtils.dealSpeedFormat(resp.averageSpeed));
+        allmileTv.setText(StringUtils.dealMileFormat(resp.totalMileage));
+        thisMileTv.setText(StringUtils.dealMileFormat(resp.perMileage));
+        perRunTime.setText( StringUtils.getHour(resp.perRunTime));
+        temperatureTv.setText(StringUtils.dealTempFormat(resp.temperature));
+        topSpeedTv.setText(StringUtils.dealSpeedFormat(resp.speedLimit));
+
     }
 
 

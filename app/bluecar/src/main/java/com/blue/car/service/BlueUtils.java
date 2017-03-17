@@ -205,6 +205,14 @@ public class BlueUtils {
         return toInt;
     }
 
+    public static long byteArrayToLong(byte[] b, int offset, int len) {
+        long toLong = 0;
+        for (int i = 0; i < len; i++) {
+            toLong |= (b[i + offset] & 0xFF) << (8 * i);
+        }
+        return toLong;
+    }
+
     public static byte[] intToByteArray(int a) {
         return new byte[]{
                 (byte) (a & 0xFF),

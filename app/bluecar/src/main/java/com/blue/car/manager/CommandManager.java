@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.blue.car.model.BatteryInfoCommandResp;
+import com.blue.car.model.BlackBoxCommandResp;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.model.LedCommandResp;
 import com.blue.car.model.LockConditionInfoCommandResp;
@@ -153,6 +154,13 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x1A}, COMMAND_SEND, new byte[]{0x01, (byte) 0xC6});
     }
 
+    // color: 0~239 其中纯红0，纯绿80，纯蓝160
+    public static byte[] getLedColorSettingCommand(int color) {
+        //《55 AA 04 0A 03 C8 F0 D9 5D FD
+        byte[] commandData = new byte[]{(byte) 0xF0, BlueUtils.intToByte(color)};
+        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC8});
+    }
+
     /*设置氛围灯模式0-9分别代表关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3*/
     public static byte[] getAmbientLightSettingCommand(int mode) {
         //《55 AA 04 0A 03 C6 09 00 28 FF
@@ -217,8 +225,14 @@ public class CommandManager {
     /*黑匣子读取步骤
     1.锁车
     2.黑匣子读取
-    3.解锁*/
-    //待定
+    3.解锁
+    2字节命令为：04 00开始
+    */
+    public static byte[] getBlackBoxCommand(int data) {
+        //《55 AA 04 0A 05 00 04 08 E0 FF
+        byte[] dataBytes = BlueUtils.getCharByte(data);
+        return getSendCommand(new byte[]{dataBytes[1], 0x08}, COMMAND_SEND, new byte[]{0x05, dataBytes[0]});
+    }
 
     public static byte[] getRemoteControlModeCommand() {
         //《55 AA 03 0A 01 B2 08 3D FF
@@ -473,6 +487,14 @@ public class CommandManager {
         //   resp.temperature = BlueUtils.byteArrayToInt(originData, 14, 2);
         resp.remainForFuture = BlueUtils.getNewBytes(originData, 16, 10);
         resp.state = BlueUtils.byteArrayToInt(originData, 26, 2);
+        return resp;
+    }
+
+    public static BlackBoxCommandResp getBlackBoxCommandResp(@NonNull byte[] originData) {
+        BlackBoxCommandResp resp = new BlackBoxCommandResp();
+        resp.time = BlueUtils.byteArrayToLong(originData, 7, 4);
+        resp.code = BlueUtils.byteArrayToInt(originData, 11, 2);
+        resp.additional = BlueUtils.byteArrayToInt(originData, 13, 2);
         return resp;
     }
 
