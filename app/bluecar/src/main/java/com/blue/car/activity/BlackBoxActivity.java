@@ -38,6 +38,8 @@ public class BlackBoxActivity extends BaseActivity {
     private String unLockCommand;
     private String blackBoxCommand;
 
+    private boolean stopSendBlackBoxCommand = false;
+
     private ArrayAdapter adapter;
 
     @Override
@@ -114,19 +116,18 @@ public class BlackBoxActivity extends BaseActivity {
         }
     };
 
-    private boolean stopSendBlackBoxCommand = false;
-
     private void processBlackBoxCommandResp(BlackBoxCommandResp resp) {
-        updateView(resp);
         if (resp.time == 0xFFFFFFFF && resp.code == 0xFFFF && resp.additional == 0xFFFF) {
             stopBlackAndUnlock();
         }
-        if (!stopSendBlackBoxCommand) {
-            startBlackBoxCommand(blackBoxCommandIndex += 4);
+        if (stopSendBlackBoxCommand) {
+            return;
         }
+        updateView(resp);
+        startBlackBoxCommand(blackBoxCommandIndex += 4);
     }
 
-    private void stopBlackAndUnlock(){
+    private void stopBlackAndUnlock() {
         stopSendBlackBoxCommand = true;
         blackBoxCommandIndex = BLACK_BOX_START;
         startUnLockCommand();
