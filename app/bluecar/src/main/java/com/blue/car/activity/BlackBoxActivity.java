@@ -2,10 +2,17 @@ package com.blue.car.activity;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Handler;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -22,7 +29,12 @@ import com.blue.car.utils.StringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class BlackBoxActivity extends BaseActivity {
     private static int BLACK_BOX_START = 1024;
@@ -30,6 +42,12 @@ public class BlackBoxActivity extends BaseActivity {
 
     @Bind(R.id.black_listView)
     ListView blackBoxListView;
+    @Bind(R.id.lh_btn_back)
+    Button lhBtnBack;
+    @Bind(R.id.ll_back)
+    LinearLayout llBack;
+    @Bind(R.id.lh_tv_title)
+    TextView lhTvTitle;
 
     private CommandRespManager respManager = new CommandRespManager();
     private int blackBoxCommandIndex = BLACK_BOX_START;
@@ -40,7 +58,9 @@ public class BlackBoxActivity extends BaseActivity {
 
     private boolean stopSendBlackBoxCommand = false;
 
-    private ArrayAdapter adapter;
+
+    ArrayList<BlackBoxCommandResp> list = new ArrayList<BlackBoxCommandResp>();
+    MyAdapter myAdapter;
 
     @Override
     protected int getLayoutId() {
@@ -54,10 +74,11 @@ public class BlackBoxActivity extends BaseActivity {
     @Override
     protected void initView() {
         initListView();
+        lhTvTitle.setText("黑匣子信息");
     }
 
     private void initListView() {
-        blackBoxListView.setAdapter(adapter = new ArrayAdapter<>(this, R.layout.black_box_list_item));
+        blackBoxListView.setAdapter(myAdapter = new MyAdapter(list));
         blackBoxListView.setDivider(new ColorDrawable(Color.WHITE));
         blackBoxListView.setDividerHeight(1);
     }
@@ -134,8 +155,9 @@ public class BlackBoxActivity extends BaseActivity {
     }
 
     private void updateView(BlackBoxCommandResp resp) {
-        adapter.add(resp.time + "-" + resp.code + "-" + resp.additional);
-        adapter.notifyDataSetChanged();
+        //  adapter.add(resp.time + "-" + resp.code + "-" + resp.additional);
+        list.add(resp);
+        myAdapter.notifyDataSetChanged();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -176,5 +198,73 @@ public class BlackBoxActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+    }
+
+
+
+    @OnClick({R.id.lh_btn_back, R.id.ll_back})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.lh_btn_back:
+
+            case R.id.ll_back:
+                onBackPressed();
+                break;
+        }
+    }
+
+    public static class MyAdapter extends BaseAdapter {
+
+        private List<BlackBoxCommandResp> data;
+
+        public MyAdapter(List<BlackBoxCommandResp> data) {
+            this.data = data;
+        }
+
+
+        @Override
+        public int getCount() {
+            return data == null ? 0 : data.size();
+        }
+
+        @Override
+        public BlackBoxCommandResp getItem(int position) {
+            return data.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder = null;
+            BlackBoxCommandResp resp = getItem(position);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.black_box_list_item, null);
+                holder = new ViewHolder();
+                holder.timeTv = (TextView) convertView.findViewById(R.id.time_tv);
+                holder.codeTv = (TextView) convertView.findViewById(R.id.code_tv);
+                holder.messageTv = (TextView) convertView.findViewById(R.id.message_tv);
+                convertView.setTag(holder);
+            }
+            holder = (ViewHolder) convertView.getTag();
+            holder.timeTv.setText("" + StringUtils.getTime(resp.time));
+            holder.codeTv.setText("" + resp.code);
+            holder.messageTv.setText("" + resp.additional);
+            return convertView;
+        }
+
+
+        static class ViewHolder {
+
+            TextView timeTv;
+
+            TextView codeTv;
+
+            TextView messageTv;
+
+        }
     }
 }

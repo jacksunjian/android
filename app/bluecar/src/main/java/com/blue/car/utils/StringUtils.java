@@ -177,5 +177,17 @@ public class StringUtils {
     }
 
 
+    public static String getTime(long second) {
+        long hour = second / 60 / 60;
+        long minute = (second - hour * 60 * 60) / 60;
+        long sec = (second - hour * 60 * 60) - minute * 60;
+
+        return hour + "h " + minute + "m " + sec + "s";
+
+    }
+
+
+
+
 
 }
