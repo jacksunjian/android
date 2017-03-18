@@ -23,5 +23,6 @@
     <string name="mode_speed_limit">限速模式</string>
     <string name="mode_lock">锁车模式</string>
     <string name="mode_remote">遥控模式</string>
+    <string name="filter_vcode">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
 
 </resources>
