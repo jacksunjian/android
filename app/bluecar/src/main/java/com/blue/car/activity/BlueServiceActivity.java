@@ -219,7 +219,8 @@ public class BlueServiceActivity extends BaseActivity {
         }
         speedMainView.setBatteryPercent(resp.remainBatteryPercent * 1.0f / 100);
         //speedMainView.setSpeedLimit(resp.speedLimit);
-        speedMainView.setSpeedLimit(Math.max(resp.speedLimit, resp.maxAbsSpeed) + 5);
+        float speedLimit = Math.max(resp.speedLimit, resp.maxAbsSpeed);
+        speedMainView.setSpeedLimit(Math.max(resp.speed, speedLimit) + 5);
         speedMainView.setSpeed(resp.speed);
         speedMainView.setPerMileage(resp.perMileage);
     }
