@@ -39,12 +39,12 @@ public class UniversalViewUtils {
     }
 
     public static View initNormalSeekBarLayout(Activity activity, int parentId, final String leftText,
-                                               int seekProgress, final SeekBar.OnSeekBarChangeListener listener) {
+                                               int seekProgress, final int offset, final SeekBar.OnSeekBarChangeListener listener) {
         ViewGroup viewGroup = (ViewGroup) activity.findViewById(parentId);
         TextView leftTextView = getLeftTextView(viewGroup);
         leftTextView.setText(leftText);
         final TextView rightTextView = getRightTextView(viewGroup);
-        rightTextView.setText(String.valueOf(seekProgress));
+        rightTextView.setText(String.valueOf(seekProgress - offset));
         SeekBar seekBar = getSeekBarView(viewGroup);
         seekBar.setProgress(seekProgress);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -53,7 +53,7 @@ public class UniversalViewUtils {
                 if (listener != null) {
                     listener.onProgressChanged(seekBar, progress, fromUser);
                 }
-                rightTextView.setText(String.valueOf(progress));
+                rightTextView.setText(String.valueOf(progress - offset));
             }
 
             @Override
@@ -71,6 +71,11 @@ public class UniversalViewUtils {
             }
         });
         return rightTextView;
+    }
+
+    public static View initNormalSeekBarLayout(Activity activity, int parentId, final String leftText,
+                                               int seekProgress, final SeekBar.OnSeekBarChangeListener listener) {
+        return initNormalSeekBarLayout(activity, parentId, leftText, seekProgress, 0, listener);
     }
 
     public static TextView getLeftTextView(ViewGroup viewGroup) {

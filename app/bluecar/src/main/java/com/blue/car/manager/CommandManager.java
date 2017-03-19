@@ -113,7 +113,6 @@ public class CommandManager {
     }
 
 
-
     public static byte[] getOpenTurnSensitivityCommand() {
         //《55 AA 04 0A 03 A1 65 00 E8 FE
         return getSendCommand(new byte[]{0x65, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xA1});
@@ -133,10 +132,10 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x65, 0x00}, COMMAND_SEND, new byte[]{0x03, (byte) 0xA2});
     }
 
-    public static byte[] getPowerBalanceSettingCommand(byte[] commandData) {
+    public static byte[] getPowerBalanceSettingCommand(int balance) {
         /*《55 AA 04 0A 03 A3 F1 FF 5B FD（-1.5度） 0xFFF1 疑惑
         《55 AA 04 0A 03 A3 32 00 19 FF（5.0度）*/
-        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xA3});
+        return getSendCommand(BlueUtils.getCharByte(balance * 10), COMMAND_SEND, new byte[]{0x03, (byte) 0xA3});
     }
 
     public static byte[] getLockConditionCommand() {
@@ -414,7 +413,11 @@ public class CommandManager {
         SensitivityCommandResp resp = new SensitivityCommandResp();
         resp.turningSensitivity = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.ridingSensitivity = BlueUtils.byteArrayToInt(originData, 8, 2);
-        resp.balanceInPowerMode = BlueUtils.byteArrayToInt(originData, 10, 2);
+        if ((originData[11] & 0xFF) == 0xFF) {
+            resp.balanceInPowerMode = (0xFF & ~originData[10] + 1) / 10 * -1;
+        } else {
+            resp.balanceInPowerMode = BlueUtils.byteArrayToInt(originData, 10, 2) / 10;
+        }
         resp.remainA = BlueUtils.getNewBytes(originData, 12, 2);
         resp.remainB = BlueUtils.byteArrayToInt(originData, 14, 2);
         return resp;
