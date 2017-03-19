@@ -13,8 +13,10 @@ import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
+import com.blue.car.model.AccountInfo;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
+import com.blue.car.utils.StringUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -28,6 +30,8 @@ import butterknife.OnClick;
  */
 
 public class BlueSettingActivity extends BaseActivity {
+    private static final String TAG = BlueSettingActivity.class.getSimpleName();
+
     @Bind(R.id.lh_btn_back)
     Button lhBtnBack;
     @Bind(R.id.ll_back)
@@ -42,10 +46,11 @@ public class BlueSettingActivity extends BaseActivity {
     EditText nameEt;
     @Bind(R.id.secret_et)
     EditText secretEt;
-    private CommandRespManager respManager = new CommandRespManager();
-    private static final String TAG = "BlueSettingActivity";
 
-    private String settingPasswordCommand,settingNameCommand;
+    private CommandRespManager respManager = new CommandRespManager();
+    private String settingPasswordCommand, settingNameCommand;
+
+    private boolean needFinishActivity = false;
 
     @Override
     protected int getLayoutId() {
@@ -54,7 +59,6 @@ public class BlueSettingActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
-
     }
 
     @Override
@@ -62,13 +66,10 @@ public class BlueSettingActivity extends BaseActivity {
         lhTvTitle.setText("蓝牙设置");
         tvRight.setVisibility(View.VISIBLE);
         tvRight.setText("确定");
-      //  getBlueCarNameSettingCommand
-        //getBlueCarPasswordSettingCommand
     }
 
     @Override
     protected void initData() {
-
     }
 
 
@@ -76,42 +77,63 @@ public class BlueSettingActivity extends BaseActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
-
             case R.id.ll_back:
                 onBackPressed();
                 break;
             case R.id.ll_right:
-
             case R.id.tv_right:
-                writeSettingNameCommand(nameEt.getText().toString());
-                writeSettingPasswordCommand(secretEt.getText().toString());
+                processNameEdit();
+                processPasswordEdit();
                 break;
         }
     }
 
+    private String getNameString() {
+        return nameEt.getText().toString();
+    }
+
+    private String getPasswordString() {
+        return secretEt.getText().toString();
+    }
+
+    private void processNameEdit() {
+        String name = getNameString();
+        if (StringUtils.isNotBlank(name)) {
+            writeSettingNameCommand(name);
+            needFinishActivity = true;
+        }
+    }
+
+    private void processPasswordEdit() {
+        String password = getPasswordString();
+        if (StringUtils.isNullOrEmpty(password)) {
+            return;
+        }
+        if (password.length() < 6) {
+            showToast("密码需要6位数字");
+            needFinishActivity = false;
+            return;
+        }
+        writeSettingPasswordCommand(password);
+        needFinishActivity = true;
+    }
+
     private void writeSettingPasswordCommand(String s) {
         byte[] command = CommandManager.getBlueCarPasswordSettingCommand(s);
-        settingPasswordCommand = new String(command);
+        settingPasswordCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
     private void writeSettingNameCommand(String s) {
         byte[] command = CommandManager.getBlueCarNameSettingCommand(s);
-        settingNameCommand = new String(command);
+        settingNameCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
-        if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
-            LogUtils.e("onCharacteristicRead", "status:" + event.status);
-            LogUtils.e(TAG, "onCharRead "
-                    + " read "
-                    + event.uuid.toString()
-                    + " -> "
-                    + BlueUtils.bytesToHexString(dataBytes));
+        byte[] dataBytes = printGattCharacteristicReadEvent(event);
+        if (dataBytes != null) {
             byte[] result = respManager.obtainData(dataBytes);
             respManager.processCommandResp(result);
         }
@@ -119,15 +141,9 @@ public class BlueSettingActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        printGattCharacteristicWriteEvent(event);
         if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = event.data;
-            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
-            LogUtils.e(TAG, "onCharWrite "
-                    + " write "
-                    + event.uuid.toString()
-                    + " -> "
-                    + BlueUtils.bytesToHexString(dataBytes));
-            processWriteEvent(dataBytes);
+            processWriteEvent(event.data);
         }
     }
 
@@ -135,17 +151,30 @@ public class BlueSettingActivity extends BaseActivity {
         if (dataBytes == null || dataBytes.length <= 0) {
             return;
         }
-        if (new String(dataBytes).equals(settingPasswordCommand)) {
+        String command = BlueUtils.bytesToAscii(dataBytes);
+        if (command.equals(settingPasswordCommand)) {
+            saveAccountPassword();
             showToast("设置密码成功");
-        }else if(new String(dataBytes).equals(settingNameCommand))
-        {
+        } else if (command.equals(settingNameCommand)) {
+            saveAccountName();
             showToast("设置名称成功");
         }
-        finish();
+        if (needFinishActivity) {
+            finish();
+        }
     }
 
+    private void saveAccountName() {
+        AccountInfo accountInfo = AccountInfo.currentAccountInfo(this);
+        accountInfo.bleName = getNameString();
+        AccountInfo.saveAccountInfo(this, accountInfo);
+    }
 
-
+    private void saveAccountPassword() {
+        AccountInfo accountInfo = AccountInfo.currentAccountInfo(this);
+        accountInfo.blePassword = getPasswordString();
+        AccountInfo.saveAccountInfo(this, accountInfo);
+    }
 
     @Override
     protected void onStart() {
@@ -158,7 +187,4 @@ public class BlueSettingActivity extends BaseActivity {
         super.onStop();
         stopRegisterEventBus();
     }
-
-
-
 }
