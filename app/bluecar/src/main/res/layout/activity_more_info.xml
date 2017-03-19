@@ -35,8 +35,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="60dp"
         android:layout_marginBottom="17dp"
+        android:layout_marginTop="60dp"
         android:gravity="center_vertical">
 
         <ImageView
@@ -74,82 +74,58 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <RelativeLayout
+            <include
                 android:id="@+id/info_rl"
-                android:minHeight="74dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView
-                    style="@style/settingTextLeftStyle"
-                    android:layout_marginLeft="0dp"
-                    android:text="信息"/>
+                layout="@layout/normal_info_image_layout" />
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"
-                    android:src="@mipmap/gengduo"/>
-            </RelativeLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_alignParentBottom="true"
-                android:background="@android:color/white" />
-
-
-            <RelativeLayout
+            <include
                 android:id="@+id/setting_rl"
-                android:minHeight="74dp"
-                android:layout_marginRight="0dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                >
-                <TextView
-                    style="@style/settingTextLeftStyle"
-                    android:layout_marginLeft="0dp"
-                    android:text="设置"/>
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"
-                    android:src="@mipmap/gengduo"/>
-            </RelativeLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_alignParentBottom="true"
-                android:background="@android:color/white" />
+                layout="@layout/normal_info_image_layout" />
 
             <include
                 android:id="@+id/average_speed"
                 layout="@layout/normal_info_text_layout" />
+
             <include
                 android:id="@+id/per_meter"
                 layout="@layout/normal_info_text_layout" />
+
             <include
-                android:id="@+id/rest_ridemeter"
+                android:id="@+id/per_runTime"
+                layout="@layout/normal_info_text_layout" />
+
+            <include
+                android:id="@+id/rest_ride_meter"
+                layout="@layout/normal_info_text_layout" />
+
+            <include
+                android:id="@+id/total_meter"
+                layout="@layout/normal_info_text_layout" />
+
+            <include
+                android:id="@+id/temperature"
+                layout="@layout/normal_info_text_layout" />
+
+            <include
+                android:id="@+id/battery_percent"
                 layout="@layout/normal_info_text_layout" />
 
         </LinearLayout>
 
     </ScrollView>
+
     <Button
         android:id="@+id/search_btn"
         android:layout_width="match_parent"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/button_rect_circle_transparent_background_white_stroke"
         android:gravity="center"
         android:text="重新搜索"
         android:textColor="@color/white"
         android:textSize="19sp" />
-
-
 
 </LinearLayout>
