@@ -226,7 +226,7 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void updateOtherView(MainFuncCommandResp resp) {
-        speedLimitView.setImageResource(resp.isSpeedLimitStatus() ? R.mipmap.xiansu_on : R.mipmap.xiansu_on);
+        speedLimitView.setImageResource(resp.isSpeedLimitStatus() ? R.mipmap.xiansu_on : R.mipmap.xiansu_off);
         lockOffView.setImageResource(resp.isLockConditionStatus() ? R.mipmap.suo_on : R.mipmap.suo_off);
     }
 

@@ -3,6 +3,7 @@ package com.blue.car.activity;
 import android.bluetooth.BluetoothGatt;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -62,6 +63,7 @@ public class SensorSettingActivity extends BaseActivity {
     private String lockCommand;
     private String unLockCommand;
     private String checkCommand;
+    Handler handler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -119,11 +121,11 @@ public class SensorSettingActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 Log.e("sunjian",""+workMode);
-//                if (workMode == 1) {
+                if (workMode == 1) {
                     showCarLockDialog();
-//                } else {
-//                    showToast("当前不是助力模式，请下车");
-//                }
+                } else {
+                    showToast("当前不是助力模式，请下车");
+                }
             }
         });
         Switch turningSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.turning_sensitivity_auto_regulation,
@@ -235,8 +237,20 @@ public class SensorSettingActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-      //  startMainFuncCommand();
         getSensorInfo();
+
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                startMainFuncCommand();
+            }
+        }.start();
     }
 
     private void getSensorInfo() {
