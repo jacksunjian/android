@@ -248,6 +248,13 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x00, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x7A});
     }
 
+    public static byte[] setCheckCommand() {
+        //《55 AA 04 0A 03 75 01 00 78 FF
+        return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x75});
+    }
+
+
+
     public static byte[] getRemoteControlMoveCommand(int xValue, int yValue) {
         //《55 AA 06 0A 03 7B 00 00 00 00 71 FF
         //《55 AA 06 0A 03 7B CF 07 EE FF AE FC

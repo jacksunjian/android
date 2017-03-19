@@ -1,7 +1,10 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -13,11 +16,14 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
+import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.model.SensitivityCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
@@ -43,7 +49,8 @@ public class SensorSettingActivity extends BaseActivity {
     Switch turningSwitch, ridingSwitch;
     SeekBar turningSeekBar, ridingSeekBar, balanceSeekBar;
     TextView balanceText;
-
+    int workMode;
+    private MainFuncCommandResp mainFuncResp;
     private CommandRespManager respManager = new CommandRespManager();
 
     private SensitivityCommandResp sensitivityCommandResp;
@@ -53,6 +60,10 @@ public class SensorSettingActivity extends BaseActivity {
             ridingOffSensorSettingCommand;
 
     private int balanceProgressOffset = 20;
+    private String lockCommand;
+    private String unLockCommand;
+    private String checkCommand;
+    Handler handler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,9 +82,33 @@ public class SensorSettingActivity extends BaseActivity {
 
     @Override
     protected void initView() {
+
         initActionBar();
         initSettingView();
+
     }
+
+    private void startMainFuncCommand() {
+        byte[] command = CommandManager.getMainFuncCommand();
+        respManager.setCommandRespCallBack(new String(command), mainCommandCallback);
+        writeCommand(command);
+    }
+
+    private CommandRespManager.OnDataCallback mainCommandCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                mainFuncResp = CommandManager.getMainFuncCommandResp(data);
+                LogUtils.jsonLog("sunjianjian", mainFuncResp);
+                workMode = mainFuncResp.workMode;
+            }
+        }
+    };
 
     private void initActionBar() {
         findViewById(R.id.ll_back).setVisibility(View.VISIBLE);
@@ -85,7 +120,12 @@ public class SensorSettingActivity extends BaseActivity {
         UniversalViewUtils.initNormalInfoLayout(this, R.id.posture_layout, "姿态校准", R.mipmap.gengduo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Log.e("sunjian",""+workMode);
+                if (workMode == 1) {
+                    showCarLockDialog();
+                } else {
+                    showToast("当前不是助力模式，请下车");
+                }
             }
         });
         Switch turningSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.turning_sensitivity_auto_regulation,
@@ -131,10 +171,10 @@ public class SensorSettingActivity extends BaseActivity {
                 byte[] ridingCommand;
                 if (isChecked) {
                     ridingCommand = CommandManager.getOpenRidingSensitivityCommand();
-                    ridingOnSensorSettingCommand = BlueUtils.bytesToAscii(ridingCommand, 0, ridingCommand.length);
+                    ridingOnSensorSettingCommand = BlueUtils.bytesToAscii(ridingCommand);
                 } else {
                     ridingCommand = CommandManager.getCloseRidingSensitivityCommand();
-                    ridingOffSensorSettingCommand = BlueUtils.bytesToAscii(ridingCommand, 0, ridingCommand.length);
+                    ridingOffSensorSettingCommand = BlueUtils.bytesToAscii(ridingCommand);
                 }
                 writeCommand(ridingCommand);
             }
@@ -198,6 +238,19 @@ public class SensorSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
         getSensorInfo();
+
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                startMainFuncCommand();
+            }
+        }.start();
     }
 
     private void getSensorInfo() {
@@ -222,6 +275,27 @@ public class SensorSettingActivity extends BaseActivity {
             }
         }
     };
+
+    private void showCarLockDialog() {
+        new MaterialDialog.Builder(this)
+                .content("标定传感器需要锁车，是否继续")
+                .positiveText("同意")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        startLockCommand();
+                    }
+                }).show();
+    }
+    private void startLockCommand() {
+        byte[] command = CommandManager.getLockCarCommand();
+        lockCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+
 
     private void updateView(SensitivityCommandResp resp) {
         if (resp == null) {
@@ -260,7 +334,7 @@ public class SensorSettingActivity extends BaseActivity {
         if (dataBytes == null || dataBytes.length <= 0) {
             return;
         }
-        String command = BlueUtils.bytesToAscii(dataBytes, 0, dataBytes.length);
+        String command = BlueUtils.bytesToAscii(dataBytes);
         Log.e("sunjian-ridingSwitch", command);
         if (command.equals(turnOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A1 65 00 E8 FE
@@ -280,7 +354,41 @@ public class SensorSettingActivity extends BaseActivity {
             ridingSeekBar.setEnabled(true);
             showToast("骑行关闭");
             ridingSeekBar.setProgress(50);
+        }else  if (command.equals(lockCommand)) {
+          showWarnCommandPop();
         }
+        else if(command.equals(checkCommand)){
+            startUnLockCommand();
+        }
+        else if (command.equals(unLockCommand)) {
+            showToast("调整完毕，车子解锁");
+        }
+    }
+
+    private void showWarnCommandPop() {
+        new MaterialDialog.Builder(this)
+                .content(R.string.warning)
+                .positiveText("同意")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        startCheckCommand();
+                    }
+                }).show();
+    }
+
+    private void startCheckCommand() {
+        byte[] command = CommandManager.setCheckCommand();
+        checkCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+    private void startUnLockCommand() {
+        byte[] command = CommandManager.getUnLockCarCommand();
+        unLockCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
     }
 
     @Override
