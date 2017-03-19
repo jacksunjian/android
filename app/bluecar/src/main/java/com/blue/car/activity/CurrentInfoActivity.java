@@ -56,6 +56,7 @@ public class CurrentInfoActivity extends BaseActivity {
 
     private CommandRespManager respManager = new CommandRespManager();
     private static final String TAG = "CurrentInfoActivity";
+    Intent it;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -178,9 +179,11 @@ public class CurrentInfoActivity extends BaseActivity {
                 processRemoteSettingClick();
                 break;
             case R.id.info_rl:
+                 it = new Intent(this, InfoMoreActivity.class);
+                startActivity(it);
                 break;
             case R.id.setting_rl:
-                Intent it = new Intent(this, SettingMoreActivity.class);
+                 it = new Intent(this, SettingMoreActivity.class);
                 startActivity(it);
                 break;
             case R.id.search_btn:

@@ -5,29 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     <include layout="@layout/layout_head"></include>
-<RelativeLayout
-    android:id="@+id/lightSetting_rl"
-   style="@style/settingRelativeStyle">
-    <TextView
-        style="@style/settingTextLeftStyle"
-        android:text="灯光设置"/>
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="20dp"
-        android:src="@mipmap/gengduo"/>
-</RelativeLayout>
-<View
-    style="@style/dividerStyle"/>
     <RelativeLayout
-        android:id="@+id/speedSetting_rl"
+        android:id="@+id/infoSetting_rl"
         style="@style/settingRelativeStyle">
         <TextView
             style="@style/settingTextLeftStyle"
-            android:text="车速设置"/>
+            android:text="设备信息"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -39,11 +23,11 @@
     <View
         style="@style/dividerStyle"/>
     <RelativeLayout
-        android:id="@+id/sensorSetting_rl"
+        android:id="@+id/batterySetting_rl"
         style="@style/settingRelativeStyle">
         <TextView
-        style="@style/settingTextLeftStyle"
-        android:text="传感器设置"/>
+            style="@style/settingTextLeftStyle"
+            android:text="电池信息"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,11 +39,11 @@
     <View
         style="@style/dividerStyle"/>
     <RelativeLayout
-        android:id="@+id/blueSetting_rl"
+        android:id="@+id/blackSetting_rl"
         style="@style/settingRelativeStyle">
         <TextView
             style="@style/settingTextLeftStyle"
-            android:text="蓝牙设置"/>
+            android:text="查询黑匣子信息"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -68,23 +52,6 @@
             android:layout_marginRight="20dp"
             android:src="@mipmap/gengduo"/>
     </RelativeLayout>
-    <View
-        style="@style/dividerStyle"/>
-    <RelativeLayout
-        android:id="@+id/othersSetting_rl"
-        style="@style/settingRelativeStyle">
-        <TextView
-            style="@style/settingTextLeftStyle"
-            android:text="其他设置"/>
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="20dp"
-            android:src="@mipmap/gengduo"/>
-    </RelativeLayout>
-
     <View
         style="@style/dividerStyle"/>
 </LinearLayout>
