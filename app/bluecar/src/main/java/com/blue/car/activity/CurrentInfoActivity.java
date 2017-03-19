@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.bluetooth.BluetoothGatt;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.blue.car.R;
+import com.blue.car.events.GattCharacteristicReadEvent;
+import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.MainFuncCommandResp;
@@ -18,6 +21,9 @@ import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 import com.blue.car.utils.UniversalViewUtils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -49,6 +55,7 @@ public class CurrentInfoActivity extends BaseActivity {
     private TextView batteryPercentTv;
 
     private CommandRespManager respManager = new CommandRespManager();
+    private static final String TAG = "CurrentInfoActivity";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -192,6 +199,36 @@ public class CurrentInfoActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            LogUtils.e("onCharacteristicRead", "status:" + event.status);
+            LogUtils.e(TAG, "onCharRead "
+                    + " read "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+            byte[] result = respManager.obtainData(dataBytes);
+            respManager.processCommandResp(result);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        if (event.status == BluetoothGatt.GATT_SUCCESS) {
+            // final byte[] dataBytes = CommandManager.unEncryptData(event.data);
+            final byte[] dataBytes = event.data;
+            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
+            LogUtils.e(TAG, "onCharWrite "
+                    + " write "
+                    + event.uuid.toString()
+                    + " -> "
+                    + BlueUtils.bytesToHexString(dataBytes));
+          //  processWriteEvent(dataBytes);
+        }
     }
 
     @Override
