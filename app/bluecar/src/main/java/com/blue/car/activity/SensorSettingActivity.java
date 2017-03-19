@@ -37,7 +37,7 @@ import butterknife.Bind;
 import butterknife.OnClick;
 
 public class SensorSettingActivity extends BaseActivity {
-
+    private static final String TAG = "SensorSettingActivity";
 
     @Bind(R.id.lh_tv_title)
     TextView actionBarTitle;
@@ -45,7 +45,7 @@ public class SensorSettingActivity extends BaseActivity {
     Button lhBtnBack;
     @Bind(R.id.ll_back)
     LinearLayout llBack;
-    private static final String TAG = "SensorSettingActivity";
+
     Switch turningSwitch, ridingSwitch;
     SeekBar turningSeekBar, ridingSeekBar, balanceSeekBar;
     TextView balanceText;
@@ -63,7 +63,7 @@ public class SensorSettingActivity extends BaseActivity {
     private String lockCommand;
     private String unLockCommand;
     private String checkCommand;
-    Handler handler;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,10 +82,8 @@ public class SensorSettingActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-
         initActionBar();
         initSettingView();
-
     }
 
     private void startMainFuncCommand() {
@@ -120,7 +118,7 @@ public class SensorSettingActivity extends BaseActivity {
         UniversalViewUtils.initNormalInfoLayout(this, R.id.posture_layout, "姿态校准", R.mipmap.gengduo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("sunjian",""+workMode);
+                Log.e("sunjian", "" + workMode);
                 if (workMode == 1) {
                     showCarLockDialog();
                 } else {
@@ -238,19 +236,12 @@ public class SensorSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
         getSensorInfo();
-
-        new Thread() {
+        handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                super.run();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 startMainFuncCommand();
             }
-        }.start();
+        }, 1000);
     }
 
     private void getSensorInfo() {
@@ -290,6 +281,7 @@ public class SensorSettingActivity extends BaseActivity {
                     }
                 }).show();
     }
+
     private void startLockCommand() {
         byte[] command = CommandManager.getLockCarCommand();
         lockCommand = BlueUtils.bytesToAscii(command);
@@ -354,13 +346,11 @@ public class SensorSettingActivity extends BaseActivity {
             ridingSeekBar.setEnabled(true);
             showToast("骑行关闭");
             ridingSeekBar.setProgress(50);
-        }else  if (command.equals(lockCommand)) {
-          showWarnCommandPop();
-        }
-        else if(command.equals(checkCommand)){
+        } else if (command.equals(lockCommand)) {
+            showWarnCommandPop();
+        } else if (command.equals(checkCommand)) {
             startUnLockCommand();
-        }
-        else if (command.equals(unLockCommand)) {
+        } else if (command.equals(unLockCommand)) {
             showToast("调整完毕，车子解锁");
         }
     }
@@ -385,6 +375,7 @@ public class SensorSettingActivity extends BaseActivity {
         checkCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
+
     private void startUnLockCommand() {
         byte[] command = CommandManager.getUnLockCarCommand();
         unLockCommand = BlueUtils.bytesToAscii(command);
