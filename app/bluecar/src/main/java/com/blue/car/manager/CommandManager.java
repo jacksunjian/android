@@ -167,22 +167,22 @@ public class CommandManager {
         return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC6});
     }
 
-    public static byte[] getFrontLightOpenCommand(int mode) {
+    public static byte[] getFrontLightOpenCommand() {
         //《55 AA 04 0A 03 D3 03 00 18 FF
         return getFrontBehindLightCommand(new byte[]{0x03, 0x00});
     }
 
-    public static byte[] getFrontLightCloseCommand(int mode) {
+    public static byte[] getFrontLightCloseCommand() {
         //《55 AA 04 0A 03 D3 02 00 19 FF
         return getFrontBehindLightCommand(new byte[]{0x02, 0x00});
     }
 
-    public static byte[] getBrakesLightOpenCommand(int mode) {
+    public static byte[] getBrakesLightOpenCommand() {
         //《55 AA 04 0A 03 D3 04 00 18 FF
         return getFrontBehindLightCommand(new byte[]{0x04, 0x00});
     }
 
-    public static byte[] getBrakesLightCloseCommand(int mode) {
+    public static byte[] getBrakesLightCloseCommand() {
         //《55 AA 04 0A 03 D3 01 00 1A FF
         return getFrontBehindLightCommand(new byte[]{0x01, 0x00});
     }

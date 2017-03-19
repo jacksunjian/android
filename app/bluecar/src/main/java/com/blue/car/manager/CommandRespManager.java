@@ -29,6 +29,13 @@ public class CommandRespManager {
         if (StringUtils.isNullOrEmpty(command) || !commandMap.containsKey(command)) {
             return;
         }
+        processCommandResp(command, data);
+    }
+
+    public void processCommandResp(String command, byte[] data) {
+        if (StringUtils.isNullOrEmpty(command) || !commandMap.containsKey(command)) {
+            return;
+        }
         OnDataCallback callback = commandMap.get(command);
         if (callback != null) {
             callback.resp(data);
