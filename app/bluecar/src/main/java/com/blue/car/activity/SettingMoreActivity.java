@@ -35,12 +35,7 @@ public class SettingMoreActivity extends BaseActivity {
     RelativeLayout blueSettingRl;
     @Bind(R.id.othersSetting_rl)
     RelativeLayout othersSettingRl;
-    @Bind(R.id.infoSetting_rl)
-    RelativeLayout infoSettingRl;
-    @Bind(R.id.batterySetting_rl)
-    RelativeLayout batterySettingRl;
-    @Bind(R.id.blackSetting_rl)
-    RelativeLayout blackSettingRl;
+
     Intent it;
 
     @Override
@@ -55,7 +50,7 @@ public class SettingMoreActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        lhTvTitle.setText("更多");
+        lhTvTitle.setText("设置");
 
     }
 
@@ -64,7 +59,7 @@ public class SettingMoreActivity extends BaseActivity {
 
     }
 
-    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.lightSetting_rl, R.id.speedSetting_rl, R.id.sensorSetting_rl, R.id.blueSetting_rl, R.id.othersSetting_rl, R.id.infoSetting_rl, R.id.batterySetting_rl, R.id.blackSetting_rl})
+    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.lightSetting_rl, R.id.speedSetting_rl, R.id.sensorSetting_rl, R.id.blueSetting_rl, R.id.othersSetting_rl})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
@@ -91,18 +86,7 @@ public class SettingMoreActivity extends BaseActivity {
                 it = new Intent(this, OtherSettingActivity.class);
                 startActivity(it);
                 break;
-            case R.id.infoSetting_rl:
-                it = new Intent(this, DeviceInfoActivity.class);
-                startActivity(it);
-                break;
-            case R.id.batterySetting_rl:
-                 it = new Intent(this, BatteryInfoActivity.class);
-                startActivity(it);
-                break;
-            case R.id.blackSetting_rl:
-                it = new Intent(this, BlackBoxActivity.class);
-                startActivity(it);
-                break;
+
         }
     }
 }
