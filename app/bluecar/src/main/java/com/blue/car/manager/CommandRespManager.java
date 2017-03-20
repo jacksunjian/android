@@ -32,6 +32,10 @@ public class CommandRespManager {
         processCommandResp(command, data);
     }
 
+    public void addCommandRespCallBack(String command, OnDataCallback callback) {
+        commandMap.put(command, callback);
+    }
+
     public void processCommandResp(String command, byte[] data) {
         if (StringUtils.isNullOrEmpty(command) || !commandMap.containsKey(command)) {
             return;

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="ambient_mode_array">
+        <item>关闭</item>
+        <item>单色呼吸</item>
+        <item>全彩呼吸</item>
+        <item>双龙戏珠</item>
+        <item>全彩分向</item>
+        <item>单色流星</item>
+        <item>炫彩流星</item>
+        <item>警灯模式1</item>
+        <item>警灯模式2</item>
+        <item>警灯模式3</item>
+    </string-array>
+
+</resources>

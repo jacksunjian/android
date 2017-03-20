@@ -154,10 +154,26 @@ public class CommandManager {
     }
 
     // color: 0~239 其中纯红0，纯绿80，纯蓝160
-    public static byte[] getLedColorSettingCommand(int color) {
+    public static byte[] getLedColorSettingCommand(int color, byte[] command) {
         //《55 AA 04 0A 03 C8 F0 D9 5D FD
         byte[] commandData = new byte[]{(byte) 0xF0, BlueUtils.intToByte(color)};
-        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC8});
+        return getSendCommand(commandData, COMMAND_SEND, command);
+    }
+
+    public static byte[] getLed1ColorSettingCommand(int color) {
+        return getLedColorSettingCommand(color, new byte[]{0x03, (byte) 0xC8});
+    }
+
+    public static byte[] getLed2ColorSettingCommand(int color) {
+        return getLedColorSettingCommand(color, new byte[]{0x03, (byte) 0xCA});
+    }
+
+    public static byte[] getLed3ColorSettingCommand(int color) {
+        return getLedColorSettingCommand(color, new byte[]{0x03, (byte) 0xCC});
+    }
+
+    public static byte[] getLed4ColorSettingCommand(int color) {
+        return getLedColorSettingCommand(color, new byte[]{0x03, (byte) 0xCE});
     }
 
     /*设置氛围灯模式0-9分别代表关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3*/
@@ -167,24 +183,8 @@ public class CommandManager {
         return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC6});
     }
 
-    public static byte[] getFrontLightOpenCommand() {
-        //《55 AA 04 0A 03 D3 03 00 18 FF
-        return getFrontBehindLightCommand(new byte[]{0x03, 0x00});
-    }
-
-    public static byte[] getFrontLightCloseCommand() {
-        //《55 AA 04 0A 03 D3 02 00 19 FF
-        return getFrontBehindLightCommand(new byte[]{0x02, 0x00});
-    }
-
-    public static byte[] getBrakesLightOpenCommand() {
-        //《55 AA 04 0A 03 D3 04 00 18 FF
-        return getFrontBehindLightCommand(new byte[]{0x04, 0x00});
-    }
-
-    public static byte[] getBrakesLightCloseCommand() {
-        //《55 AA 04 0A 03 D3 01 00 1A FF
-        return getFrontBehindLightCommand(new byte[]{0x01, 0x00});
+    public static byte[] getFrontBehindLightCommand(int commandData){
+        return getFrontBehindLightCommand(BlueUtils.getCharByte(commandData));
     }
 
     private static byte[] getFrontBehindLightCommand(byte[] commandData) {
@@ -442,20 +442,18 @@ public class CommandManager {
     }
 
     /*55 AA 1C 0D 01 C6
-    01 00
-    00 00 F0 8B
-    00 00 F0 50
-    00 00 F0 F0
-    00 00 F0 C8
-
-    00 00 00 00
-    00 00 00 00
+    01 00 00 00
+    F0 8B 00 00 //F0无用，数据为后三位，其实也就是只有8B有效
+    F0 50 00 00
+    F0 F0 00 00
+    F0 C8 00 00
+    00 00 00 00 00 00
     BB F8*/
     public static LedCommandResp getLedCommandResp(byte[] originData) {
         LedCommandResp resp = new LedCommandResp();
-        resp.ledMode = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.ledMode = BlueUtils.byteArrayToInt(originData, 6, 4);
         for (int i = 0; i < resp.ledColor.length; i++) {
-            resp.ledColor[i] = BlueUtils.byteArrayToInt(originData, 8 + 4 * i, 4);
+            resp.ledColor[i] = BlueUtils.byteArrayToInt(originData, 11 + 4 * i, 4);
         }
         return resp;
     }
@@ -506,6 +504,10 @@ public class CommandManager {
         resp.code = BlueUtils.byteArrayToInt(originData, 11, 2);
         resp.additional = BlueUtils.byteArrayToInt(originData, 13, 2);
         return resp;
+    }
+
+    public static byte[] getSpecialCommandBytes(@NonNull byte[] originData){
+        return new byte[]{originData[4], originData[5]};
     }
 
     public static byte[] unEncryptData(byte[] encryptData) {

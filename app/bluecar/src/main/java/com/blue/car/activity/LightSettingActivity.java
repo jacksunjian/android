@@ -2,8 +2,12 @@ package com.blue.car.activity;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,6 +23,7 @@ import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.LedCommandResp;
+import com.blue.car.model.LockConditionInfoCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LinearGradientUtil;
 import com.blue.car.utils.LogUtils;
@@ -48,7 +53,24 @@ public class LightSettingActivity extends BaseActivity {
     @Bind(R.id.color_select_view)
     View colorSelectView;
 
+    @Bind(R.id.color1)
+    ImageView color1View;
+    @Bind(R.id.color2)
+    ImageView color2View;
+    @Bind(R.id.color3)
+    ImageView color3View;
+    @Bind(R.id.color4)
+    ImageView color4View;
+
+    private ImageView[] colorCollectionViews;
+    private ShapeDrawable[] shapeDrawableCollection;
+
+    private TextView ambientTextView;
+    private Switch frontLightSwitch;
+    private Switch brakeLightSwitch;
+
     private float rotation = 0;
+    private int colorSelectIndex = 0;
 
     private CommandRespManager respManager = new CommandRespManager();
     private String ledColorCommand;
@@ -58,11 +80,16 @@ public class LightSettingActivity extends BaseActivity {
     private int ambientLightModeCount = 10;
     private int ambientLightMode = 0;
 
+    private LockConditionInfoCommandResp lockCommandResp;
+    private LedCommandResp ledCommandResp;
+
     private View settingLayout;
     private ValueAnimator settingAnimator;
     private boolean windowShow = false;
     private float[] marginRange;
     private float marginBottom;
+
+    private String[] ambientModeStringArray;
 
     @Override
     protected int getLayoutId() {
@@ -71,7 +98,8 @@ public class LightSettingActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
-
+        ambientModeStringArray = getResources().getStringArray(R.array.ambient_mode_array);
+        ambientLightModeCount = ambientModeStringArray.length;
     }
 
     @Override
@@ -80,18 +108,19 @@ public class LightSettingActivity extends BaseActivity {
         colorControlView.setRotationSelectListener(new RotationImageView.OnRotationSelectListener() {
             @Override
             public void OnRotation(float ro) {
-                colorSelectView.setBackgroundColor(getColor(rotation = ro));
+                int color = getColor(rotation = ro);
+                colorSelectView.setBackgroundColor(color);
+                updateColorView(colorSelectIndex, color);
                 setLedColor();
             }
         });
         initLightSettingLayout();
+        initColorView();
     }
-
-    private Switch frontLightSwitch;
-    private Switch brakeLightSwitch;
 
     private void initLightSettingLayout() {
         UniversalViewUtils.initNormalInfoLayout(this, R.id.ambient_light_layout, "氛围灯模式", R.mipmap.gengduo);
+        ambientTextView = UniversalViewUtils.getRightTextView((ViewGroup) findViewById(R.id.ambient_light_layout));
         frontLightSwitch = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.front_light_layout, "前灯开关");
         frontLightSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,9 +146,51 @@ public class LightSettingActivity extends BaseActivity {
         });
     }
 
+    private ShapeDrawable getOvalShapeDrawable(int index) {
+        return shapeDrawableCollection[index];
+    }
+
+    private ImageView getColorSelectImageView(int index) {
+        return colorCollectionViews[index];
+    }
+
+    private ShapeDrawable getOvalShapeDrawable() {
+        ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
+        drawable.getPaint().setColor(Color.RED);
+        int size = getResources().getDimensionPixelSize(R.dimen.oval_shape_size);
+        drawable.setBounds(0, 0, size, size);
+        return drawable;
+    }
+
+    private void initColorView() {
+        colorCollectionViews = new ImageView[4];
+        colorCollectionViews[0] = color1View;
+        colorCollectionViews[1] = color2View;
+        colorCollectionViews[2] = color3View;
+        colorCollectionViews[3] = color4View;
+
+        shapeDrawableCollection = new ShapeDrawable[4];
+        shapeDrawableCollection[0] = getOvalShapeDrawable();
+        shapeDrawableCollection[1] = getOvalShapeDrawable();
+        shapeDrawableCollection[2] = getOvalShapeDrawable();
+        shapeDrawableCollection[3] = getOvalShapeDrawable();
+        for (int i = 0; i < colorCollectionViews.length; i++) {
+            colorCollectionViews[i].setBackground(shapeDrawableCollection[i]);
+        }
+    }
+
+    private void updateColorView(int index, int color) {
+        ImageView imageView = getColorSelectImageView(index);
+        ShapeDrawable drawable = getOvalShapeDrawable(index);
+        drawable.getPaint().setColor(color);
+        imageView.setBackground(drawable);
+        renderCollectionImageView();
+    }
+
     @Override
     protected void initData() {
         startLedQueryCommand();
+        startLedLockConditionCommand();
     }
 
     private int getColor(float rotation) {
@@ -131,9 +202,13 @@ public class LightSettingActivity extends BaseActivity {
         return LinearGradientUtil.getActualColor(rotation);
     }
 
+    private String getOnReadCommand(byte[] dataBytes) {
+        return BlueUtils.bytesToAscii(CommandManager.getSpecialCommandBytes(dataBytes));
+    }
+
     private void startLedQueryCommand() {
         byte[] ledCommand = CommandManager.getLedCommand();
-        respManager.setCommandRespCallBack(BlueUtils.bytesToAscii(ledCommand), ledCommandCallback);
+        respManager.setCommandRespCallBack(getOnReadCommand(ledCommand), ledCommandCallback);
         writeCommand(ledCommand);
     }
 
@@ -146,51 +221,104 @@ public class LightSettingActivity extends BaseActivity {
             boolean result = CommandManager.checkVerificationCode(data);
             LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
-                LedCommandResp ledCommandResp = CommandManager.getLedCommandResp(data);
+                ledCommandResp = CommandManager.getLedCommandResp(data);
                 LogUtils.jsonLog(getClass().getSimpleName(), ledCommandResp);
-                updateView(ledCommandResp);
+                updateLedView(ledCommandResp);
             }
         }
     };
 
-    private void updateView(LedCommandResp resp) {
-        frontLightSwitch.setChecked(resp.isFrontLedOpen());
-        brakeLightSwitch.setChecked(resp.isBrakeLedOpen());
+    private void startLedLockConditionCommand() {
+        byte[] lockCommand = CommandManager.getLedCommand();
+        respManager.addCommandRespCallBack(getOnReadCommand(lockCommand), lockCommandCallback);
+        writeCommand(lockCommand);
+    }
+
+    private CommandRespManager.OnDataCallback lockCommandCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                lockCommandResp = CommandManager.getLockConditionCommandResp(data);
+                LogUtils.jsonLog(getClass().getSimpleName(), lockCommandResp);
+                updateSwitchView(lockCommandResp);
+            }
+        }
+    };
+
+    private void updateLedView(LedCommandResp resp) {
+        if (resp == null) {
+            return;
+        }
+        ambientLightMode = resp.ledMode;
+        updateAmbientModeView(ambientLightMode);
+        for (int i = 0; i < resp.ledColor.length; i++) {
+            int hsb = LinearGradientUtil.hsbToColor(resp.ledColor[i])[0];
+            updateColorView(i, hsb & 239);
+        }
+    }
+
+    private void updateSwitchView(LockConditionInfoCommandResp resp) {
+        if (resp == null) {
+            return;
+        }
+        frontLightSwitch.setChecked(resp.isFrontLedOn());
+        brakeLightSwitch.setChecked(resp.isBrakeLedOn());
+    }
+
+    private void updateAmbientModeView(int mode) {
+        ambientTextView.setText(ambientModeStringArray[mode % ambientLightModeCount]);
     }
 
     private void setLedColor() {
         int color = getActualColor(rotation)[1];
-        byte[] command = CommandManager.getLedColorSettingCommand(color);
+        byte[] command = null;
+        switch (colorSelectIndex) {
+            case 0:
+                command = CommandManager.getLed1ColorSettingCommand(color);
+                break;
+            case 1:
+                command = CommandManager.getLed2ColorSettingCommand(color);
+                break;
+            case 2:
+                command = CommandManager.getLed3ColorSettingCommand(color);
+                break;
+            case 3:
+                command = CommandManager.getLed4ColorSettingCommand(color);
+                break;
+        }
         ledColorCommand = BlueUtils.bytesToAscii(command);
-        respManager.setCommandRespCallBack(ledColorCommand, null);
         writeCommand(command);
     }
 
     private void setAmbientLightMode(int mode) {
         byte[] command = CommandManager.getAmbientLightSettingCommand(mode);
         ambientLightCommand = BlueUtils.bytesToAscii(command);
-        respManager.setCommandRespCallBack(ambientLightCommand, null);
         writeCommand(command);
     }
 
     private void startFrontLedSwitchCommand() {
         byte[] command;
-        if (frontLightSwitch.isChecked()) {
-            command = CommandManager.getFrontLightOpenCommand();
-        } else {
-            command = CommandManager.getFrontLightCloseCommand();
+        if (lockCommandResp == null) {
+            lockCommandResp = new LockConditionInfoCommandResp();
         }
+        lockCommandResp.setFrontLedEnable(frontLightSwitch.isChecked());
+        command = CommandManager.getFrontBehindLightCommand(lockCommandResp.alarmStatus & 0x03);
         frontLedCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
     private void startBrakeLedSwitchCommand() {
         byte[] command;
-        if (brakeLightSwitch.isChecked()) {
-            command = CommandManager.getBrakesLightOpenCommand();
-        } else {
-            command = CommandManager.getBrakesLightCloseCommand();
+        if (lockCommandResp == null) {
+            lockCommandResp = new LockConditionInfoCommandResp();
         }
+        lockCommandResp.setBrakeLedEnable(brakeLightSwitch.isChecked());
+        command = CommandManager.getFrontBehindLightCommand(lockCommandResp.alarmStatus & 0x03);
         brakeLedCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
@@ -199,9 +327,15 @@ public class LightSettingActivity extends BaseActivity {
     public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
         byte[] dataBytes = printGattCharacteristicReadEvent(event);
         if (dataBytes != null) {
-            byte[] result = respManager.obtainData(dataBytes);
-            respManager.processCommandResp(result);
+            processReadEvent(respManager.obtainData(dataBytes));
         }
+    }
+
+    private void processReadEvent(byte[] data) {
+        if (data == null) {
+            return;
+        }
+        respManager.processCommandResp(getOnReadCommand(data), data);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -210,13 +344,14 @@ public class LightSettingActivity extends BaseActivity {
         processWriteEvent(event.data);
     }
 
+    @SuppressLint("DefaultLocale")
     private void processWriteEvent(byte[] dataBytes) {
         if (dataBytes == null || dataBytes.length <= 0) {
             return;
         }
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(ledColorCommand)) {
-            showToast("颜色设置成功");
+            showToast(String.format("颜色%d设置成功", colorSelectIndex + 1));
         } else if (command.equals(ambientLightCommand)) {
             showToast("氛围灯设置成功");
         } else if (command.equals(frontLedCommand)) {
@@ -248,6 +383,31 @@ public class LightSettingActivity extends BaseActivity {
         }
     }
 
+    private void renderCollectionImageView() {
+        for (int i = 0; i < colorCollectionViews.length; i++) {
+            colorCollectionViews[i].setImageResource(i == colorSelectIndex ? R.mipmap.ic_color_pick : 0);
+        }
+    }
+
+    @OnClick({R.id.color1, R.id.color2, R.id.color3, R.id.color4})
+    public void onColorViewClick(View view) {
+        switch (view.getId()) {
+            case R.id.color1:
+                colorSelectIndex = 0;
+                break;
+            case R.id.color2:
+                colorSelectIndex = 1;
+                break;
+            case R.id.color3:
+                colorSelectIndex = 2;
+                break;
+            case R.id.color4:
+                colorSelectIndex = 3;
+                break;
+        }
+        renderCollectionImageView();
+    }
+
     @OnClick(R.id.arrow_indicator)
     void onSettingIndicationClick() {
         startTranslateSettingLayout();
@@ -256,7 +416,9 @@ public class LightSettingActivity extends BaseActivity {
     //关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3
     @OnClick(R.id.ambient_light_layout)
     void onAmbientLightClick() {
-        setAmbientLightMode(++ambientLightMode % ambientLightModeCount);
+        int mode = ++ambientLightMode % ambientLightModeCount;
+        updateAmbientModeView(mode);
+        setAmbientLightMode(mode);
     }
 
     private void startTranslateSettingLayout() {

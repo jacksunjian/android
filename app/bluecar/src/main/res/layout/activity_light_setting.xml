@@ -41,7 +41,61 @@
         android:layout_below="@+id/color_panel"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
-        android:background="#FFFF0000" />
+        android:background="#FFFF0000"
+        android:visibility="invisible" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/color_select_view"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/color1"
+                style="@style/colorSelectImageViewStyle"
+                android:src="@mipmap/ic_color_pick" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/color2"
+                style="@style/colorSelectImageViewStyle" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/color3"
+                style="@style/colorSelectImageViewStyle" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/color4"
+                style="@style/colorSelectImageViewStyle" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/setting_layout"

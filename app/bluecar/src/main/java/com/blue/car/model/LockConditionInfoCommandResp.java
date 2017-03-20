@@ -17,6 +17,10 @@ public class LockConditionInfoCommandResp {
         return isOnCondition(0);
     }
 
+    public boolean isBrakeLedOn() {
+        return isOnCondition(1);
+    }
+
     public boolean isLockCanOff() {
         return isOnCondition(2);
     }
@@ -31,6 +35,14 @@ public class LockConditionInfoCommandResp {
 
     public void setLockNotWarn(boolean notWarn) {
         setCondition(3, notWarn);
+    }
+
+    public void setFrontLedEnable(boolean enable) {
+        setCondition(0, enable);
+    }
+
+    public void setBrakeLedEnable(boolean enable) {
+        setCondition(1, enable);
     }
 
     public boolean isOnCondition(int n) {
