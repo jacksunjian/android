@@ -6,6 +6,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -90,6 +92,7 @@ public class LightSettingActivity extends BaseActivity {
     private float marginBottom;
 
     private String[] ambientModeStringArray;
+    private Handler handler = new Handler();
 
     @Override
     protected int getLayoutId() {
@@ -181,16 +184,23 @@ public class LightSettingActivity extends BaseActivity {
 
     private void updateColorView(int index, int color) {
         ImageView imageView = getColorSelectImageView(index);
-        ShapeDrawable drawable = getOvalShapeDrawable(index);
+        ShapeDrawable drawable = getOvalShapeDrawable();
         drawable.getPaint().setColor(color);
         imageView.setBackground(drawable);
-        renderCollectionImageView();
     }
 
     @Override
     protected void initData() {
         startLedQueryCommand();
-        startLedLockConditionCommand();
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startLedLockConditionCommand();
+            }
+        }, 1000);
+
+
     }
 
     private int getColor(float rotation) {
@@ -229,7 +239,7 @@ public class LightSettingActivity extends BaseActivity {
     };
 
     private void startLedLockConditionCommand() {
-        byte[] lockCommand = CommandManager.getLedCommand();
+        byte[] lockCommand = CommandManager.getLockConditionCommand();
         respManager.addCommandRespCallBack(getOnReadCommand(lockCommand), lockCommandCallback);
         writeCommand(lockCommand);
     }
@@ -258,7 +268,9 @@ public class LightSettingActivity extends BaseActivity {
         updateAmbientModeView(ambientLightMode);
         for (int i = 0; i < resp.ledColor.length; i++) {
             int hsb = LinearGradientUtil.hsbToColor(resp.ledColor[i])[0];
-            updateColorView(i, hsb & 239);
+            Log.e("AA-hsb",""+i+":"+Integer.toHexString(hsb));
+
+            updateColorView(i, hsb );
         }
     }
 
@@ -335,6 +347,8 @@ public class LightSettingActivity extends BaseActivity {
         if (data == null) {
             return;
         }
+        Log.e("AA-data",BlueUtils.bytesToHexString(data));
+
         respManager.processCommandResp(getOnReadCommand(data), data);
     }
 

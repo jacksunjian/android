@@ -453,7 +453,7 @@ public class CommandManager {
         LedCommandResp resp = new LedCommandResp();
         resp.ledMode = BlueUtils.byteArrayToInt(originData, 6, 4);
         for (int i = 0; i < resp.ledColor.length; i++) {
-            resp.ledColor[i] = BlueUtils.byteArrayToInt(originData, 11 + 4 * i, 4);
+            resp.ledColor[i] = BlueUtils.byteArrayToInt(originData, 11 + 4 * i, 3);
         }
         return resp;
     }
