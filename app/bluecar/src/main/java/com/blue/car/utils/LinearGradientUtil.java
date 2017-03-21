@@ -68,15 +68,16 @@ public class LinearGradientUtil {
         float tmp = hsb % 240;
         if (tmp <= 80) {
             startColor = Color.RED;
-            endColor = Color.GREEN;
-        } else if (tmp <= 160) {
-            startColor = Color.GREEN;
             endColor = Color.BLUE;
-        } else if (tmp <= 240) {
+        } else if (tmp <= 160) {
             startColor = Color.BLUE;
+            endColor = Color.GREEN;
+        } else if (tmp <= 240) {
+            startColor = Color.GREEN;
             endColor = Color.RED;
         }
         int actualColor = LinearGradientUtil.getColor(startColor, endColor, tmp % 80 / 80);
         return new int[]{actualColor, (int) (tmp / 240 * 360)};
+
     }
 }
