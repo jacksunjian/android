@@ -28,11 +28,11 @@ public class SpeedMainView extends View {
     private ValueAnimator batteryProgressValueAnimator;
     private int valueAnimatorDuration = 800;
 
-    private float speed;
+    private float speed=0;
     private float speedLimit = 30;
     private int startAngle = 160;
     private int speedSweepMaxAngle = 220;
-    private int currentSweepAngle = 0;
+    private float currentSweepAngle = 0.1f;
 
     private Paint batteryProgressPaint;
     private TextPaint batteryTextPaint;
@@ -189,7 +189,7 @@ public class SpeedMainView extends View {
         } else {
             this.speed = value;
         }
-        currentSweepAngle = (int) (speed / speedLimit * speedSweepMaxAngle);
+        currentSweepAngle = (speed / speedLimit * speedSweepMaxAngle);
     }
 
     private void updateBatteryValueScale(float value) {
