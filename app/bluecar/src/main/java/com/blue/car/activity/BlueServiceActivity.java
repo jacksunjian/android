@@ -28,6 +28,7 @@ import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.custom.BounceScrollView;
 import com.blue.car.custom.OnScrollListener;
+import com.blue.car.custom.OverScrollView;
 import com.blue.car.custom.SpeedMainView;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -66,7 +67,7 @@ public class BlueServiceActivity extends BaseActivity {
     ViewGroup speedViewLayout;
 
     @Bind(R.id.bounceScrollView)
-    BounceScrollView bounceScrollView;
+    OverScrollView bounceScrollView;
 
     @Bind(R.id.mode_desc_tv)
     TextView modeDescTv;
@@ -387,13 +388,10 @@ public class BlueServiceActivity extends BaseActivity {
         return super.onTouchEvent(event);
     }
 
-    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.info_rl, R.id.setting_rl, R.id.search_btn})
+    @OnClick({ R.id.info_rl, R.id.setting_rl, R.id.search_btn})
     void someFunPanelClick(View view) {
         switch (view.getId()) {
-            case R.id.lh_btn_back:
-            case R.id.ll_back:
-                onBackPressed();
-                break;
+
             case R.id.info_rl:
                 gotoIntent(InfoMoreActivity.class);
                 break;
