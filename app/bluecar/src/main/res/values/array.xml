@@ -13,4 +13,12 @@
         <item>警灯模式3</item>
     </string-array>
 
+    <string-array name="work_mode">
+        <item>待机</item>
+        <item>助力</item>
+        <item>骑行</item>
+        <item>锁车</item>
+        <item>遥控</item>
+    </string-array>
+
 </resources>

@@ -161,6 +161,10 @@ public class StringUtils {
 
     }
 
+    public static String dealBatteryPercentFormat(float percent) {
+        return String.format("%.0f%%",percent);
+    }
+
     /**
      * 获取小时/分钟/秒
      *

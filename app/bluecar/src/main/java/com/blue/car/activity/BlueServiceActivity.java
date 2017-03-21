@@ -3,21 +3,31 @@ package com.blue.car.activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.AppApplication;
 import com.blue.car.R;
+import com.blue.car.custom.BounceScrollView;
+import com.blue.car.custom.OnScrollListener;
 import com.blue.car.custom.SpeedMainView;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -32,6 +42,7 @@ import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.BluetoothGattUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
+import com.blue.car.utils.UniversalViewUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -51,10 +62,24 @@ public class BlueServiceActivity extends BaseActivity {
     @Bind(R.id.lock_off_img)
     ImageView lockOffView;
 
+    @Bind(R.id.speedView_layout)
+    ViewGroup speedViewLayout;
+
+    @Bind(R.id.bounceScrollView)
+    BounceScrollView bounceScrollView;
+
     @Bind(R.id.mode_desc_tv)
     TextView modeDescTv;
     @Bind(R.id.system_status_tv)
     TextView sysStatusTv;
+
+    private TextView averageTv;
+    private TextView perMeterTv;
+    private TextView perRunTimeTv;
+    private TextView restRideMeterTv;
+    private TextView totalMeterTextTv;
+    private TextView temperatureTextTv;
+    private TextView batteryPercentTv;
 
     private BluetoothLeService bluetoothLeService = null;
     private Handler processHandler = new Handler();
@@ -79,6 +104,12 @@ public class BlueServiceActivity extends BaseActivity {
     private String unLockCarCommand;
     private String lockCarCommand;
 
+    private boolean startAnim = false;
+    private int slideUpLimit = 80;
+    private int slideDownLimit = 20;
+
+    private String[] workModeArray;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,10 +125,17 @@ public class BlueServiceActivity extends BaseActivity {
         gestureDetector = new GestureDetectorCompat(this, new MyGestureListener());
         scaledTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
         scaledMinimumFlingVelocity = ViewConfiguration.get(this).getScaledMinimumFlingVelocity();
+        workModeArray = getResources().getStringArray(R.array.work_mode);
     }
 
     @Override
     protected void initView() {
+        initSpeedMainView();
+        initScrollView();
+        initInfoLayout();
+    }
+
+    private void initSpeedMainView() {
         speedMainView.setValueAnimatorDuration(mainFuncCommandDelay - 30);
     }
 
@@ -218,7 +256,6 @@ public class BlueServiceActivity extends BaseActivity {
             return;
         }
         speedMainView.setBatteryPercent(resp.remainBatteryPercent * 1.0f / 100);
-        //speedMainView.setSpeedLimit(resp.speedLimit);
         float speedLimit = Math.max(resp.speedLimit, resp.maxAbsSpeed);
         speedMainView.setSpeedLimit(Math.max(resp.speed, speedLimit) + 5);
         speedMainView.setSpeed(resp.speed);
@@ -228,6 +265,8 @@ public class BlueServiceActivity extends BaseActivity {
     private void updateOtherView(MainFuncCommandResp resp) {
         speedLimitView.setImageResource(resp.isSpeedLimitStatus() ? R.mipmap.xiansu_on : R.mipmap.xiansu_off);
         lockOffView.setImageResource(resp.isLockConditionStatus() ? R.mipmap.suo_on : R.mipmap.suo_off);
+        sysStatusTv.setText((resp.isError() || resp.isWarning()) ? R.string.warning_error : R.string.warning_normal);
+        modeDescTv.setText(String.format(getString(R.string.mode_format), workModeArray[resp.workMode % workModeArray.length]));
     }
 
     private MainFuncCommandResp mainFuncResp;
@@ -245,6 +284,7 @@ public class BlueServiceActivity extends BaseActivity {
                 LogUtils.jsonLog(TAG, mainFuncResp);
                 updateSpeedView(mainFuncResp);
                 updateOtherView(mainFuncResp);
+                updateCurrentInfoView(mainFuncResp);
             }
         }
     };
@@ -343,8 +383,44 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        gestureDetector.onTouchEvent(event);
+        //gestureDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
+    }
+
+    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.info_rl, R.id.setting_rl, R.id.search_btn})
+    void someFunPanelClick(View view) {
+        switch (view.getId()) {
+            case R.id.lh_btn_back:
+            case R.id.ll_back:
+                onBackPressed();
+                break;
+            case R.id.info_rl:
+                gotoIntent(InfoMoreActivity.class);
+                break;
+            case R.id.setting_rl:
+                gotoIntent(SettingMoreActivity.class);
+                break;
+            case R.id.search_btn:
+                showGoToSearchDialog();
+                break;
+        }
+    }
+
+    private void showGoToSearchDialog() {
+        new MaterialDialog.Builder(this)
+                .content("需要进入重新搜索吗？")
+                .positiveText("确定")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        Intent intent = new Intent(BlueServiceActivity.this, SearchActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).show();
     }
 
     @OnClick(R.id.speed_limit_img)
@@ -390,8 +466,7 @@ public class BlueServiceActivity extends BaseActivity {
         }
 
         @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2,
-                               float velocityX, float velocityY) {
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             float y = e2.getY() - e1.getY();
             if (y < -scaledTouchSlop
                     && Math.abs(velocityX) < Math.abs(velocityY)
@@ -411,5 +486,70 @@ public class BlueServiceActivity extends BaseActivity {
         Intent intent = new Intent(this, CurrentInfoActivity.class);
         ActivityCompat.startActivity(this, intent, options.toBundle());
         intentToOtherBefore = true;
+    }
+
+    private void initScrollView() {
+        bounceScrollView.setScrollViewListener(new OnScrollListener() {
+            @Override
+            public void onScrollChanged(int nowX, int nowY, int oldX, int oldY) {
+                updateSpeedViewLayout(nowY, oldY);
+            }
+        });
+    }
+
+    private void updateSpeedViewLayout(int nowY, int oldY) {
+        int limit = slideUpLimit;
+        if (nowY > oldY) {
+            if (nowY > limit) {
+                if (!startAnim) {
+                    startAnim = true;
+                    Animation animation = AnimationUtils.loadAnimation(this, R.anim.anim_slide_out_alpha);
+                    speedViewLayout.startAnimation(animation);
+                }
+            }
+        } else {
+            if (nowY < limit) {
+                if (nowY <= slideDownLimit) {
+                    if (startAnim) {
+                        startAnim = false;
+                        Animation animation = AnimationUtils.loadAnimation(this, R.anim.anim_slide_in_alpha);
+                        speedViewLayout.startAnimation(animation);
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateCurrentInfoView(MainFuncCommandResp resp) {
+        if (resp == null) {
+            return;
+        }
+        batteryPercentTv.setText(StringUtils.dealBatteryPercentFormat(resp.remainBatteryPercent * 1.0f / 100));
+        averageTv.setText(StringUtils.dealSpeedFormat(resp.averageSpeed));
+        perMeterTv.setText(StringUtils.dealMileFormat(resp.perMileage));
+        totalMeterTextTv.setText(StringUtils.dealMileFormat(resp.totalMileage));
+        perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
+        restRideMeterTv.setText(StringUtils.dealMileFormat(resp.getRemainMileage()));
+        temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
+    }
+
+    private void initInfoLayout() {
+        initNormalInfoLayout(R.id.info_rl, "信息", R.mipmap.gengduo);
+        initNormalInfoLayout(R.id.setting_rl, "设置", R.mipmap.gengduo);
+        averageTv = initNormalInfoLayout(R.id.average_speed, "平均速度", "0.0km/h");
+        perMeterTv = initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0km");
+        perRunTimeTv = initNormalInfoLayout(R.id.per_runTime, "本次行驶时间", "0min");
+        restRideMeterTv = initNormalInfoLayout(R.id.rest_ride_meter, "剩余行驶里程", "0km");
+        totalMeterTextTv = initNormalInfoLayout(R.id.total_meter, "总里程", "0.0km");
+        temperatureTextTv = initNormalInfoLayout(R.id.temperature, "温度", "20℃");
+        batteryPercentTv = initNormalInfoLayout(R.id.battery_percent, "剩余电量百分比", "50%");
+    }
+
+    private TextView initNormalInfoLayout(int parentId, String leftText, String rightText) {
+        return (TextView) UniversalViewUtils.initNormalInfoLayout(this, parentId, leftText, rightText);
+    }
+
+    private void initNormalInfoLayout(int parentId, String leftText, int rightImageResId) {
+        UniversalViewUtils.initNormalInfoLayout(this, parentId, leftText, rightImageResId);
     }
 }

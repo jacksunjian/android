@@ -18,7 +18,9 @@
     <string name="wifi_dialog_content">无网络连接，是否打开WiFi？</string>
 
     <string name="warning_normal">车辆运行正常</string>
+    <string name="warning_error">车辆目前异常</string>
 
+    <string name="mode_format">%s模式</string>
     <string name="mode_normal">正常模式</string>
     <string name="mode_speed_limit">限速模式</string>
     <string name="mode_lock">锁车模式</string>
