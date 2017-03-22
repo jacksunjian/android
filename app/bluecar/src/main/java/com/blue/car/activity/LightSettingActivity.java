@@ -124,6 +124,7 @@ public class LightSettingActivity extends BaseActivity {
     private void initLightSettingLayout() {
         UniversalViewUtils.initNormalInfoLayout(this, R.id.ambient_light_layout, "氛围灯模式", R.mipmap.gengduo);
         ambientTextView = UniversalViewUtils.getRightTextView((ViewGroup) findViewById(R.id.ambient_light_layout));
+        ambientTextView.setVisibility(View.VISIBLE);
         frontLightSwitch = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.front_light_layout, "前灯开关");
         frontLightSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
