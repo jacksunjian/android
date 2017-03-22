@@ -285,6 +285,10 @@ public class SearchActivity extends BaseActivity {
 
     @OnClick(R.id.search_btn)
     public void onSearchClick(View view) {
+        stopLeScan();
+        deviceList.clear();
+        pairedDevicesArrayAdapter.clear();
+        initBluetooth();
     }
 
     @Override
