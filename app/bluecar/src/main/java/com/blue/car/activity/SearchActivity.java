@@ -24,7 +24,9 @@ import com.blue.car.R;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.Bind;
@@ -36,6 +38,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  * Created by Administrator on 2017/2/28.
  */
 public class SearchActivity extends BaseActivity {
+    private static final String SEPARATOR = "\n";
     private static final int STOP_LE_SCAN_DELAY = 60 * 1000;
 
     private static final int COARSE_LOCATION_PERMS_REQUEST_CODE = 1011;
@@ -47,6 +50,7 @@ public class SearchActivity extends BaseActivity {
     @Bind(R.id.devices_listView)
     ListView pairedListView;
 
+    private List<String> deviceList = new ArrayList<>();
     private ArrayAdapter<String> pairedDevicesArrayAdapter;
 
     private BluetoothAdapter bluetoothAdapter;
@@ -126,17 +130,15 @@ public class SearchActivity extends BaseActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 stopLeScan();
-                processDeviceItemClick(view, position);
+                processDeviceItemClick(position);
             }
         });
     }
 
-    private void processDeviceItemClick(View view, int position) {
-        if (!(view instanceof TextView)) {
-            return;
-        }
-        String name = ((TextView) view).getText().toString();
-        String remoteAddress = blueNameAddressMap.get(name);
+    private void processDeviceItemClick(int position) {
+        String deviceAlias = deviceList.get(position);
+        String name = getDeviceAliasName(deviceAlias);
+        String remoteAddress = getDeviceAliasAddress(deviceAlias);
         if (StringUtils.isNullOrEmpty(remoteAddress)) {
             showToast("找不到蓝牙地址");
             return;
@@ -217,21 +219,44 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void addDeviceToAdapter(String deviceAlias) {
-        pairedDevicesArrayAdapter.add(deviceAlias);
+        if (deviceList.contains(deviceAlias)) {
+            return;
+        }
+        deviceList.add(deviceAlias);
+        pairedDevicesArrayAdapter.add(getDeviceAliasName(deviceAlias));
         pairedDevicesArrayAdapter.notifyDataSetChanged();
     }
 
     private String getBluetoothDeviceAlias(BluetoothDevice device) {
         if (device == null) {
-            return "unknown name";
+            return "unknown name" + SEPARATOR + "unknown address";
         }
         String name = device.getName();
         String address = device.getAddress();
         if (StringUtils.isNullOrEmpty(name)) {
             name = "unknown name";
         }
-        blueNameAddressMap.put(name, address);
-        return name;
+        if (StringUtils.isNullOrEmpty(address)) {
+            address = "unknown address";
+        }
+        return getBluetoothDeviceAlias(name, address);
+    }
+
+    private String getBluetoothDeviceAlias(String deviceName, String deviceAddress) {
+        return deviceName + SEPARATOR + deviceAddress;
+    }
+
+    private String getDeviceAliasName(String deviceAlias) {
+        return splitDeviceAlias(deviceAlias, 0);
+    }
+
+    private String getDeviceAliasAddress(String deviceAlias) {
+        return splitDeviceAlias(deviceAlias, 1);
+    }
+
+    private String splitDeviceAlias(String deviceAlias, int index) {
+        String[] result = deviceAlias.split(SEPARATOR);
+        return result[index % result.length];
     }
 
     private BluetoothAdapter getBluetoothAdapter() {
