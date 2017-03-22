@@ -2,6 +2,8 @@ package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -71,6 +73,7 @@ public class DeviceInfoActivity extends BaseActivity {
 
     @Override
     protected void initData() {
+        new Thread(mRunnable).start();
         startDeviceInfoQueryCommand();
     }
 
@@ -79,6 +82,20 @@ public class DeviceInfoActivity extends BaseActivity {
         respManager.setCommandRespCallBack(new String(command), deviceInfoRespCallback);
         writeCommand(command);
     }
+    Handler mHandler = new Handler(){
+        public void handleMessage(Message msg) {
+            startDeviceInfoQueryCommand();
+        }
+    };
+    Runnable mRunnable = new Runnable() {
+        public void run(){
+            while(true){
+                try{Thread.sleep(500);}catch(InterruptedException e){}
+                mHandler.sendMessage(mHandler.obtainMessage());
+            }
+        }
+    };
+
 
 
     private CommandRespManager.OnDataCallback deviceInfoRespCallback = new CommandRespManager.OnDataCallback() {
