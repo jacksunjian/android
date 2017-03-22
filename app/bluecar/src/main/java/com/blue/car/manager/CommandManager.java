@@ -178,9 +178,9 @@ public class CommandManager {
 
     /*设置氛围灯模式0-9分别代表关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3*/
     public static byte[] getAmbientLightSettingCommand(int mode) {
+        // 《55 AA 04 0A 03 C6 00 00 28 FF
         //《55 AA 04 0A 03 C6 09 00 28 FF
-        byte[] commandData = new byte[]{(byte) mode};
-        return getSendCommand(commandData, COMMAND_SEND, new byte[]{0x03, (byte) 0xC6});
+        return getSendCommand(BlueUtils.getCharByte(mode), COMMAND_SEND, new byte[]{0x03, (byte) 0xC6});
     }
 
     public static byte[] getFrontBehindLightCommand(int commandData){
