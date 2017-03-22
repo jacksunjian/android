@@ -275,8 +275,13 @@ public class SpeedMainView extends View {
     }
 
     private void drawSpeedProgress(Canvas canvas) {
-        canvas.drawArc(speedScaleCircle, startAngle, speedSweepMaxAngle, false, baseSpeedPaint);
-        canvas.drawArc(speedScaleCircle, startAngle, currentSweepAngle, false, actualSpeedPaint);
+        if (Build.VERSION.SDK_INT == 23) {
+            canvas.drawArc(speedScaleCircle, startAngle + currentSweepAngle, speedSweepMaxAngle - currentSweepAngle, false, baseSpeedPaint);
+            canvas.drawArc(speedScaleCircle, startAngle, currentSweepAngle, false, actualSpeedPaint);
+        } else {
+            canvas.drawArc(speedScaleCircle, startAngle, speedSweepMaxAngle, false, baseSpeedPaint);
+            canvas.drawArc(speedScaleCircle, startAngle, currentSweepAngle, false, actualSpeedPaint);
+        }
     }
 
     @SuppressLint("DefaultLocale")
