@@ -54,6 +54,7 @@ public class DeviceInfoActivity extends BaseActivity {
     private static final String TAG = DeviceInfoActivity.class.getSimpleName();
 
     private CommandRespManager respManager = new CommandRespManager();
+    boolean stopThread=false;
 
     @Override
     protected int getLayoutId() {
@@ -89,7 +90,7 @@ public class DeviceInfoActivity extends BaseActivity {
     };
     Runnable mRunnable = new Runnable() {
         public void run(){
-            while(true){
+            while(!stopThread){
                 try{Thread.sleep(500);}catch(InterruptedException e){}
                 mHandler.sendMessage(mHandler.obtainMessage());
             }
@@ -182,9 +183,8 @@ public class DeviceInfoActivity extends BaseActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
+    protected void onDestroy() {
+        stopThread=true;
+        super.onDestroy();
     }
 }

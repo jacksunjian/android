@@ -54,6 +54,7 @@ public class BatteryInfoActivity extends BaseActivity {
     private static final String TAG = BatteryInfoActivity.class.getSimpleName();
 
     private CommandRespManager respManager = new CommandRespManager();
+    boolean stopThread=false;
 //    private Handler mHandler = new Handler();
     int k = 0;
     @Override
@@ -74,17 +75,6 @@ public class BatteryInfoActivity extends BaseActivity {
     protected void initData() {
 
         new Thread(mRunnable).start();
-//        mHandler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                startBatteryQueryCommand();
-//                k++;
-//                if (k < 20) {
-//                    mHandler.postDelayed(this, 350);
-//                }
-//
-//            }
-//        });
     }
 
     Handler mHandler = new Handler(){
@@ -102,7 +92,7 @@ public class BatteryInfoActivity extends BaseActivity {
 
     Runnable mRunnable = new Runnable() {
         public void run(){
-            while(true){
+            while(!stopThread){
                 try{Thread.sleep(500);}catch(InterruptedException e){}
                 mHandler.sendMessage(mHandler.obtainMessage());
             }
@@ -187,5 +177,11 @@ public class BatteryInfoActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopThread=true;
+        super.onDestroy();
     }
 }
