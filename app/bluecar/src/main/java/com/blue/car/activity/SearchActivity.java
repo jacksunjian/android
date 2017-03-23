@@ -226,7 +226,7 @@ public class SearchActivity extends BaseActivity {
             return;
         }
         deviceList.add(deviceAlias);
-        pairedDevicesArrayAdapter.add(getDeviceAliasName(deviceAlias));
+        pairedDevicesArrayAdapter.add(getDeviceAliasName(deviceAlias)+getDeviceAliasAddress(deviceAlias));
         pairedDevicesArrayAdapter.notifyDataSetChanged();
     }
 
