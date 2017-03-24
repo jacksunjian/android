@@ -27,4 +27,6 @@
     <string name="mode_remote">遥控模式</string>
     <string name="filter_vcode">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
     <string name="warning">在姿态传感器校准过程中请保持车辆处于绝对静止状态，标定过程持续大约三秒，是否继续？</string>
+
+    <string name="battery_remain_format">剩余电量：%.0f%%</string>
 </resources>

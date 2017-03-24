@@ -9,6 +9,8 @@ import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.model.LedCommandResp;
 import com.blue.car.model.LockConditionInfoCommandResp;
 import com.blue.car.model.MainFuncCommandResp;
+import com.blue.car.model.RemoteControlInfoCommandResp;
+import com.blue.car.model.RemoteControlModeCommandResp;
 import com.blue.car.model.RidingTimeCommandResp;
 import com.blue.car.model.SensitivityCommandResp;
 import com.blue.car.model.SpeedLimitResp;
@@ -183,7 +185,7 @@ public class CommandManager {
         return getSendCommand(BlueUtils.getCharByte(mode), COMMAND_SEND, new byte[]{0x03, (byte) 0xC6});
     }
 
-    public static byte[] getFrontBehindLightCommand(int commandData){
+    public static byte[] getFrontBehindLightCommand(int commandData) {
         return getFrontBehindLightCommand(BlueUtils.getCharByte(commandData));
     }
 
@@ -253,7 +255,15 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x75});
     }
 
+    public static byte[] getRemoteControlInfoCommand() {
+        //《55 AA 03 0A 01 7D 02 72 FF
+        return getSendCommand(new byte[]{0x02}, COMMAND_SEND, new byte[]{0x01, 0x7D});
+    }
 
+    public static byte[] getRemoteControlInfoSettingCommand(int speedLimit) {
+        //《55 AA 04 0A 03 7D F4 08 E5 FE
+        return getSendCommand(BlueUtils.getCharByte(speedLimit * 1000), COMMAND_SEND, new byte[]{0x03, 0x7D});
+    }
 
     public static byte[] getRemoteControlMoveCommand(int xValue, int yValue) {
         //《55 AA 06 0A 03 7B 00 00 00 00 71 FF
@@ -506,7 +516,22 @@ public class CommandManager {
         return resp;
     }
 
-    public static byte[] getSpecialCommandBytes(@NonNull byte[] originData){
+    public static RemoteControlModeCommandResp getRemoteControlModeCommandResp(@NonNull byte[] originData) {
+        RemoteControlModeCommandResp resp = new RemoteControlModeCommandResp();
+        resp.sysStatus = BlueUtils.byteArrayToInt(originData, 6, 2);
+        resp.workMode = BlueUtils.byteArrayToInt(originData, 8, 2);
+        resp.batteryRemainPercent = BlueUtils.byteArrayToInt(originData, 10, 2);
+        resp.speed = BlueUtils.byteArrayToInt(originData, 6, 2) * 1.0f / 1000;
+        return resp;
+    }
+
+    public static RemoteControlInfoCommandResp getRemoteControlInfoCommandResp(@NonNull byte[] originData) {
+        RemoteControlInfoCommandResp resp = new RemoteControlInfoCommandResp();
+        resp.blueCtrlSpeedLimit = BlueUtils.byteArrayToInt(originData, 6, 2) * 1.0f / 1000;
+        return resp;
+    }
+
+    public static byte[] getSpecialCommandBytes(@NonNull byte[] originData) {
         return new byte[]{originData[4], originData[5]};
     }
 
