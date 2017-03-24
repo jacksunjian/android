@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.util.LogWriter;
 import android.util.Log;
 import android.view.View;
@@ -53,7 +54,8 @@ public class BatteryInfoActivity extends BaseActivity {
     private static final String TAG = BatteryInfoActivity.class.getSimpleName();
 
     private CommandRespManager respManager = new CommandRespManager();
-    private Handler mHandler = new Handler();
+    boolean stopThread=false;
+//    private Handler mHandler = new Handler();
     int k = 0;
     @Override
     protected int getLayoutId() {
@@ -71,26 +73,31 @@ public class BatteryInfoActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        startBatteryQueryCommand();
-//        mHandler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                startBatteryQueryCommand();
-//                k++;
-//                if (k < 20) {
-//                    mHandler.postDelayed(this, 350);
-//                }
-//
-//            }
-//        });
 
+        new Thread(mRunnable).start();
     }
+
+    Handler mHandler = new Handler(){
+        public void handleMessage(Message msg) {
+            startBatteryQueryCommand();
+        }
+    };
+
 
     private void startBatteryQueryCommand() {
         byte[] command = CommandManager.getBatteryInfoCommand();
         respManager.setCommandRespCallBack(new String(command), batteryInfoRespCallback);
         writeCommand(command);
     }
+
+    Runnable mRunnable = new Runnable() {
+        public void run(){
+            while(!stopThread){
+                try{Thread.sleep(500);}catch(InterruptedException e){}
+                mHandler.sendMessage(mHandler.obtainMessage());
+            }
+        }
+    };
 
 
     private CommandRespManager.OnDataCallback batteryInfoRespCallback = new CommandRespManager.OnDataCallback() {
@@ -170,5 +177,11 @@ public class BatteryInfoActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopThread=true;
+        super.onDestroy();
     }
 }

@@ -209,6 +209,9 @@ public class SearchActivity extends BaseActivity {
                 String action = intent.getAction();
                 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (!(device.getType() == BluetoothDevice.DEVICE_TYPE_LE)) {
+                        return;
+                    }
                     addDeviceToAdapter(getBluetoothDeviceAlias(device));
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                     Toast.makeText(SearchActivity.this, "扫描完成了哈", Toast.LENGTH_SHORT).show();
@@ -223,7 +226,7 @@ public class SearchActivity extends BaseActivity {
             return;
         }
         deviceList.add(deviceAlias);
-        pairedDevicesArrayAdapter.add(getDeviceAliasName(deviceAlias));
+        pairedDevicesArrayAdapter.add(getDeviceAliasName(deviceAlias) + " " + getDeviceAliasAddress(deviceAlias));
         pairedDevicesArrayAdapter.notifyDataSetChanged();
     }
 
