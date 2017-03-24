@@ -56,6 +56,9 @@ public class BlueControlActivity extends BaseActivity {
     private CommandRespManager respManager = new CommandRespManager();
     private String speedLimitCommand;
 
+    private int speedLimitSeekBarOffset = -2;
+    private int speedLimit = 2;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_blue_control;
@@ -87,7 +90,7 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void initSpeedLimitView() {
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.remote_maxSpeed_layout, "最大速度(km/h)", 0, -2, new SeekBar.OnSeekBarChangeListener() {
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.remote_maxSpeed_layout, "最大速度(km/h)", 0, speedLimitSeekBarOffset, new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             }
@@ -98,7 +101,7 @@ public class BlueControlActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                startSetRemoteSpeedLimit(seekBar.getProgress() + 2);
+                startSetRemoteSpeedLimit(seekBar.getProgress() - speedLimitSeekBarOffset);
             }
         });
         speedLimitSeekBar = UniversalViewUtils.getSeekBarView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout));
@@ -108,7 +111,12 @@ public class BlueControlActivity extends BaseActivity {
     @Override
     protected void initData() {
         startRemoteControlModeCommand();
-        startRemoteControlInfoCommand();
+        speedTextView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startRemoteControlInfoCommand();
+            }
+        }, 200);
     }
 
     private String getSpecialCommand(byte[] command) {
@@ -165,11 +173,20 @@ public class BlueControlActivity extends BaseActivity {
         }
     };
 
+    private int getSpeedLimitSeekBarProgress() {
+        int value = speedLimit + speedLimitSeekBarOffset;
+        if (value < 0) {
+            value = 0;
+        }
+        return value;
+    }
+
     private void updateSpeedLimitView(RemoteControlInfoCommandResp resp) {
         if (resp == null) {
             return;
         }
-        speedLimitSeekBar.setProgress((int) resp.blueCtrlSpeedLimit);
+        speedLimit = (int) resp.blueCtrlSpeedLimit;
+        speedLimitSeekBar.setProgress(getSpeedLimitSeekBarProgress());
     }
 
     private void updateControlModeView(RemoteControlModeCommandResp resp) {
@@ -184,7 +201,6 @@ public class BlueControlActivity extends BaseActivity {
         }
         speedTextView.setText(StringUtils.dealSpeedFormat(resp.speed));
         batteryTextView.setText(String.format(getString(R.string.battery_remain_format), resp.batteryRemainPercent));
-        Log.e("A-updateControlModeView", "true");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -218,7 +234,12 @@ public class BlueControlActivity extends BaseActivity {
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(speedLimitCommand)) {
             showToast("限速设置成功");
+            setSuccessSpeedLimit();
         }
+    }
+
+    private void setSuccessSpeedLimit() {
+        speedLimit = speedLimitSeekBar.getProgress() - speedLimitSeekBarOffset;
     }
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
