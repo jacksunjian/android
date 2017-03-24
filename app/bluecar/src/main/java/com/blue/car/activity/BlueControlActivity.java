@@ -192,8 +192,15 @@ public class BlueControlActivity extends BaseActivity {
         final byte[] dataBytes = printGattCharacteristicReadEvent(event);
         if (dataBytes != null) {
             byte[] result = respManager.obtainData(dataBytes);
-            respManager.processCommandResp(getSpecialCommand(result), result);
+            processReadEvent(result);
         }
+    }
+
+    private void processReadEvent(byte[] dataBytes) {
+        if (dataBytes == null || dataBytes.length <= 0) {
+            return;
+        }
+        respManager.processCommandResp(getSpecialCommand(dataBytes), dataBytes);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
