@@ -87,7 +87,7 @@ public class BlueControlActivity extends BaseActivity {
                 if (BluetoothConstant.USE_DEBUG) {
                     LogUtils.e(TAG, String.format("xScale:%.1f,yScale:%.1f", xScale, yScale));
                 }
-                startRemoteControlMoveCommand(xScale, yScale);
+                startRemoteControlMoveCommand(yScale, xScale * -1);
             }
 
             @Override
