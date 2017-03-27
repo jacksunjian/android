@@ -3,6 +3,7 @@ package com.blue.car.activity;
 import android.bluetooth.BluetoothGatt;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -57,6 +58,8 @@ public class BlueControlActivity extends BaseActivity {
 
     private CommandRespManager respManager = new CommandRespManager();
     private String speedLimitCommand;
+    private String remoteOpenCommand;
+    private String remoteCloseCommand;
 
     private int speedLimitSeekBarOffset = -2;
     private int speedLimit = 2;
@@ -118,8 +121,7 @@ public class BlueControlActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        startRemoteControlInfoCommand();
-        startRemoteControlModeCommand();
+        enterRemoteModeCommand();
     }
 
     private String getSpecialCommand(byte[] command) {
@@ -129,6 +131,18 @@ public class BlueControlActivity extends BaseActivity {
     private void startSetRemoteSpeedLimit(int speedLimit) {
         byte[] command = CommandManager.getRemoteControlInfoSettingCommand(speedLimit);
         speedLimitCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+
+    private void enterRemoteModeCommand() {
+        byte[] command = CommandManager.getRemoteControlOpenCommand();
+        remoteOpenCommand = BlueUtils.bytesToAscii(command);
+        writeCommand(command);
+    }
+
+    private void quitRemoteModeCommand() {
+        byte[] command = CommandManager.getRemoteControlCloseCommand();
+        remoteCloseCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
@@ -259,6 +273,11 @@ public class BlueControlActivity extends BaseActivity {
         if (command.equals(speedLimitCommand)) {
             showToast("限速设置成功");
             setSuccessSpeedLimit();
+        } else if (command.equals(remoteOpenCommand)) {
+            showToast("已成功进入遥控模式");
+            afterEnterRemoteMode();
+        } else if (command.equals(remoteCloseCommand)) {
+            afterQuitRemoteMode();
         }
     }
 
@@ -266,14 +285,32 @@ public class BlueControlActivity extends BaseActivity {
         speedLimit = speedLimitSeekBar.getProgress() - speedLimitSeekBarOffset;
     }
 
+    private void afterEnterRemoteMode() {
+        startRemoteControlInfoCommand();
+        startRemoteControlModeCommand();
+    }
+
+    private void afterQuitRemoteMode() {
+        finish();
+    }
+
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
             case R.id.ll_back:
-                onBackPressed();
+                quitRemoteModeCommand();
                 break;
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            quitRemoteModeCommand();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
