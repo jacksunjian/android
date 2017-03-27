@@ -447,6 +447,14 @@ public class BlueServiceActivity extends BaseActivity {
 
     @OnClick(R.id.remote_setting_img)
     void onRemoteSettingImgClick() {
+        if (mainFuncResp == null) {
+            showToast("未有连接上平衡车");
+            return;
+        }
+        if (mainFuncResp.workMode != 0 && mainFuncResp.workMode != 1) {
+            showToast("进入遥控，当前模式必须为助力或者待机");
+            return;
+        }
         gotoIntent(BlueControlActivity.class);
     }
 
