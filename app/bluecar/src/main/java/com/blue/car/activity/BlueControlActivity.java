@@ -3,7 +3,6 @@ package com.blue.car.activity;
 import android.bluetooth.BluetoothGatt;
 import android.graphics.Typeface;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -36,6 +35,9 @@ import butterknife.OnClick;
  */
 
 public class BlueControlActivity extends BaseActivity {
+    private static final String TAG = BlueControlActivity.class.getSimpleName();
+    private static final long SEND_MOVE_COMMAND_INTERVAL = 180;
+    private static final int CONTROL_MODE_DELAY = 250;
 
     @Bind(R.id.lh_btn_back)
     Button lhBtnBack;
@@ -59,6 +61,11 @@ public class BlueControlActivity extends BaseActivity {
     private int speedLimitSeekBarOffset = -2;
     private int speedLimit = 2;
 
+    private long lastSendMoveCommandTime = System.currentTimeMillis();
+
+    private Handler controlModeHandler = new Handler();
+
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_blue_control;
@@ -78,8 +85,9 @@ public class BlueControlActivity extends BaseActivity {
             @Override
             public void onScaleChanged(float xScale, float yScale) {
                 if (BluetoothConstant.USE_DEBUG) {
-                    speedTextView.setText(String.format("%.1f", xScale * 30));
+                    LogUtils.e(TAG, String.format("xScale:%.1f,yScale:%.1f", xScale, yScale));
                 }
+                startRemoteControlMoveCommand(xScale, yScale);
             }
 
             @Override
@@ -110,13 +118,8 @@ public class BlueControlActivity extends BaseActivity {
 
     @Override
     protected void initData() {
+        startRemoteControlInfoCommand();
         startRemoteControlModeCommand();
-        speedTextView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                startRemoteControlInfoCommand();
-            }
-        }, 200);
     }
 
     private String getSpecialCommand(byte[] command) {
@@ -130,6 +133,18 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void startRemoteControlModeCommand() {
+        controlModeHandler.postDelayed(controlModeRunnable, CONTROL_MODE_DELAY);
+    }
+
+    private Runnable controlModeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            postRemoteControlModeCommand();
+            startRemoteControlModeCommand();
+        }
+    };
+
+    private void postRemoteControlModeCommand() {
         byte[] command = CommandManager.getRemoteControlModeCommand();
         respManager.addCommandRespCallBack(getSpecialCommand(command), remoteModeRespCallback);
         writeCommand(command);
@@ -172,6 +187,15 @@ public class BlueControlActivity extends BaseActivity {
             }
         }
     };
+
+    private void startRemoteControlMoveCommand(float xValue, float yValue) {
+        if (System.currentTimeMillis() < lastSendMoveCommandTime + SEND_MOVE_COMMAND_INTERVAL) {
+            return;
+        }
+        lastSendMoveCommandTime = System.currentTimeMillis();
+        byte[] command = CommandManager.getRemoteControlMoveCommand((int) xValue * speedLimit * 500, (int) yValue * speedLimit * 1000);
+        writeCommand(command);
+    }
 
     private int getSpeedLimitSeekBarProgress() {
         int value = speedLimit + speedLimitSeekBarOffset;
@@ -262,5 +286,14 @@ public class BlueControlActivity extends BaseActivity {
     public void onStop() {
         super.onStop();
         stopRegisterEventBus();
+    }
+
+    @Override
+    protected void onDestroy() {
+        try {
+            controlModeHandler.removeCallbacks(controlModeRunnable);
+        } catch (Exception e) {
+        }
+        super.onDestroy();
     }
 }
