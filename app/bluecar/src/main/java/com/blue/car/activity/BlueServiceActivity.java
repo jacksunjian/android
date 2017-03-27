@@ -267,7 +267,12 @@ public class BlueServiceActivity extends BaseActivity {
         speedLimitView.setImageResource(resp.isSpeedLimitStatus() ? R.mipmap.xiansu_on : R.mipmap.xiansu_off);
         lockOffView.setImageResource(resp.isLockConditionStatus() ? R.mipmap.suo_on : R.mipmap.suo_off);
         sysStatusTv.setText((resp.isError() || resp.isWarning()) ? R.string.warning_error : R.string.warning_normal);
-        modeDescTv.setText(String.format(getString(R.string.mode_format), workModeArray[resp.workMode % workModeArray.length]));
+        //如果骑行模式时有限速，则显示限速模式，否则显示骑行模式
+        if (resp.workMode == 2 && resp.isSpeedLimitStatus()) {
+            modeDescTv.setText(R.string.mode_speed_limit);
+        } else {
+            modeDescTv.setText(String.format(getString(R.string.mode_format), workModeArray[resp.workMode % workModeArray.length]));
+        }
     }
 
     private MainFuncCommandResp mainFuncResp;
