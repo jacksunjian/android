@@ -279,6 +279,9 @@ public class SpeedMainView extends View {
             canvas.drawArc(speedScaleCircle, startAngle + currentSweepAngle, speedSweepMaxAngle - currentSweepAngle, false, baseSpeedPaint);
             canvas.drawArc(speedScaleCircle, startAngle, currentSweepAngle, false, actualSpeedPaint);
         } else {
+            if (currentSweepAngle == 0) {
+                currentSweepAngle = 0.1f;
+            }
             canvas.drawArc(speedScaleCircle, startAngle, speedSweepMaxAngle, false, baseSpeedPaint);
             canvas.drawArc(speedScaleCircle, startAngle, currentSweepAngle, false, actualSpeedPaint);
         }
