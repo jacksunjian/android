@@ -526,7 +526,7 @@ public class CommandManager {
         resp.sysStatus = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.workMode = BlueUtils.byteArrayToInt(originData, 8, 2);
         resp.batteryRemainPercent = BlueUtils.byteArrayToInt(originData, 10, 2);
-        resp.speed = BlueUtils.byteArrayToInt(originData, 6, 2) * 1.0f / 1000;
+        resp.speed = BlueUtils.byteArrayToInt(originData, 12, 2) * 1.0f / 1000;
         return resp;
     }
 
