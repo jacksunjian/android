@@ -1,8 +1,11 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -12,6 +15,8 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -55,6 +60,7 @@ public class OtherSettingActivity extends BaseActivity {
     private LockConditionInfoCommandResp lockCommandResp;
     int workMode;
     private MainFuncCommandResp mainFuncResp;
+    private String closeCarCommamd;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_other_setting;
@@ -183,7 +189,33 @@ public class OtherSettingActivity extends BaseActivity {
                     + event.uuid.toString()
                     + " -> "
                     + BlueUtils.bytesToHexString(dataBytes));
+            processWriteEvent(event.data);
         }
+    }
+
+    private void processWriteEvent(byte[] dataBytes) {
+        String command = BlueUtils.bytesToAscii(dataBytes);
+        if (command.equals(closeCarCommamd)) {
+            showGoToSearchDialog();
+        }
+    }
+
+
+    private void showGoToSearchDialog() {
+        new MaterialDialog.Builder(this)
+                .content("需要进入重新搜索吗？")
+                .positiveText("确定")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        Intent intent = new Intent(OtherSettingActivity.this, SearchActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).show();
     }
 
     @OnClick({R.id.lh_btn_back, R.id.ll_back,R.id.close_rl})
@@ -208,6 +240,7 @@ public class OtherSettingActivity extends BaseActivity {
 
     private void closeCarCommamd() {
         byte[] command = CommandManager.closeCar();
+        closeCarCommamd  = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
