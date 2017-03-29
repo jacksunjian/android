@@ -237,7 +237,7 @@ public class BlueControlActivity extends BaseActivity {
         if (resp.isRemoteConditionStatus() && (resp.isPickingUpStatus() || resp.isStandingManStatus())) {
             showToast("遥控模式，不可站人和拎起");
         }
-        speedTextView.setText(StringUtils.dealSpeedFormat(resp.speed));
+        speedTextView.setText(String.format("%.1f", resp.speed));
         batteryTextView.setText(String.format(getString(R.string.battery_remain_format), resp.batteryRemainPercent));
     }
 
