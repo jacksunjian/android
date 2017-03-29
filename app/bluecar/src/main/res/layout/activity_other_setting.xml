@@ -35,4 +35,15 @@
     </RelativeLayout>
     <View
         style="@style/dividerStyle"/>
+
+    <RelativeLayout
+        android:id="@+id/close_rl"
+        style="@style/settingRelativeStyle">
+        <TextView
+            android:text="关闭车辆"
+            style="@style/settingTextLeftStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+
 </LinearLayout>
