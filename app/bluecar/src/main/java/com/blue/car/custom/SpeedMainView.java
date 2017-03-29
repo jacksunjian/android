@@ -28,7 +28,7 @@ public class SpeedMainView extends View {
     private ValueAnimator batteryProgressValueAnimator;
     private int valueAnimatorDuration = 800;
 
-    private float speed=0;
+    private float speed = 0;
     private float speedLimit = 30;
     private int startAngle = 160;
     private int speedSweepMaxAngle = 220;
@@ -279,7 +279,7 @@ public class SpeedMainView extends View {
             canvas.drawArc(speedScaleCircle, startAngle + currentSweepAngle, speedSweepMaxAngle - currentSweepAngle, false, baseSpeedPaint);
             canvas.drawArc(speedScaleCircle, startAngle, currentSweepAngle, false, actualSpeedPaint);
         } else {
-            if (currentSweepAngle == 0) {
+            if (currentSweepAngle <= 0) {
                 currentSweepAngle = 0.1f;
             }
             canvas.drawArc(speedScaleCircle, startAngle, speedSweepMaxAngle, false, baseSpeedPaint);
