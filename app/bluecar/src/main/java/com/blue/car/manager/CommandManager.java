@@ -255,7 +255,7 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x75});
     }
 
-    public static byte[] closeCar(){
+    public static byte[] closeCar() {
         //《55 AA 04 0A 03 79 01 00 74 FF	关机命令，要求非骑行模式
         return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x79});
     }
@@ -526,7 +526,12 @@ public class CommandManager {
         resp.sysStatus = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.workMode = BlueUtils.byteArrayToInt(originData, 8, 2);
         resp.batteryRemainPercent = BlueUtils.byteArrayToInt(originData, 10, 2);
-        resp.speed = BlueUtils.byteArrayToInt(originData, 12, 2) * 1.0f / 1000;
+        if ((originData[13] & 0xFF) == 0xFF) {
+            resp.speed = (0xFF & ~originData[12] + 1) * -1;
+        } else {
+            resp.speed = BlueUtils.byteArrayToInt(originData, 12, 2);
+        }
+        resp.speed = Math.abs(resp.speed * 1.0f / 1000);
         return resp;
     }
 
