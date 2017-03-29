@@ -255,6 +255,11 @@ public class CommandManager {
         return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x75});
     }
 
+    public static byte[] closeCar(){
+        //《55 AA 04 0A 03 79 01 00 74 FF	关机命令，要求非骑行模式
+        return getSendCommand(new byte[]{0x01, 0x00}, COMMAND_SEND, new byte[]{0x03, 0x79});
+    }
+
     public static byte[] getRemoteControlInfoCommand() {
         //《55 AA 03 0A 01 7D 02 72 FF
         return getSendCommand(new byte[]{0x02}, COMMAND_SEND, new byte[]{0x01, 0x7D});
