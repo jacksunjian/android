@@ -211,7 +211,7 @@ public class OtherSettingActivity extends BaseActivity {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss();
-                        Intent intent = new Intent(OtherSettingActivity.this, SearchActivity.class);
+                        Intent intent = new Intent(OtherSettingActivity.this, SearchActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                         finish();
                     }
