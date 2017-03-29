@@ -1,11 +1,14 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -15,6 +18,7 @@ import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.LockConditionInfoCommandResp;
+import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
@@ -23,6 +27,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -42,10 +47,14 @@ public class OtherSettingActivity extends BaseActivity {
     Switch canOffSwitch;
     @Bind(R.id.can_warn_switch)
     Switch canWarnSwitch;
+    @Bind(R.id.close_rl)
+    RelativeLayout closeRl;
+    private Handler handler = new Handler();
 
     private CommandRespManager respManager = new CommandRespManager();
     private LockConditionInfoCommandResp lockCommandResp;
-
+    int workMode;
+    private MainFuncCommandResp mainFuncResp;
     @Override
     protected int getLayoutId() {
         return R.layout.activity_other_setting;
@@ -85,7 +94,36 @@ public class OtherSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
         getLockConditionInfo();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startMainFuncCommand();
+            }
+        }, 1000);
     }
+
+    private void startMainFuncCommand() {
+        byte[] command = CommandManager.getMainFuncCommand();
+        respManager.setCommandRespCallBack(new String(command), mainCommandCallback);
+        writeCommand(command);
+    }
+
+    private CommandRespManager.OnDataCallback mainCommandCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                mainFuncResp = CommandManager.getMainFuncCommandResp(data);
+                LogUtils.jsonLog("sunjianjian", mainFuncResp);
+                workMode = mainFuncResp.workMode;
+            }
+        }
+    };
+
 
     private void writeLockCanDoCommand(int status) {
         byte[] command = CommandManager.getLockConditionSettingCommand(status);
@@ -148,7 +186,7 @@ public class OtherSettingActivity extends BaseActivity {
         }
     }
 
-    @OnClick({R.id.lh_btn_back, R.id.ll_back})
+    @OnClick({R.id.lh_btn_back, R.id.ll_back,R.id.close_rl})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
@@ -156,7 +194,21 @@ public class OtherSettingActivity extends BaseActivity {
             case R.id.ll_back:
                 onBackPressed();
                 break;
+            case R.id.close_rl:
+               // 0待机，1助力，2骑行，3锁车，4遥控
+                showToast(""+workMode);
+                if(workMode==2){
+                    showToast("关机请先下车");
+                }else{
+                   closeCarCommamd();
+                }
+                break;
         }
+    }
+
+    private void closeCarCommamd() {
+        byte[] command = CommandManager.closeCar();
+        writeCommand(command);
     }
 
     @Override
