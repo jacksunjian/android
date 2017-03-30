@@ -32,9 +32,15 @@ public class LockConditionInfoCommandResp {
     public boolean isLockNotWarn() {
         return isOnCondition(3);
     }
+    public boolean isbackCanWrn(){
+        return  isOnCondition(4);
+    }
 
     public void setLockNotWarn(boolean notWarn) {
         setCondition(3, notWarn);
+    }
+    public void setBackCanWrn(boolean canwarn){
+        setCondition(4, canwarn);
     }
 
     public void setFrontLedEnable(boolean enable) {
