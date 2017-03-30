@@ -54,6 +54,8 @@ public class OtherSettingActivity extends BaseActivity {
     Switch canWarnSwitch;
     @Bind(R.id.close_rl)
     RelativeLayout closeRl;
+    @Bind(R.id.back_warn_switch)
+    Switch backWarnSwitch;
     private Handler handler = new Handler();
 
     private CommandRespManager respManager = new CommandRespManager();
@@ -61,6 +63,7 @@ public class OtherSettingActivity extends BaseActivity {
     int workMode;
     private MainFuncCommandResp mainFuncResp;
     private String closeCarCommamd;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_other_setting;
@@ -95,6 +98,20 @@ public class OtherSettingActivity extends BaseActivity {
                 }
             }
         });
+
+        backWarnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (lockCommandResp != null) {
+                    lockCommandResp.setBackCanWrn(isChecked);
+                    writeLockCanDoCommand(lockCommandResp.getAlarmStatus());
+                }
+            }
+        });
+
+
+
+
     }
 
     @Override
@@ -162,6 +179,7 @@ public class OtherSettingActivity extends BaseActivity {
         Log.e("sunjian", "获取了");
         canOffSwitch.setChecked(resp.isLockCanOff());
         canWarnSwitch.setChecked(resp.isLockNotWarn());
+        backWarnSwitch.setChecked(resp.isbackCanWrn());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -218,7 +236,7 @@ public class OtherSettingActivity extends BaseActivity {
                 }).show();
     }
 
-    @OnClick({R.id.lh_btn_back, R.id.ll_back,R.id.close_rl})
+    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.close_rl})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
@@ -227,12 +245,12 @@ public class OtherSettingActivity extends BaseActivity {
                 onBackPressed();
                 break;
             case R.id.close_rl:
-               // 0待机，1助力，2骑行，3锁车，4遥控
-                showToast(""+workMode);
-                if(workMode==2){
+                // 0待机，1助力，2骑行，3锁车，4遥控
+                showToast("" + workMode);
+                if (workMode == 2) {
                     showToast("关机请先下车");
-                }else{
-                   closeCarCommamd();
+                } else {
+                    closeCarCommamd();
                 }
                 break;
         }
@@ -240,7 +258,7 @@ public class OtherSettingActivity extends BaseActivity {
 
     private void closeCarCommamd() {
         byte[] command = CommandManager.closeCar();
-        closeCarCommamd  = BlueUtils.bytesToAscii(command);
+        closeCarCommamd = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
@@ -255,5 +273,4 @@ public class OtherSettingActivity extends BaseActivity {
         super.onStop();
         stopRegisterEventBus();
     }
-
 }

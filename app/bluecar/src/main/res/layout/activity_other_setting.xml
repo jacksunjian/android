@@ -37,6 +37,22 @@
         style="@style/dividerStyle"/>
 
     <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            android:text="后退过快警告"
+            style="@style/settingTextLeftStyle" />
+        <Switch
+            android:id="@+id/back_warn_switch"
+            android:layout_width="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+
+    <RelativeLayout
         android:id="@+id/close_rl"
         style="@style/settingRelativeStyle">
         <TextView
