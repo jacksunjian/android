@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,6 +57,7 @@ public class SearchActivity extends BaseActivity {
     private ArrayAdapter<String> pairedDevicesArrayAdapter;
 
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothLeScanner bluetoothLeScanner;
     private BroadcastReceiver bleDiscoveryReceiver;
     private Map<String, String> blueNameAddressMap = new HashMap<>();
 
@@ -164,11 +168,21 @@ public class SearchActivity extends BaseActivity {
 
     private void stopLeScan() {
         scanning = false;
+        //1.first method
+        //getBluetoothAdapter().stopLeScan(scanCallback1);
+        //2.second method
+        //getBluetoothLeScanner().stopScan(scanCallback2);
+        //3.third method
         stopDiscovery();
     }
 
     private void startLeScan() {
         scanning = true;
+        //1.first method
+        //getBluetoothAdapter().startLeScan(scanCallback1);
+        //2.second method
+        //getBluetoothLeScanner().startScan(scanCallback2);
+        //3.broadcast method
         startDiscovery();
     }
 
@@ -308,4 +322,51 @@ public class SearchActivity extends BaseActivity {
                 break;
         }
     }
+
+    private BluetoothLeScanner getBluetoothLeScanner() {
+        if (bluetoothLeScanner == null) {
+            bluetoothLeScanner = getBluetoothAdapter().getBluetoothLeScanner();
+        }
+        return bluetoothLeScanner;
+    }
+
+    private BluetoothAdapter.LeScanCallback scanCallback1 = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (device != null) {
+                        String deviceAlias = getBluetoothDeviceAlias(device);
+                        addDeviceToAdapter(deviceAlias);
+                    }
+                }
+            });
+        }
+    };
+
+    private ScanCallback scanCallback2 = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            if (result != null) {
+                final BluetoothDevice device = result.getDevice();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (device != null) {
+                            addDeviceToAdapter(getBluetoothDeviceAlias(device));
+                        }
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onBatchScanResults(List<ScanResult> results) {
+        }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+        }
+    };
 }
