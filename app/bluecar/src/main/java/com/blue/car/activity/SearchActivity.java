@@ -15,7 +15,9 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.LocationManager;
 import android.os.Handler;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -63,6 +65,7 @@ public class SearchActivity extends BaseActivity {
 
     private boolean scanning = false;
     private Handler handler = new Handler();
+    private static final int REQUEST_CODE_LOCATION_SETTINGS = 0x11;
 
     @Override
     protected int getLayoutId() {
@@ -100,8 +103,25 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void afterPermissionGranted() {
-        initBluetooth();
+        if (isLocationEnable(SearchActivity.this)) {
+            initBluetooth();
+        } else {
+            setLocationService();
+        }
     }
+    private void setLocationService() {
+        Intent locationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        this.startActivityForResult(locationIntent, REQUEST_CODE_LOCATION_SETTINGS);
+    }
+
+    public static final boolean isLocationEnable(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        boolean networkProvider = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        boolean gpsProvider = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (networkProvider || gpsProvider) return true;
+        return false;
+    }
+
 
     private void initBluetooth() {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -169,21 +189,21 @@ public class SearchActivity extends BaseActivity {
     private void stopLeScan() {
         scanning = false;
         //1.first method
-        //getBluetoothAdapter().stopLeScan(scanCallback1);
+//        getBluetoothAdapter().stopLeScan(scanCallback1);
         //2.second method
-        //getBluetoothLeScanner().stopScan(scanCallback2);
+        getBluetoothLeScanner().stopScan(scanCallback2);
         //3.third method
-        stopDiscovery();
+//        stopDiscovery();
     }
 
     private void startLeScan() {
         scanning = true;
         //1.first method
-        //getBluetoothAdapter().startLeScan(scanCallback1);
-        //2.second method
-        //getBluetoothLeScanner().startScan(scanCallback2);
+//        getBluetoothAdapter().startLeScan(scanCallback1);
+//        2.second method
+        getBluetoothLeScanner().startScan(scanCallback2);
         //3.broadcast method
-        startDiscovery();
+//        startDiscovery();
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -319,7 +339,19 @@ public class SearchActivity extends BaseActivity {
                 }
                 break;
             case COARSE_LOCATION_PERMS_REQUEST_CODE:
+                afterPermissionGranted();
                 break;
+            case REQUEST_CODE_LOCATION_SETTINGS:
+                if (isLocationEnable(this)) {
+                    //定位已打开的处理
+                    initBluetooth();
+                } else {
+                    //定位依然没有打开的处理
+                    setLocationService();
+                }
+                break;
+
+
         }
     }
 
