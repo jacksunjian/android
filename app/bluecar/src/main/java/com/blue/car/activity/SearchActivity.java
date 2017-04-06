@@ -7,7 +7,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.LocationManager;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -223,7 +226,11 @@ public class SearchActivity extends BaseActivity {
         //1.first method
 //        getBluetoothAdapter().startLeScan(scanCallback1);
 //        2.second method
-        getBluetoothLeScanner().startScan(scanCallback2);
+//        getBluetoothLeScanner().startScan(scanCallback2);
+        List<ScanFilter> bleScanFilters = new ArrayList<>();
+        bleScanFilters.add(new ScanFilter.Builder().setServiceUuid(new ParcelUuid(BluetoothConstant.UUID_SERVICE)).build());
+        getBluetoothLeScanner().startScan(bleScanFilters, new ScanSettings.Builder().build(), scanCallback2);
+
         //3.broadcast method
 //        startDiscovery();
     }
