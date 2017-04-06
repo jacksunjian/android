@@ -18,6 +18,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.LocationManager;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -25,6 +26,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.StringUtils;
@@ -106,9 +109,28 @@ public class SearchActivity extends BaseActivity {
         if (isLocationEnable(SearchActivity.this)) {
             initBluetooth();
         } else {
-            setLocationService();
+            showCarLockDialog();
+
         }
     }
+
+    private void showCarLockDialog() {
+        new MaterialDialog.Builder(this)
+                .content("需要打开位置，是否继续")
+                .positiveText("同意")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        setLocationService();
+                    }
+                }).show();
+    }
+
+
+
     private void setLocationService() {
         Intent locationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         this.startActivityForResult(locationIntent, REQUEST_CODE_LOCATION_SETTINGS);
@@ -342,13 +364,7 @@ public class SearchActivity extends BaseActivity {
                 afterPermissionGranted();
                 break;
             case REQUEST_CODE_LOCATION_SETTINGS:
-                if (isLocationEnable(this)) {
-                    //定位已打开的处理
-                    initBluetooth();
-                } else {
-                    //定位依然没有打开的处理
-                    setLocationService();
-                }
+                initBluetooth();
                 break;
 
 
