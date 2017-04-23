@@ -30,6 +30,7 @@ public class SplashActivity extends BaseActivity
             @Override
             public void run() {
                 startActivity(localIntent);
+                SplashActivity.this.finish();
             }
         };
         timer.schedule(tast, 1500);
