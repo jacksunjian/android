@@ -16,7 +16,7 @@
            android:layout_alignParentRight="true"
            android:layout_centerVertical="true"
            android:layout_height="wrap_content" />
-        
+
     </RelativeLayout>
     <View
        style="@style/dividerStyle"/>
@@ -49,6 +49,27 @@
             android:layout_height="wrap_content" />
 
     </RelativeLayout>
+
+    <View
+        style="@style/dividerStyle"/>
+
+    <RelativeLayout style="@style/settingRelativeStyle">
+
+        <TextView
+            style="@style/settingTextLeftStyle"
+            android:id="@+id/unit_label"
+            android:text="单位：公制" />
+
+        <Switch
+            android:id="@+id/unit_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true" />
+
+    </RelativeLayout>
+
     <View
         style="@style/dividerStyle"/>
 

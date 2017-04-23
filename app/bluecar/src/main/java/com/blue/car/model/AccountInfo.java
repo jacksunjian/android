@@ -31,6 +31,16 @@ public class AccountInfo implements Serializable {
         saveToSecurePreferences(context, account);
     }
 
+    static public void saveAccountInfo(Context context, String bleName, String blePassword) {
+        AccountInfo accountInfo = currentAccountInfo(context);
+        if (accountInfo == null) {
+            accountInfo = new AccountInfo();
+        }
+        accountInfo.bleName = bleName;
+        accountInfo.blePassword = blePassword;
+        saveAccountInfo(context, accountInfo);
+    }
+
     static private AccountInfo loadAccountInfo(final Context context) {
         SecurePreferences preferences = new SecurePreferences(context, SECURE_TYPE_ACCOUNT, SECURE_ACCOUNT_TAG, true);
         final String string = preferences.getString(SECURE_ACCOUNT_KEY);

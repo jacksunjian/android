@@ -411,7 +411,13 @@ public class CommandManager {
         resp.perRunTime = BlueUtils.byteArrayToInt(originData, 26, 2);
         resp.temperature = BlueUtils.byteArrayToInt(originData, 28, 2) * 1.0f / 10;
         resp.speedLimit = BlueUtils.byteArrayToInt(originData, 30, 2) * 1.0f / 1000;
-        resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 32, 2);
+        if ((originData[33] & 0x80) == 0x80) {
+            int result = (~originData[33] << 8) + (~originData[32] & 0xFF);
+            resp.electricCurrent = (0xFFFF & (result + 1)) * -1;
+        } else {
+            resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 32, 2);
+        }
+        resp.electricCurrent = resp.electricCurrent * 1.0f / 100;
         resp.remain = BlueUtils.getNewBytes(originData, 34, 2);
         resp.maxAbsSpeed = BlueUtils.byteArrayToInt(originData, 36, 2) * 1.0f / 1000;
         return resp;
@@ -507,7 +513,13 @@ public class CommandManager {
         BatteryInfoCommandResp resp = new BatteryInfoCommandResp();
         resp.remainBatteryElectricity = BlueUtils.byteArrayToInt(originData, 6, 2);
         resp.remainPercent = BlueUtils.byteArrayToInt(originData, 8, 2);
-        resp.electricCurrent = (BlueUtils.byteArrayToInt(originData, 10, 2) * 1.0f) / 1000;
+        if ((originData[11] & 0x80) == 0x80) {
+            int result = (~originData[11] << 8) + (~originData[10] & 0xFF);
+            resp.electricCurrent = (0xFFFF & (result + 1)) * -1;
+        } else {
+            resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 10, 2);
+        }
+        resp.electricCurrent = resp.electricCurrent * 1.0f / 100;
         resp.voltage = (BlueUtils.byteArrayToInt(originData, 12, 2) * 1.0f) / 100;
         int tmp1 = BlueUtils.byteArrayToInt(originData, 14, 1);
         int tmp2 = BlueUtils.byteArrayToInt(originData, 15, 1);

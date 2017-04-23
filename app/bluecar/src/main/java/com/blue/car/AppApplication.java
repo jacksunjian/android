@@ -58,6 +58,10 @@ public class AppApplication extends Application {
         saveKmUnit(unit);
     }
 
+    public boolean isKmUnit() {
+        return this.kmUnit;
+    }
+
     public String getUnit() {
         if (kmUnit) {
             return "km";
