@@ -1,6 +1,7 @@
 package com.blue.car.utils;
 
 import android.graphics.Color;
+import android.util.Log;
 
 public class LinearGradientUtil {
 
@@ -47,15 +48,15 @@ public class LinearGradientUtil {
     public static int[] getActualColor(float rotation) {
         //纯红0，纯绿80，纯蓝160
         int startColor = 0, endColor = 0;
-        float tmp = 360 - rotation % 360;
+        float tmp = rotation % 360;
         if (tmp <= 120) {
             startColor = Color.RED;
-            endColor = Color.BLUE;
-        } else if (tmp <= 240) {
-            startColor = Color.BLUE;
             endColor = Color.GREEN;
-        } else if (tmp <= 360) {
+        } else if (tmp <= 240) {
             startColor = Color.GREEN;
+            endColor = Color.BLUE;
+        } else if (tmp <= 360) {
+            startColor = Color.BLUE;
             endColor = Color.RED;
         }
         int actualColor = LinearGradientUtil.getColor(startColor, endColor, tmp % 60 / 60);
@@ -65,19 +66,27 @@ public class LinearGradientUtil {
     public static int[] hsbToColor(int hsb){
         //纯红0，纯绿80，纯蓝160
         int startColor = 0, endColor = 0;
-        float tmp = hsb % 240;
-        if (tmp <= 80) {
+        float tmp = hsb * 1.0f / 240 * 360;
+        if (tmp <= 60) {
             startColor = Color.RED;
-            endColor = Color.BLUE;
-        } else if (tmp <= 160) {
-            startColor = Color.BLUE;
+            endColor = Color.YELLOW;
+        } else if (tmp <= 120) {
+            startColor = Color.YELLOW;
             endColor = Color.GREEN;
-        } else if (tmp <= 240) {
+        } else if (tmp <= 180) {
             startColor = Color.GREEN;
+            endColor = Color.CYAN;
+        } else if (tmp < 240) {
+            startColor = Color.CYAN;
+            endColor = Color.BLUE;
+        } else if (tmp <= 300) {
+            startColor = Color.BLUE;
+            endColor = Color.MAGENTA;
+        } else if (tmp <= 360) {
+            startColor = Color.MAGENTA;
             endColor = Color.RED;
         }
-        int actualColor = LinearGradientUtil.getColor(startColor, endColor, tmp % 80 / 80);
-        return new int[]{actualColor, (int) (tmp / 240 * 360)};
-
+        int actualColor = LinearGradientUtil.getColor(startColor, endColor, tmp % 60 / 60);
+        return new int[]{actualColor, (int) (tmp)};
     }
 }
