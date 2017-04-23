@@ -3,7 +3,6 @@ package com.blue.car.activity;
 import android.bluetooth.BluetoothGatt;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -17,6 +16,7 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -32,7 +32,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -56,13 +55,18 @@ public class OtherSettingActivity extends BaseActivity {
     RelativeLayout closeRl;
     @Bind(R.id.back_warn_switch)
     Switch backWarnSwitch;
+    @Bind(R.id.unit_switch)
+    Switch unitSwitch;
+    @Bind(R.id.unit_label)
+    TextView unitLabel;
     private Handler handler = new Handler();
 
     private CommandRespManager respManager = new CommandRespManager();
     private LockConditionInfoCommandResp lockCommandResp;
     int workMode;
     private MainFuncCommandResp mainFuncResp;
-    private String closeCarCommamd;
+    private String closeCarCommand;
+    private String unitSettingCommand;
 
     @Override
     protected int getLayoutId() {
@@ -108,10 +112,14 @@ public class OtherSettingActivity extends BaseActivity {
                 }
             }
         });
-
-
-
-
+        unitSwitch.setChecked(AppApplication.instance().isKmUnit());
+        unitSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                unitLabel.setText("单位:" + (isChecked ? "公制" : "英制"));
+                writeUnitSettingCommand(isChecked);
+            }
+        });
     }
 
     @Override
@@ -147,6 +155,11 @@ public class OtherSettingActivity extends BaseActivity {
         }
     };
 
+    private void writeUnitSettingCommand(boolean kmUnit) {
+        //byte[] command = CommandManager.closeCar();
+        //unitSettingCommand = BlueUtils.bytesToAscii(command);
+        //writeCommand(command);
+    }
 
     private void writeLockCanDoCommand(int status) {
         byte[] command = CommandManager.getLockConditionSettingCommand(status);
@@ -213,11 +226,12 @@ public class OtherSettingActivity extends BaseActivity {
 
     private void processWriteEvent(byte[] dataBytes) {
         String command = BlueUtils.bytesToAscii(dataBytes);
-        if (command.equals(closeCarCommamd)) {
+        if (command.equals(closeCarCommand)) {
             showGoToSearchDialog();
+        } else if (command.equals(unitSettingCommand)) {
+            AppApplication.instance().setKmUnit(unitSwitch.isChecked());
         }
     }
-
 
     private void showGoToSearchDialog() {
         new MaterialDialog.Builder(this)
@@ -258,7 +272,7 @@ public class OtherSettingActivity extends BaseActivity {
 
     private void closeCarCommamd() {
         byte[] command = CommandManager.closeCar();
-        closeCarCommamd = BlueUtils.bytesToAscii(command);
+        closeCarCommand = BlueUtils.bytesToAscii(command);
         writeCommand(command);
     }
 
