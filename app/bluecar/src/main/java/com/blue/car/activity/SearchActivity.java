@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -32,9 +33,11 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
+import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.StringUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +75,7 @@ public class SearchActivity extends BaseActivity {
     private boolean scanning = false;
     private Handler handler = new Handler();
     private static final int REQUEST_CODE_LOCATION_SETTINGS = 0x11;
+    byte[] nameBytes;
 
     @Override
     protected int getLayoutId() {
@@ -298,6 +302,12 @@ public class SearchActivity extends BaseActivity {
             return "unknown name" + SEPARATOR + "unknown address";
         }
         String name = device.getName();
+        try {
+            nameBytes =name.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        Log.e("names",""+ BlueUtils.bytesToHexString(nameBytes));
         String address = device.getAddress();
         if (StringUtils.isNullOrEmpty(name)) {
             name = "unknown name";
