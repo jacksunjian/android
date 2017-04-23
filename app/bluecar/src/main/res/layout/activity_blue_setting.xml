@@ -20,7 +20,7 @@
             android:layout_marginLeft="50dp"
             android:layout_toRightOf="@+id/name_tv"
             android:hint="输入蓝牙名称"
-            android:digits="@string/filter_vcode"
+
             android:background="@null"
             android:maxLength="30"
             android:textSize="14sp"

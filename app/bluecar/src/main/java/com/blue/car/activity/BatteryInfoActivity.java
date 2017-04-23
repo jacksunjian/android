@@ -1,18 +1,15 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.util.LogWriter;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -52,11 +49,15 @@ public class BatteryInfoActivity extends BaseActivity {
     @Bind(R.id.temperature_tv)
     TextView temperatureTv;
     private static final String TAG = BatteryInfoActivity.class.getSimpleName();
+    @Bind(R.id.power_tv)
+    TextView powerTv;
+    public float power;
 
     private CommandRespManager respManager = new CommandRespManager();
-    boolean stopThread=false;
-//    private Handler mHandler = new Handler();
+    boolean stopThread = false;
+    //    private Handler mHandler = new Handler();
     int k = 0;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_battery_info;
@@ -77,7 +78,7 @@ public class BatteryInfoActivity extends BaseActivity {
         new Thread(mRunnable).start();
     }
 
-    Handler mHandler = new Handler(){
+    Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             startBatteryQueryCommand();
         }
@@ -91,9 +92,12 @@ public class BatteryInfoActivity extends BaseActivity {
     }
 
     Runnable mRunnable = new Runnable() {
-        public void run(){
-            while(!stopThread){
-                try{Thread.sleep(500);}catch(InterruptedException e){}
+        public void run() {
+            while (!stopThread) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                }
                 mHandler.sendMessage(mHandler.obtainMessage());
             }
         }
@@ -117,14 +121,18 @@ public class BatteryInfoActivity extends BaseActivity {
     };
 
 
-   private void updateBatteryView(BatteryInfoCommandResp resp){
-       restBatteryTv.setText(resp.remainBatteryElectricity + "mAh");
-       restPercentTv.setText( resp.remainPercent + "%");
-       electricTv.setText("" + resp.electricCurrent + "A");
-       voltageTv.setText("" + resp.voltage + "V");
-       temperatureTv.setText("" + resp.temperature + "℃");
+    private void updateBatteryView(BatteryInfoCommandResp resp) {
 
-   }
+        restBatteryTv.setText(resp.remainBatteryElectricity + "mAh");
+        restPercentTv.setText(resp.remainPercent + "%");
+        electricTv.setText(String.format("%.2fA",resp.electricCurrent));
+        voltageTv.setText( String.format("%.2fV",resp.voltage));
+        temperatureTv.setText("" + resp.temperature + "℃");
+        power =(resp.electricCurrent)*(resp.voltage);
+        Log.e("power",""+power);
+        powerTv.setText(String.format("%.2fW",power));
+
+    }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -181,7 +189,14 @@ public class BatteryInfoActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        stopThread=true;
+        stopThread = true;
         super.onDestroy();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO: add setContentView(...) invocation
+        ButterKnife.bind(this);
     }
 }

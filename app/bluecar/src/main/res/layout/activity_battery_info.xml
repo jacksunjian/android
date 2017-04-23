@@ -62,6 +62,19 @@
         style="@style/settingRelativeStyle">
         <TextView
             style="@style/settingTextLeftStyle"
+            android:text="功率"/>
+
+        <TextView
+            android:id="@+id/power_tv"
+            android:text="------"
+            style="@style/settingTextRightStyle" />
+    </RelativeLayout>
+    <View
+        style="@style/dividerStyle"/>
+    <RelativeLayout
+        style="@style/settingRelativeStyle">
+        <TextView
+            style="@style/settingTextLeftStyle"
             android:text="温度"/>
 
         <TextView
