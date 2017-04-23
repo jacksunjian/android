@@ -1,6 +1,7 @@
 package com.blue.car.activity;
 
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -34,6 +36,7 @@ import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.events.GattServiceDiscoveryEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
+import com.blue.car.model.AccountInfo;
 import com.blue.car.model.FirstStartCommandResp;
 import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.service.BlueUtils;
@@ -42,6 +45,7 @@ import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.BluetoothGattUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
+import com.blue.car.utils.ToastUtils;
 import com.blue.car.utils.UniversalViewUtils;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -109,6 +113,7 @@ public class BlueServiceActivity extends BaseActivity {
     private int slideDownLimit = 20;
 
     private String[] workModeArray;
+    private boolean enablePasswordCheck = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,7 +215,7 @@ public class BlueServiceActivity extends BaseActivity {
 
     private CommandRespManager.OnDataCallback firstCommandCallback = new CommandRespManager.OnDataCallback() {
         @Override
-        public void resp(byte[] data) {
+        public void resp(final byte[] data) {
             if (StringUtils.isNullOrEmpty(data)) {
                 return;
             }
@@ -218,12 +223,68 @@ public class BlueServiceActivity extends BaseActivity {
             LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
                 getFirstCommandResp(true, true);
-                FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
+                final FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
                 LogUtils.jsonLog(TAG, resp);
-                startMainFuncCommand();
+                if (!enablePasswordCheck) {
+                    startMainFuncCommand();
+                    return;
+                }
+                if (StringUtils.isNullOrEmpty(resp.blePassword)) {
+                    startMainFuncCommand();
+                } else {
+                    String password = null;
+                    AccountInfo accountInfo = AccountInfo.currentAccountInfo(BlueServiceActivity.this);
+                    if (accountInfo != null) {
+                        password = accountInfo.blePassword;
+                    }
+                    if (StringUtils.isNullOrEmpty(password) || !password.equals(resp.blePassword)) {
+                        showPwdCheckDialog(resp.blePassword);
+                    }
+                }
             }
         }
     };
+
+    private void showPwdCheckDialog(final String blePassword) {
+        new MaterialDialog.Builder(BlueServiceActivity.this)
+                .title("输入密码进行校验")
+                .canceledOnTouchOutside(false)
+                .autoDismiss(false)
+                .input("6位数字密码", "", false, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+
+                    }
+                })
+                .alwaysCallInputCallback()
+                .keyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            return true;
+                        }
+                        return false;
+                    }
+                })
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        String pwd = dialog.getInputEditText().toString();
+                        if (pwd.length() != 6) {
+                            ToastUtils.showShortToast(BlueServiceActivity.this, "请输入6位数的密码");
+                            return;
+                        }
+                        if (blePassword.equals(pwd)) {
+                            ToastUtils.showShortToast(BlueServiceActivity.this, "密码校验失败");
+                            return;
+                        }
+                        AccountInfo.saveAccountInfo(BlueServiceActivity.this, deviceName, pwd);
+                        startMainFuncCommand();
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+    }
 
     private synchronized boolean getFirstCommandResp(boolean needSet, boolean value) {
         if (needSet) {
