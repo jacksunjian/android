@@ -15,7 +15,7 @@ public class MainFuncCommandResp {
     public int perRunTime; //unit second
     public float temperature;
     public float speedLimit;
-    public int electricCurrent;
+    public float electricCurrent;
     public byte[] remain = new byte[2];
     public float maxAbsSpeed;
 
