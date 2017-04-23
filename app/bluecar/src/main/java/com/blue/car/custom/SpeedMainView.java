@@ -48,6 +48,9 @@ public class SpeedMainView extends View {
     private RectF mileageTextRect;
     private float mileageTextDiff = -1;
 
+    private boolean kmUnit = true;
+    private float perMileage = 0;
+
     private int[] batteryProgressColors = {
             Color.parseColor("#00B5FD"), Color.parseColor("#00E3D9")};
 
@@ -237,10 +240,24 @@ public class SpeedMainView extends View {
         setBatteryProgress(batteryProgressMax * percent);
     }
 
-    private float perMileage = 0;
-
     public void setPerMileage(float mileage) {
         this.perMileage = mileage;
+    }
+
+    public void setKmUnit(boolean unit) {
+        this.kmUnit = unit;
+    }
+
+    public String getUnit() {
+        if (kmUnit) {
+            return "km";
+        } else {
+            return "mi";
+        }
+    }
+
+    public String getUnitWithTime() {
+        return getUnit() + "/h";
     }
 
     @Override
@@ -315,7 +332,7 @@ public class SpeedMainView extends View {
             mileageTextDiff = top / 2 + bottom / 2;
         }
         canvas.drawRoundRect(mileageTextRect, 40, 40, mileageRectPaint);
-        canvas.drawText(String.format("本次里程 %.1fkm", perMileage), centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
+        canvas.drawText(String.format("本次里程 %.1f"+getUnit(), perMileage), centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
     }
 
     private int getSpeedValueTextHeight() {
@@ -330,6 +347,6 @@ public class SpeedMainView extends View {
     @SuppressLint("DefaultLocale")
     private void drawSpeedText(Canvas canvas) {
         canvas.drawText(String.format("%.1f", speed), getWidth() / 2, getHeight() / 2, speedValuePaint);
-        canvas.drawText("km/h", getWidth() / 2, getHeight() / 2 - getSpeedValueTextHeight() - 33, speedUnitPaint);
+        canvas.drawText(getUnitWithTime(), getWidth() / 2, getHeight() / 2 - getSpeedValueTextHeight() - 33, speedUnitPaint);
     }
 }

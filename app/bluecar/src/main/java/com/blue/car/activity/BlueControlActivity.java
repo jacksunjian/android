@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.custom.RotationImageView;
 import com.blue.car.events.GattCharacteristicReadEvent;
@@ -49,6 +50,8 @@ public class BlueControlActivity extends BaseActivity {
 
     @Bind(R.id.speed_textView)
     TextView speedTextView;
+    @Bind(R.id.speed_unit)
+    TextView speedUnitTextView;
     @Bind(R.id.battery_remain_percent)
     TextView batteryTextView;
     SeekBar speedLimitSeekBar;
@@ -82,6 +85,7 @@ public class BlueControlActivity extends BaseActivity {
     @Override
     protected void initView() {
         lhTvTitle.setText("蓝牙控制");
+        speedUnitTextView.setText(AppApplication.instance().getUnit());
         speedTextView.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/zaozigongfang.otf"));
         controlView.setRotationDiff(90);
         controlView.setOnMoveScaleChangedListener(new RotationImageView.OnMoveScaleChangedListener() {
@@ -237,7 +241,7 @@ public class BlueControlActivity extends BaseActivity {
         if (resp.isRemoteConditionStatus() && (resp.isPickingUpStatus() || resp.isStandingManStatus())) {
             showToast("遥控模式，不可站人和拎起");
         }
-        speedTextView.setText(String.format("%.1f", resp.speed));
+        speedTextView.setText(String.format("%.1f", AppApplication.instance().getResultByUnit(resp.speed)));
         batteryTextView.setText(String.format(getString(R.string.battery_remain_format), resp.batteryRemainPercent));
     }
 

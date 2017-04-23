@@ -9,6 +9,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -117,13 +118,13 @@ public class DeviceInfoActivity extends BaseActivity {
 
 
     private void updateDeviceInfoView(MainFuncCommandResp resp){
-        currentSpeedTv.setText(StringUtils.dealSpeedFormat(resp.speed));
-        averageSpeedTv.setText(StringUtils.dealSpeedFormat(resp.averageSpeed));
-        allmileTv.setText(StringUtils.dealMileFormat(resp.totalMileage));
-        thisMileTv.setText(StringUtils.dealMileFormat(resp.perMileage));
+        currentSpeedTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.speed)));
+        averageSpeedTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
+        allmileTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
+        thisMileTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
         perRunTime.setText( StringUtils.getHour(resp.perRunTime));
         temperatureTv.setText(StringUtils.dealTempFormat(resp.temperature));
-        topSpeedTv.setText(StringUtils.dealSpeedFormat(resp.speedLimit));
+        topSpeedTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.speedLimit)));
 
     }
 

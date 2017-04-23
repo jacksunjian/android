@@ -26,7 +26,6 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.AppApplication;
 import com.blue.car.R;
-import com.blue.car.custom.BounceScrollView;
 import com.blue.car.custom.OnScrollListener;
 import com.blue.car.custom.OverScrollView;
 import com.blue.car.custom.SpeedMainView;
@@ -252,15 +251,42 @@ public class BlueServiceActivity extends BaseActivity {
         }, firstCommandDelay);
     }
 
+    private CommandRespManager.OnDataCallback unitCommandCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            if (result) {
+                //FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
+                //LogUtils.jsonLog(TAG, resp);
+                boolean kmUnit = true;
+                AppApplication.instance().setKmUnit(kmUnit);
+                updateSpeedViewUnit(kmUnit);
+            }
+        }
+    };
+
+    private void startUnitCommand() {
+        byte[] command = CommandManager.getFirstCommand();
+        respManager.setCommandRespCallBack(BlueUtils.bytesToAscii(command), unitCommandCallback);
+        writeCommand(command);
+    }
+
+    private void updateSpeedViewUnit(boolean kmUnit) {
+        speedMainView.setKmUnit(kmUnit);
+    }
+
     private void updateSpeedView(MainFuncCommandResp resp) {
         if (resp == null) {
             return;
         }
         speedMainView.setBatteryPercent(resp.remainBatteryPercent * 1.0f / 100);
         float speedLimit = Math.max(resp.speedLimit, resp.maxAbsSpeed);
-        speedMainView.setSpeedLimit(Math.max(resp.speed, speedLimit) + 5);
-        speedMainView.setSpeed(resp.speed);
-        speedMainView.setPerMileage(resp.perMileage);
+        speedMainView.setSpeedLimit(AppApplication.instance().getResultByUnit(Math.max(resp.speed, speedLimit) + 5));
+        speedMainView.setSpeed(AppApplication.instance().getResultByUnit(resp.speed));
+        speedMainView.setPerMileage(AppApplication.instance().getResultByUnit(resp.perMileage));
     }
 
     private void updateOtherView(MainFuncCommandResp resp) {
@@ -396,7 +422,6 @@ public class BlueServiceActivity extends BaseActivity {
     @OnClick({ R.id.info_rl, R.id.setting_rl, R.id.search_btn})
     void someFunPanelClick(View view) {
         switch (view.getId()) {
-
             case R.id.info_rl:
                 gotoIntent(InfoMoreActivity.class);
                 break;
@@ -434,7 +459,19 @@ public class BlueServiceActivity extends BaseActivity {
         if (mainFuncResp.isSpeedLimitStatus()) {
             writeUnLimitSpeedCommand();
         } else {
-            writeLimitSpeedCommand();
+            new MaterialDialog.Builder(this)
+                    .title("温馨提示")
+                    .content("您确定要切换为限速模式吗？")
+                    .positiveText("确定")
+                    .negativeText("取消")
+                    .negativeColor(Color.BLACK)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            writeLimitSpeedCommand();
+                        }
+                    })
+                    .show();
         }
     }
 
@@ -536,11 +573,11 @@ public class BlueServiceActivity extends BaseActivity {
             return;
         }
         batteryPercentTv.setText(StringUtils.dealBatteryPercentFormat(resp.remainBatteryPercent * 1.0f / 100));
-        averageTv.setText(StringUtils.dealSpeedFormat(resp.averageSpeed));
-        perMeterTv.setText(StringUtils.dealMileFormat(resp.perMileage));
-        totalMeterTextTv.setText(StringUtils.dealMileFormat(resp.totalMileage));
+        averageTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
+        perMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
+        totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
         perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
-        restRideMeterTv.setText(StringUtils.dealMileFormat(resp.getRemainMileage()));
+        restRideMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.getRemainMileage())));
         temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
     }
 
