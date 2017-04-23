@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -136,13 +137,13 @@ public class CurrentInfoActivity extends BaseActivity {
         if (resp == null) {
             return;
         }
-        currentSpeedView.setText(StringUtils.dealSpeedFormat(resp.speed));
+        currentSpeedView.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.speed)));
         batteryPercentTv.setText(String.valueOf(resp.remainBatteryPercent * 1.0f / 100));
-        averageTv.setText(String.valueOf(resp.averageSpeed));
-        perMeterTv.setText(StringUtils.dealMileFormat(resp.perMileage));
-        totalMeterTextTv.setText(StringUtils.dealMileFormat(resp.totalMileage));
+        averageTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
+        perMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
+        totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
         perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
-        restRideMeterTv.setText(StringUtils.dealMileFormat(resp.getRemainMileage()));
+        restRideMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.getRemainMileage())));
         temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
     }
 
