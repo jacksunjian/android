@@ -398,7 +398,13 @@ public class CommandManager {
         resp.sysStatus = BlueUtils.byteArrayToInt(originData, 10, 2);
         resp.workMode = BlueUtils.byteArrayToInt(originData, 12, 2);
         resp.remainBatteryPercent = BlueUtils.byteArrayToInt(originData, 14, 2);
-        resp.speed = BlueUtils.byteArrayToInt(originData, 16, 2) * 1.0f / 1000;
+        if ((originData[17] & 0x80) == 0x80) {
+            int result = (~originData[17] << 8) + (~originData[16] & 0xFF);
+            resp.speed = (0xFFFF & (result + 1)) * -1;
+        } else {
+            resp.speed = BlueUtils.byteArrayToInt(originData, 16, 2);
+        }
+        resp.speed = Math.abs(resp.speed * 1.0f / 1000);
         resp.averageSpeed = BlueUtils.byteArrayToInt(originData, 18, 2) * 1.0f / 1000;
         resp.totalMileage = BlueUtils.byteArrayToInt(originData, 20, 4) * 1.0f / 1000;
         resp.perMileage = BlueUtils.byteArrayToInt(originData, 24, 2) * 1.0f / 100;

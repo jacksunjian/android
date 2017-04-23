@@ -5,6 +5,11 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +17,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.LocationManager;
 import android.os.Handler;
+import android.os.ParcelUuid;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +29,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.StringUtils;
@@ -54,11 +65,13 @@ public class SearchActivity extends BaseActivity {
     private ArrayAdapter<String> pairedDevicesArrayAdapter;
 
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothLeScanner bluetoothLeScanner;
     private BroadcastReceiver bleDiscoveryReceiver;
     private Map<String, String> blueNameAddressMap = new HashMap<>();
 
     private boolean scanning = false;
     private Handler handler = new Handler();
+    private static final int REQUEST_CODE_LOCATION_SETTINGS = 0x11;
 
     @Override
     protected int getLayoutId() {
@@ -96,8 +109,44 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void afterPermissionGranted() {
-        initBluetooth();
+        if (isLocationEnable(SearchActivity.this)) {
+            initBluetooth();
+        } else {
+            showCarLockDialog();
+
+        }
     }
+
+    private void showCarLockDialog() {
+        new MaterialDialog.Builder(this)
+                .content("需要打开位置，是否继续")
+                .positiveText("同意")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        setLocationService();
+                    }
+                }).show();
+    }
+
+
+
+    private void setLocationService() {
+        Intent locationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        this.startActivityForResult(locationIntent, REQUEST_CODE_LOCATION_SETTINGS);
+    }
+
+    public static final boolean isLocationEnable(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        boolean networkProvider = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        boolean gpsProvider = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (networkProvider || gpsProvider) return true;
+        return false;
+    }
+
 
     private void initBluetooth() {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -164,12 +213,26 @@ public class SearchActivity extends BaseActivity {
 
     private void stopLeScan() {
         scanning = false;
-        stopDiscovery();
+        //1.first method
+//        getBluetoothAdapter().stopLeScan(scanCallback1);
+        //2.second method
+        getBluetoothLeScanner().stopScan(scanCallback2);
+        //3.third method
+//        stopDiscovery();
     }
 
     private void startLeScan() {
         scanning = true;
-        startDiscovery();
+        //1.first method
+//        getBluetoothAdapter().startLeScan(scanCallback1);
+//        2.second method
+//        getBluetoothLeScanner().startScan(scanCallback2);
+        List<ScanFilter> bleScanFilters = new ArrayList<>();
+        bleScanFilters.add(new ScanFilter.Builder().setServiceUuid(new ParcelUuid(BluetoothConstant.UUID_SERVICE)).build());
+        getBluetoothLeScanner().startScan(bleScanFilters, new ScanSettings.Builder().build(), scanCallback2);
+
+        //3.broadcast method
+//        startDiscovery();
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -305,7 +368,60 @@ public class SearchActivity extends BaseActivity {
                 }
                 break;
             case COARSE_LOCATION_PERMS_REQUEST_CODE:
+                afterPermissionGranted();
                 break;
+            case REQUEST_CODE_LOCATION_SETTINGS:
+                initBluetooth();
+                break;
+
+
         }
     }
+
+    private BluetoothLeScanner getBluetoothLeScanner() {
+        if (bluetoothLeScanner == null) {
+            bluetoothLeScanner = getBluetoothAdapter().getBluetoothLeScanner();
+        }
+        return bluetoothLeScanner;
+    }
+
+    private BluetoothAdapter.LeScanCallback scanCallback1 = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (device != null) {
+                        String deviceAlias = getBluetoothDeviceAlias(device);
+                        addDeviceToAdapter(deviceAlias);
+                    }
+                }
+            });
+        }
+    };
+
+    private ScanCallback scanCallback2 = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            if (result != null) {
+                final BluetoothDevice device = result.getDevice();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (device != null) {
+                            addDeviceToAdapter(getBluetoothDeviceAlias(device));
+                        }
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onBatchScanResults(List<ScanResult> results) {
+        }
+
+        @Override
+        public void onScanFailed(int errorCode) {
+        }
+    };
 }
