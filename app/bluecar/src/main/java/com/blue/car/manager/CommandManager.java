@@ -197,7 +197,7 @@ public class CommandManager {
         //55 AA 11 0A 50 00
         //4E 69 6E 65 62 6F 74 4D 69 6E 69 20 4D 31 30  蓝牙名称小于30个字符，asc码表示
         //6A FA
-        return getSendCommand(BlueUtils.getBytesByIsoCharsetName(name), COMMAND_SEND, new byte[]{0x50, 0x00});
+        return getSendCommand(BlueUtils.getBytesByUTF8CharsetName(name), COMMAND_SEND, new byte[]{0x50, 0x00});
     }
 
     public static byte[] getBlueCarPasswordSettingCommand(String password) {

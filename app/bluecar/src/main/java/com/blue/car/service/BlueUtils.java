@@ -304,4 +304,14 @@ public class BlueUtils {
         }
         return data;
     }
+
+    public static byte[] getBytesByUTF8CharsetName(String str) {
+        try {
+            return str.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
