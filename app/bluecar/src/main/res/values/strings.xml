@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BlueCar</string>
+    <string name="app_name">Timeway</string>
 
     <string name="double_back_press_tip">再按一次退出</string>
     <string name="warning_of_permissions_denied">申请权限被拒绝，无法往下操作</string>
