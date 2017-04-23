@@ -26,7 +26,6 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.AppApplication;
 import com.blue.car.R;
-import com.blue.car.custom.BounceScrollView;
 import com.blue.car.custom.OnScrollListener;
 import com.blue.car.custom.OverScrollView;
 import com.blue.car.custom.SpeedMainView;
@@ -460,7 +459,19 @@ public class BlueServiceActivity extends BaseActivity {
         if (mainFuncResp.isSpeedLimitStatus()) {
             writeUnLimitSpeedCommand();
         } else {
-            writeLimitSpeedCommand();
+            new MaterialDialog.Builder(this)
+                    .title("温馨提示")
+                    .content("您确定要切换为限速模式吗？")
+                    .positiveText("确定")
+                    .negativeText("取消")
+                    .negativeColor(Color.BLACK)
+                    .onPositive(new MaterialDialog.SingleButtonCallback() {
+                        @Override
+                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                            writeLimitSpeedCommand();
+                        }
+                    })
+                    .show();
         }
     }
 
