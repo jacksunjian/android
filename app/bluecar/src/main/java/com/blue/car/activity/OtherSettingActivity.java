@@ -66,7 +66,6 @@ public class OtherSettingActivity extends BaseActivity {
     int workMode;
     private MainFuncCommandResp mainFuncResp;
     private String closeCarCommand;
-    private String unitSettingCommand;
 
     @Override
     protected int getLayoutId() {
@@ -112,14 +111,19 @@ public class OtherSettingActivity extends BaseActivity {
                 }
             }
         });
+        updateUnitLabel(AppApplication.instance().isKmUnit());
         unitSwitch.setChecked(AppApplication.instance().isKmUnit());
         unitSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                unitLabel.setText("单位:" + (isChecked ? "公制" : "英制"));
-                writeUnitSettingCommand(isChecked);
+                updateUnitLabel(isChecked);
+                AppApplication.instance().setKmUnit(isChecked);
             }
         });
+    }
+
+    private void updateUnitLabel(boolean isKmUnit) {
+        unitLabel.setText("单位:" + (isKmUnit ? "公制" : "英制"));
     }
 
     @Override
@@ -154,12 +158,6 @@ public class OtherSettingActivity extends BaseActivity {
             }
         }
     };
-
-    private void writeUnitSettingCommand(boolean kmUnit) {
-        //byte[] command = CommandManager.closeCar();
-        //unitSettingCommand = BlueUtils.bytesToAscii(command);
-        //writeCommand(command);
-    }
 
     private void writeLockCanDoCommand(int status) {
         byte[] command = CommandManager.getLockConditionSettingCommand(status);
@@ -228,8 +226,6 @@ public class OtherSettingActivity extends BaseActivity {
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(closeCarCommand)) {
             showGoToSearchDialog();
-        } else if (command.equals(unitSettingCommand)) {
-            AppApplication.instance().setKmUnit(unitSwitch.isChecked());
         }
     }
 
