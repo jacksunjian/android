@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.custom.RotationImageView;
 import com.blue.car.events.GattCharacteristicReadEvent;
@@ -52,8 +53,6 @@ public class LightSettingActivity extends BaseActivity {
 
     @Bind(R.id.color_control_view)
     RotationImageView colorControlView;
-    @Bind(R.id.color_select_view)
-    View colorSelectView;
 
     @Bind(R.id.color1)
     ImageView color1View;
@@ -108,12 +107,16 @@ public class LightSettingActivity extends BaseActivity {
     @Override
     protected void initView() {
         lhTvTitle.setText("灯光设置");
+        colorControlView.setConstantlyRotationSelect(true);
         colorControlView.setRotationSelectListener(new RotationImageView.OnRotationSelectListener() {
             @Override
             public void OnRotation(float ro) {
                 int color = getColor(rotation = ro);
-                colorSelectView.setBackgroundColor(color);
                 updateColorView(colorSelectIndex, color);
+            }
+
+            @Override
+            public void OnRotationUp(float rotation) {
                 setLedColor();
             }
         });
@@ -193,15 +196,12 @@ public class LightSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
         startLedQueryCommand();
-
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 startLedLockConditionCommand();
             }
         }, 1000);
-
-
     }
 
     private int getColor(float rotation) {
@@ -431,9 +431,25 @@ public class LightSettingActivity extends BaseActivity {
     //关闭、单色呼吸、全彩呼吸、双龙戏珠、全彩分向、单色流星、炫彩流星、警灯模式1-3
     @OnClick(R.id.ambient_light_layout)
     void onAmbientLightClick() {
-        int mode = ++ambientLightMode % ambientLightModeCount;
-        updateAmbientModeView(mode);
-        setAmbientLightMode(mode);
+        showDialogAmbientLightSelect();
+    }
+
+    private void showDialogAmbientLightSelect() {
+        new MaterialDialog.Builder(this)
+                .title("氛围灯模式选择")
+                .items(R.array.ambient_mode_array)
+                .itemsCallbackSingleChoice(ambientLightMode % ambientLightModeCount, new MaterialDialog.ListCallbackSingleChoice() {
+                    @Override
+                    public boolean onSelection(MaterialDialog dialog, View view, int which, CharSequence text) {
+                        ambientLightMode = which;
+                        updateAmbientModeView(which);
+                        setAmbientLightMode(which);
+                        return true;
+                    }
+                })
+                .negativeText("取消")
+                .negativeColor(Color.BLACK)
+                .show();
     }
 
     private void startTranslateSettingLayout() {

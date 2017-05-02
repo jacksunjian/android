@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 public class RotationImageView extends ImageView {
@@ -14,15 +15,19 @@ public class RotationImageView extends ImageView {
     private float nowRotation = 0;
     private int rotationDiff = 0;
 
+    private float xPos, yPos;
+
     private Matrix bitmapMatrix = new Matrix();
     private Matrix tempMatrix = new Matrix();
     private Bitmap rotationBitmap;
 
+    private boolean constantlyRotationSelect = false;
     private OnRotationSelectListener rotationSelectListener;
     private OnMoveScaleChangedListener onMoveScaleChangedListener;
 
     public interface OnRotationSelectListener {
         void OnRotation(float rotation);
+        void OnRotationUp(float rotation);
     }
 
     public interface OnMoveScaleChangedListener {
@@ -46,6 +51,17 @@ public class RotationImageView extends ImageView {
     public RotationImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         initBitmapAttribute(attrs);
+        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                Matrix matrix = new Matrix();
+                matrix.postScale(getWidth() * 1.0f / rotationBitmap.getWidth(),
+                        getHeight() * 1.0f / rotationBitmap.getHeight());
+                rotationBitmap = Bitmap.createBitmap(rotationBitmap, 0, 0, rotationBitmap.getWidth(),
+                        rotationBitmap.getHeight(), matrix, true);
+            }
+        });
     }
 
     private void initBitmapAttribute(AttributeSet attrs) {
@@ -70,6 +86,7 @@ public class RotationImageView extends ImageView {
                 bitmapMatrix.set(tempMatrix);
                 invalidate();
                 invokeMoveScaleChangeListener();
+                invokeConstantlyRotationListener();
                 break;
             case MotionEvent.ACTION_UP:
                 invokeRotationListener();
@@ -77,8 +94,6 @@ public class RotationImageView extends ImageView {
         }
         return true;
     }
-
-    private float xPos, yPos;
 
     private float getRotation(MotionEvent event) {
         xPos = event.getX();
@@ -124,6 +139,12 @@ public class RotationImageView extends ImageView {
 
     private void invokeRotationListener() {
         if (rotationSelectListener != null) {
+            rotationSelectListener.OnRotationUp(nowRotation);
+        }
+    }
+
+    private void invokeConstantlyRotationListener() {
+        if (constantlyRotationSelect && rotationSelectListener != null) {
             rotationSelectListener.OnRotation(nowRotation);
         }
     }
@@ -171,5 +192,13 @@ public class RotationImageView extends ImageView {
 
     public void setRotationDiff(int rotationDiff) {
         this.rotationDiff = rotationDiff;
+    }
+
+    public void setConstantlyRotationSelect(boolean constantly) {
+        this.constantlyRotationSelect = constantly;
+    }
+
+    public boolean isConstantlyRotationSelect() {
+        return this.constantlyRotationSelect;
     }
 }

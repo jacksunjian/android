@@ -15,11 +15,11 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/head"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="30dp">
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="250dp"
+            android:layout_height="255dp"
             android:layout_gravity="center"
             android:clickable="false"
             android:focusableInTouchMode="false"
@@ -27,32 +27,24 @@
 
         <com.blue.car.custom.RotationImageView
             android:id="@+id/color_control_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="308dp"
+            android:layout_height="308dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/lightset_01" />
 
     </FrameLayout>
 
-    <View
-        android:id="@+id/color_select_view"
-        android:layout_width="140dp"
-        android:layout_height="70dp"
-        android:layout_below="@+id/color_panel"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:background="#FFFF0000"
-        android:visibility="invisible" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/color_select_view"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="44dp"
         android:orientation="horizontal">
 
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/color_select_layout_margin"
             android:layout_weight="1">
 
             <ImageView
@@ -60,38 +52,61 @@
                 style="@style/colorSelectImageViewStyle"
                 android:src="@mipmap/ic_color_pick" />
 
+            <TextView
+                style="@style/colorSelectTextViewStyle"
+                android:layout_below="@+id/color1"
+                android:text="颜色一" />
+
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/color_select_layout_margin"
             android:layout_weight="1">
 
             <ImageView
                 android:id="@+id/color2"
                 style="@style/colorSelectImageViewStyle" />
 
+            <TextView
+                style="@style/colorSelectTextViewStyle"
+                android:layout_below="@+id/color2"
+                android:text="颜色二" />
+
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/color_select_layout_margin"
             android:layout_weight="1">
 
             <ImageView
                 android:id="@+id/color3"
                 style="@style/colorSelectImageViewStyle" />
 
+            <TextView
+                style="@style/colorSelectTextViewStyle"
+                android:layout_below="@+id/color3"
+                android:text="颜色三" />
+
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_margin="@dimen/color_select_layout_margin"
             android:layout_weight="1">
 
             <ImageView
                 android:id="@+id/color4"
                 style="@style/colorSelectImageViewStyle" />
+
+            <TextView
+                style="@style/colorSelectTextViewStyle"
+                android:layout_below="@+id/color4"
+                android:text="颜色四" />
 
         </RelativeLayout>
 
