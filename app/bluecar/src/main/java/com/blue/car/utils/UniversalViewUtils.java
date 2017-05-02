@@ -97,4 +97,8 @@ public class UniversalViewUtils {
     public static Switch getSwitchView(ViewGroup viewGroup) {
         return (Switch) viewGroup.findViewById(R.id.info_right_switch);
     }
+
+    public static View getItemDividerView(ViewGroup viewGroup) {
+        return viewGroup.findViewById(R.id.item_divider);
+    }
 }

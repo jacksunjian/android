@@ -23,10 +23,10 @@
         android:layout_below="@+id/layout_head"
         android:layout_centerHorizontal="true"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="18dp"
-        android:text="00.0"
+        android:layout_marginTop="4dp"
+        android:text="0.0"
         android:textColor="@android:color/holo_blue_bright"
-        android:textSize="62sp"
+        android:textSize="65sp"
         android:textStyle="italic" />
 
     <TextView
@@ -44,24 +44,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/speed_textView"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="6dp">
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="285dp"
+            android:layout_height="285dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/remote_background" />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="63dp"
+            android:layout_height="63dp"
             android:layout_gravity="center"
             android:src="@drawable/remote_button" />
 
         <com.blue.car.custom.RotationImageView
             android:id="@+id/remote_control_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="285dp"
+            android:layout_height="285dp"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/remote_arrow" />
 
@@ -74,14 +74,16 @@
         android:layout_below="@+id/remote_control_layout"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="3dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="6dp"
         android:text="剩余电量：80%"
         android:textColor="@android:color/white"
-        android:textSize="20sp" />
+        android:textSize="18sp" />
 
     <include
         android:id="@+id/remote_maxSpeed_layout"
         layout="@layout/normal_info_seekbar_layout"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/battery_remain_percent" />
