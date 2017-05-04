@@ -1,6 +1,9 @@
 package com.blue.car.activity;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.util.Log;
 import android.view.View;
 
@@ -33,6 +36,10 @@ public class ColorTestActivity extends BaseActivity {
         colorControlView.setRotationSelectListener(new RotationImageView.OnRotationSelectListener() {
             @Override
             public void OnRotation(float rotation) {
+            }
+
+            @Override
+            public void OnRotationUp(float rotation) {
                 colorSelectView.setBackgroundColor(getColor(rotation));
             }
         });
@@ -66,5 +73,15 @@ public class ColorTestActivity extends BaseActivity {
         }
         float radio = tmp % 60 / 60;
         return LinearGradientUtil.getColor(startColor, endColor, radio);
+    }
+
+    @Override
+    public void onBackPressed() {
+        ActivityOptionsCompat options =
+                ActivityOptionsCompat.makeCustomAnimation(this,
+                        R.anim.slide_top_out,
+                        R.anim.anim_none_alpha);
+        Intent intent = new Intent(this, RemoteTestActivity.class);
+        ActivityCompat.startActivity(this, intent, options.toBundle());
     }
 }
