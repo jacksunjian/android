@@ -42,6 +42,9 @@ public class SpeedControlActivity extends BaseActivity {
     TextView lhTvTitle;
     SeekBar speedLimitSeekBar;
 
+    private int speedLimitMax = 10;
+    private int speedLimitOffset = -4;
+
     private CommandRespManager respManager = new CommandRespManager();
     private SpeedLimitResp speedLimitResp;
     private String speedLimitSettingCommand;
@@ -66,7 +69,8 @@ public class SpeedControlActivity extends BaseActivity {
     }
 
     private void initSpeedLimitSeekBar() {
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值", 0, new SeekBar.OnSeekBarChangeListener() {
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值",
+                0, speedLimitOffset, new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             }
@@ -77,14 +81,14 @@ public class SpeedControlActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                writeSpeedLimitCommand(seekBar.getProgress());
+                writeSpeedLimitCommand(seekBar.getProgress() - speedLimitOffset);
             }
         });
-        ViewGroup seekBarViewGroup = (ViewGroup) findViewById(R.id.speedg_control);
-        speedLimitSeekBar = UniversalViewUtils.getSeekBarView(seekBarViewGroup);
+        speedLimitSeekBar = UniversalViewUtils.getSeekBarView((ViewGroup) findViewById(R.id.speedg_control));
+        speedLimitSeekBar.setMax(speedLimitMax + speedLimitOffset);
         if (speedLimitResp != null) {
-            speedLimitSeekBar.setMax(30);
-            speedLimitSeekBar.setProgress(speedLimitResp.speedLimit);
+            speedLimitSeekBar.setProgress(getSpeedLimitSeekBarProgress(speedLimitResp.speedLimit) > speedLimitSeekBar.getMax() ?
+                    getSpeedLimitSeekBarProgress(speedLimitResp.speedLimit) : speedLimitResp.speedLimit);
         }
     }
 
@@ -116,11 +120,19 @@ public class SpeedControlActivity extends BaseActivity {
         }
     };
 
+    private int getSpeedLimitSeekBarProgress(int speedLimit) {
+        int value = speedLimit + speedLimitOffset;
+        if (value < 0) {
+            value = 0;
+        }
+        return value;
+    }
+
     private void updateView(SpeedLimitResp resp) {
         if (resp == null) {
             return;
         }
-        speedLimitSeekBar.setProgress(resp.speedLimit);
+        speedLimitSeekBar.setProgress(getSpeedLimitSeekBarProgress(resp.speedLimit));
     }
 
     private void saveSpeedLimitResp() {
@@ -138,14 +150,8 @@ public class SpeedControlActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicReadEvent(GattCharacteristicReadEvent event) {
-        if (event.status == BluetoothGatt.GATT_SUCCESS) {
-            final byte[] dataBytes = CommandManager.unEncryptData(event.data);
-            LogUtils.e("onCharacteristicRead", "status:" + event.status);
-            LogUtils.e(TAG, "onCharRead "
-                    + " read "
-                    + event.uuid.toString()
-                    + " -> "
-                    + BlueUtils.bytesToHexString(dataBytes));
+        byte[] dataBytes = printGattCharacteristicReadEvent(event);
+        if (dataBytes != null) {
             byte[] result = respManager.obtainData(dataBytes);
             respManager.processCommandResp(result);
         }
@@ -153,16 +159,9 @@ public class SpeedControlActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattCharacteristicWriteEvent(GattCharacteristicWriteEvent event) {
+        printGattCharacteristicWriteEvent(event);
         if (event.status == BluetoothGatt.GATT_SUCCESS) {
-           // final byte[] dataBytes = CommandManager.unEncryptData(event.data);
-            final byte[] dataBytes = event.data;
-            LogUtils.e("onCharacteristicWrite", "status:" + event.status);
-            LogUtils.e(TAG, "onCharWrite "
-                    + " write "
-                    + event.uuid.toString()
-                    + " -> "
-                    + BlueUtils.bytesToHexString(dataBytes));
-            processWriteEvent(dataBytes);
+            processWriteEvent(event.data);
         }
     }
 
