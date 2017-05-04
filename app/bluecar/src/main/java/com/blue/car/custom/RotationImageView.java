@@ -81,10 +81,7 @@ public class RotationImageView extends ImageView {
                 tempMatrix.set(bitmapMatrix);
                 break;
             case MotionEvent.ACTION_MOVE:
-                nowRotation = getRotation(event) + rotationDiff;
-                tempMatrix.setRotate(nowRotation, getWidth() / 2, getHeight() / 2);
-                bitmapMatrix.set(tempMatrix);
-                invalidate();
+                invalidateRotation(getRotation(event) + rotationDiff);
                 invokeMoveScaleChangeListener();
                 invokeConstantlyRotationListener();
                 break;
@@ -200,5 +197,17 @@ public class RotationImageView extends ImageView {
 
     public boolean isConstantlyRotationSelect() {
         return this.constantlyRotationSelect;
+    }
+
+    public void resetToOriginalRotation() {
+        xPos = 0;
+        yPos = 0;
+        invalidateRotation(0);
+    }
+
+    private void invalidateRotation(float rotation) {
+        tempMatrix.setRotate(nowRotation = rotation, getWidth() / 2, getHeight() / 2);
+        bitmapMatrix.set(tempMatrix);
+        invalidate();
     }
 }

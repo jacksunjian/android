@@ -85,9 +85,19 @@ public class BlueControlActivity extends BaseActivity {
     @Override
     protected void initView() {
         lhTvTitle.setText("蓝牙控制");
-        speedUnitTextView.setText(AppApplication.instance().getUnit());
+        speedUnitTextView.setText(AppApplication.instance().getUnitWithTime());
         speedTextView.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/zaozigongfang.otf"));
         controlView.setRotationDiff(90);
+        controlView.setRotationSelectListener(new RotationImageView.OnRotationSelectListener() {
+            @Override
+            public void OnRotation(float rotation) {
+            }
+
+            @Override
+            public void OnRotationUp(float rotation) {
+                controlView.resetToOriginalRotation();
+            }
+        });
         controlView.setOnMoveScaleChangedListener(new RotationImageView.OnMoveScaleChangedListener() {
             @Override
             public void onScaleChanged(float xScale, float yScale) {
@@ -119,6 +129,7 @@ public class BlueControlActivity extends BaseActivity {
                 startSetRemoteSpeedLimit(seekBar.getProgress() - speedLimitSeekBarOffset);
             }
         });
+        UniversalViewUtils.getItemDividerView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout)).setVisibility(View.VISIBLE);
         speedLimitSeekBar = UniversalViewUtils.getSeekBarView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout));
         speedLimitSeekBar.setMax(5);
     }

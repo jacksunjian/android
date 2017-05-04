@@ -70,6 +70,10 @@ public class AppApplication extends Application {
         }
     }
 
+    public String getUnitWithTime() {
+        return getUnit() + "/h";
+    }
+
     public float getResultByUnit(float origin) {
         if (kmUnit) {
             return origin;
