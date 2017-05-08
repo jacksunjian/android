@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -50,6 +51,8 @@ public class SensorSettingActivity extends BaseActivity {
     SeekBar turningSeekBar, ridingSeekBar, balanceSeekBar;
     TextView balanceText;
     int workMode;
+    @Bind(R.id.posture_layout)
+    RelativeLayout postureLayout;
     private MainFuncCommandResp mainFuncResp;
     private CommandRespManager respManager = new CommandRespManager();
 
@@ -64,6 +67,8 @@ public class SensorSettingActivity extends BaseActivity {
     private String unLockCommand;
     private String checkCommand;
     private Handler handler = new Handler();
+    ViewGroup turnlayout;
+    ViewGroup ridinglayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,6 +117,9 @@ public class SensorSettingActivity extends BaseActivity {
         findViewById(R.id.ll_back).setVisibility(View.VISIBLE);
         findViewById(R.id.iv_right).setVisibility(View.GONE);
         actionBarTitle.setText("传感器设置");
+
+         turnlayout = (ViewGroup) findViewById(R.id.turning_sensitivity);
+         ridinglayout =(ViewGroup) findViewById(R.id.riding_sensitivity);
     }
 
     private void initSettingView() {
@@ -330,21 +338,17 @@ public class SensorSettingActivity extends BaseActivity {
         Log.e("sunjian-ridingSwitch", command);
         if (command.equals(turnOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A1 65 00 E8 FE
-            showToast("转向开启");
-            turningSeekBar.setEnabled(false);
+            turnlayout.setVisibility(View.GONE);
         } else if (command.equals(turnoffSensorSettingCommand)) {
             //55 AA 04 0A 03 A1 32 00 1B FF
-            turningSeekBar.setEnabled(true);
-            showToast("转向关闭");
+            turnlayout.setVisibility(View.VISIBLE);
             turningSeekBar.setProgress(50);
         } else if (command.equals(ridingOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A2 65 00 E7 FE
-            ridingSeekBar.setEnabled(false);
-            showToast("骑行开启");
+           ridinglayout.setVisibility(View.GONE);
         } else if (command.equals(ridingOffSensorSettingCommand)) {
             //55 AA 04 0A 03 A2 32 00 1A FF
-            ridingSeekBar.setEnabled(true);
-            showToast("骑行关闭");
+          ridinglayout.setVisibility(View.VISIBLE);
             ridingSeekBar.setProgress(50);
         } else if (command.equals(lockCommand)) {
             showWarnCommandPop();
@@ -395,12 +399,19 @@ public class SensorSettingActivity extends BaseActivity {
     }
 
 
-    @OnClick({R.id.lh_btn_back, R.id.ll_back})
+    @OnClick({R.id.lh_btn_back, R.id.ll_back,R.id.posture_layout})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
             case R.id.ll_back:
                 onBackPressed();
+                break;
+            case R.id.posture_layout:
+                if (workMode == 1) {
+                    showCarLockDialog();
+                } else {
+                    showToast("当前不是助力模式，请下车");
+                }
                 break;
         }
     }
