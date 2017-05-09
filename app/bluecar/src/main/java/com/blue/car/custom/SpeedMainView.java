@@ -273,13 +273,25 @@ public class SpeedMainView extends View {
         } else {
             size = width;
         }
-        updateScaleCircle(size);
+        updateSomeDimen(size);
         setMeasuredDimension(size, size);
     }
 
     private void updateScaleCircle(int squareSize) {
+        strokeWidthBorder = squareSize / 20;
         int strokeMargin = strokeWidthBorder / 2;
         speedScaleCircle = new RectF(strokeMargin, strokeMargin, squareSize - strokeMargin, squareSize - strokeMargin);
+        baseSpeedPaint.setStrokeWidth(strokeWidthBorder);
+        actualSpeedPaint.setStrokeWidth(strokeWidthBorder);
+        batteryProgressPaint.setStrokeWidth(batteryProgressWidth = strokeWidthBorder);
+    }
+
+    private void updateSomeDimen(int squareSize) {
+        updateScaleCircle(squareSize);
+        mileageTextPaint.setTextSize(squareSize / 13);
+        speedValuePaint.setTextSize(squareSize / 2.5f);
+        speedUnitPaint.setTextSize(squareSize / 11);
+        batteryTextPaint.setTextSize(squareSize / 11);
     }
 
     @Override
@@ -321,8 +333,8 @@ public class SpeedMainView extends View {
     @SuppressLint("DefaultLocale")
     private void drawPerMileage(Canvas canvas) {
         int centre = getWidth() / 2;
-        int marginTop = 74;
-        int height = 74;
+        int marginTop = (int) (centre * 1.0f / 4);
+        int height = (int) (centre * 1.0f / 4);
 
         if (mileageTextRect == null) {
             mileageTextRect = new RectF(centre - centre * 2 / 3, centre + marginTop, centre + centre * 2 / 3, centre + marginTop + height);
@@ -332,7 +344,7 @@ public class SpeedMainView extends View {
             mileageTextDiff = top / 2 + bottom / 2;
         }
         canvas.drawRoundRect(mileageTextRect, 40, 40, mileageRectPaint);
-        canvas.drawText(String.format("本次里程 %.1f"+getUnit(), perMileage), centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
+        canvas.drawText(String.format("本次里程 %.1f" + getUnit(), perMileage), centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
     }
 
     private int getSpeedValueTextHeight() {
@@ -346,7 +358,7 @@ public class SpeedMainView extends View {
 
     @SuppressLint("DefaultLocale")
     private void drawSpeedText(Canvas canvas) {
-        canvas.drawText(String.format("%.1f", speed), getWidth() / 2, getHeight() / 2, speedValuePaint);
-        canvas.drawText(getUnitWithTime(), getWidth() / 2, getHeight() / 2 - getSpeedValueTextHeight() - 33, speedUnitPaint);
+        canvas.drawText(String.format("%.1f", speed), getWidth() / 2 - speedValuePaint.getTextSize() / 9, getHeight() / 2, speedValuePaint);
+        canvas.drawText(getUnitWithTime(), getWidth() / 2, getHeight() / 2 - getSpeedValueTextHeight() - getHeight() / 18, speedUnitPaint);
     }
 }
