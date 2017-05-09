@@ -146,19 +146,20 @@ public class StringUtils {
         return input;
     }
 
+    public static String dealSpeedFormatWithoutTime(float speed) {
+        return String.format("%.1f", speed);
+    }
+
    public static  String dealSpeedFormat(float speed){
        return String.format("%.1fkm/h",speed);
-
    }
 
     public static  String dealMileFormat(float mile){
         return String.format("%.1fkm",mile);
-
     }
 
     public static  String dealTempFormat(float temp){
         return String.format("%.1f℃",temp);
-
     }
 
     public static String dealBatteryPercentFormat(float percent) {

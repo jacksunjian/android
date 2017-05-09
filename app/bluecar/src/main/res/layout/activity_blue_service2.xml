@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_color"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <com.blue.car.custom.MyScrollView
+        android:id="@+id/myScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/speed_panel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:id="@+id/speedView_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.blue.car.custom.SpeedMainView
+                        android:id="@+id/speed_view"
+                        android:layout_width="230dp"
+                        android:layout_height="230dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginBottom="12dp"
+                        android:layout_marginLeft="12dp"
+                        android:layout_marginRight="12dp" />
+
+                    <ImageView
+                        android:id="@+id/bluetooth_market"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/speed_view"
+                        android:layout_centerHorizontal="true"
+                        android:src="@mipmap/lanya" />
+
+                    <TextView
+                        android:id="@+id/system_status_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/bluetooth_market"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/button_rect_circle_black_background"
+                        android:gravity="center"
+                        android:minWidth="180dp"
+                        android:padding="10dp"
+                        android:text="@string/warning_normal"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/mode_desc_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/system_status_tv"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="11dp"
+                        android:text="@string/mode_normal"
+                        android:textColor="@android:color/holo_orange_light"
+                        android:textSize="14sp" />
+
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/current_speed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/func_panel_layout"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="-20dp"
+                    android:alpha="0"
+                    android:gravity="center_horizontal"
+                    android:minWidth="120dp"
+                    android:paddingRight="15dp"
+                    android:text="0.0"
+                    android:textColor="@android:color/white"
+                    android:textSize="64sp" />
+
+                <TextView
+                    android:id="@+id/speed_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/current_speed"
+                    android:layout_marginLeft="-14dp"
+                    android:layout_toRightOf="@+id/current_speed"
+                    android:alpha="0"
+                    android:text="km/h"
+                    android:textColor="@android:color/white"
+                    android:textSize="17sp" />
+
+                <RelativeLayout
+                    android:id="@+id/func_panel_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginLeft="34dp"
+                    android:layout_marginRight="34dp"
+                    android:gravity="center_vertical"
+                    android:minHeight="116dp"
+                    android:paddingBottom="8dp">
+
+                    <ImageView
+                        android:id="@+id/speed_limit_img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@mipmap/xiansu_off" />
+
+                    <ImageView
+                        android:id="@+id/lock_off_img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@+id/speed_limit_img"
+                        android:layout_centerHorizontal="true"
+                        android:src="@mipmap/suo_off" />
+
+                    <ImageView
+                        android:id="@+id/remote_setting_img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignTop="@+id/speed_limit_img"
+                        android:src="@mipmap/yaokong" />
+
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/other_panel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/speed_panel"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/info_rl"
+                    layout="@layout/normal_info_image_layout" />
+
+                <include
+                    android:id="@+id/setting_rl"
+                    layout="@layout/normal_info_image_layout" />
+
+                <include
+                    android:id="@+id/average_speed"
+                    layout="@layout/normal_info_text_layout" />
+
+                <include
+                    android:id="@+id/per_meter"
+                    layout="@layout/normal_info_text_layout" />
+
+                <include
+                    android:id="@+id/rest_ride_meter"
+                    layout="@layout/normal_info_text_layout" />
+
+                <Button
+                    android:id="@+id/search_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/button_rect_circle_transparent_background_white_stroke"
+                    android:gravity="center"
+                    android:text="重新搜索"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+    </com.blue.car.custom.MyScrollView>
+
+</LinearLayout>

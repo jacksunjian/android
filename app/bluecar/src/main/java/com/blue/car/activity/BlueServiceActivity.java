@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -19,15 +20,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.AppApplication;
 import com.blue.car.R;
+import com.blue.car.custom.MyScrollView;
 import com.blue.car.custom.OnScrollListener;
 import com.blue.car.custom.OverScrollView;
 import com.blue.car.custom.SpeedMainView;
@@ -44,6 +48,7 @@ import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
 import com.blue.car.utils.BluetoothGattUtils;
 import com.blue.car.utils.LogUtils;
+import com.blue.car.utils.ScreenUtils;
 import com.blue.car.utils.StringUtils;
 import com.blue.car.utils.ToastUtils;
 import com.blue.car.utils.UniversalViewUtils;
@@ -69,8 +74,15 @@ public class BlueServiceActivity extends BaseActivity {
     @Bind(R.id.speedView_layout)
     ViewGroup speedViewLayout;
 
-    @Bind(R.id.bounceScrollView)
-    OverScrollView bounceScrollView;
+    /*@Bind(R.id.bounceScrollView)
+    OverScrollView bounceScrollView;*/
+
+    @Bind(R.id.myScrollView)
+    MyScrollView myScrollView;
+    @Bind(R.id.current_speed)
+    TextView currentSpeed;
+    @Bind(R.id.speed_unit)
+    TextView currentSpeedUnit;
 
     @Bind(R.id.mode_desc_tv)
     TextView modeDescTv;
@@ -108,6 +120,7 @@ public class BlueServiceActivity extends BaseActivity {
     private String unLockCarCommand;
     private String lockCarCommand;
 
+    private int speedLayoutHeight;
     private boolean startAnim = false;
     private int slideUpLimit = 80;
     private int slideDownLimit = 20;
@@ -122,7 +135,7 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.activity_blue_service;
+        return R.layout.activity_blue_service2;
     }
 
     @Override
@@ -135,13 +148,41 @@ public class BlueServiceActivity extends BaseActivity {
 
     @Override
     protected void initView() {
+        initSpecialLayout();
         initSpeedMainView();
         initScrollView();
         initInfoLayout();
     }
 
+    private void initSpecialLayout() {
+        ViewGroup viewGroup = (ViewGroup) findViewById(R.id.speed_panel);
+        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) viewGroup.getLayoutParams();
+        lp.height = ScreenUtils.screenHeight(this) - ScreenUtils.getNavigationBarHeight(this);
+        viewGroup.setLayoutParams(lp);
+
+        currentSpeedUnit.setText(AppApplication.instance().getUnitWithTime());
+        currentSpeed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/zaozigongfang.otf"), Typeface.ITALIC);
+        currentSpeed.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                currentSpeed.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                int[] position = new int[2];
+                currentSpeed.getLocationInWindow(position);
+                Log.e("##location",String.valueOf(position[1]));
+                myScrollView.setDetailLayoutPosition(position[1]);
+            }
+        });
+    }
+
     private void initSpeedMainView() {
         speedMainView.setValueAnimatorDuration(mainFuncCommandDelay - 30);
+        speedMainView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                speedMainView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                speedLayoutHeight = speedMainView.getHeight();
+            }
+        });
     }
 
     @Override
@@ -312,42 +353,21 @@ public class BlueServiceActivity extends BaseActivity {
         }, firstCommandDelay);
     }
 
-    private CommandRespManager.OnDataCallback unitCommandCallback = new CommandRespManager.OnDataCallback() {
-        @Override
-        public void resp(byte[] data) {
-            if (StringUtils.isNullOrEmpty(data)) {
-                return;
-            }
-            boolean result = CommandManager.checkVerificationCode(data);
-            if (result) {
-                //FirstStartCommandResp resp = CommandManager.getFirstStartCommandRespData(data);
-                //LogUtils.jsonLog(TAG, resp);
-                boolean kmUnit = true;
-                AppApplication.instance().setKmUnit(kmUnit);
-                updateSpeedViewUnit(kmUnit);
-            }
-        }
-    };
-
-    private void startUnitCommand() {
-        byte[] command = CommandManager.getFirstCommand();
-        respManager.setCommandRespCallBack(BlueUtils.bytesToAscii(command), unitCommandCallback);
-        writeCommand(command);
-    }
-
-    private void updateSpeedViewUnit(boolean kmUnit) {
-        speedMainView.setKmUnit(kmUnit);
-    }
-
     private void updateSpeedView(MainFuncCommandResp resp) {
         if (resp == null) {
             return;
         }
+        speedMainView.setKmUnit(AppApplication.instance().isKmUnit());
         speedMainView.setBatteryPercent(resp.remainBatteryPercent * 1.0f / 100);
         float speedLimit = Math.max(resp.speedLimit, resp.maxAbsSpeed);
         speedMainView.setSpeedLimit(AppApplication.instance().getResultByUnit(Math.max(resp.speed, speedLimit) + 5));
         speedMainView.setSpeed(AppApplication.instance().getResultByUnit(resp.speed));
         speedMainView.setPerMileage(AppApplication.instance().getResultByUnit(resp.perMileage));
+    }
+
+    private void updateCurrentSpeed(MainFuncCommandResp resp) {
+        currentSpeedUnit.setText(AppApplication.instance().getUnitWithTime());
+        currentSpeed.setText(StringUtils.dealSpeedFormatWithoutTime(AppApplication.instance().getResultByUnit(resp.speed)));
     }
 
     private void updateOtherView(MainFuncCommandResp resp) {
@@ -480,7 +500,7 @@ public class BlueServiceActivity extends BaseActivity {
         return super.onTouchEvent(event);
     }
 
-    @OnClick({ R.id.info_rl, R.id.setting_rl, R.id.search_btn})
+    @OnClick({R.id.info_rl, R.id.setting_rl, R.id.search_btn})
     void someFunPanelClick(View view) {
         switch (view.getId()) {
             case R.id.info_rl:
@@ -598,13 +618,46 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void initScrollView() {
-        bounceScrollView.setScrollViewListener(new OnScrollListener() {
+        /*bounceScrollView.setScrollViewListener(new OnScrollListener() {
             @Override
             public void onScrollChanged(int nowX, int nowY, int oldX, int oldY) {
                 updateSpeedViewLayout(nowY, oldY);
             }
+        });*/
+        myScrollView.setOnScrollChangedListener(new MyScrollView.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged(int l, int t, int oldl, int oldt) {
+                if (t <= 390) {
+                    int diff = 390 - t;
+                    speedViewLayout.setAlpha(diff * 1.0f / 390);
+                    if (t <= 240) {
+                        currentSpeed.setAlpha(t * 1.0f / 240);
+                        currentSpeedUnit.setAlpha(t * 1.0f / 240);
+                    }
+                }
+            }
         });
     }
+
+    /*private void updateSpeedViewLayout(int nowY, int oldY) {
+        int limit = slideUpLimit;
+        if (nowY > oldY) {
+            if (nowY > limit) {
+                if (nowY > speedLayoutHeight + 24 + 40) {
+                    return;
+                }
+                speedViewLayout.scrollTo(0, nowY);
+            }
+        } else {
+            if (nowY > speedLayoutHeight + 24 + 40) {
+                return;
+            }
+            if (nowY < 0) {
+                return;
+            }
+            speedViewLayout.scrollTo(0, nowY * -1);
+        }
+    }*/
 
     private void updateSpeedViewLayout(int nowY, int oldY) {
         int limit = slideUpLimit;
@@ -633,13 +686,16 @@ public class BlueServiceActivity extends BaseActivity {
         if (resp == null) {
             return;
         }
-        batteryPercentTv.setText(StringUtils.dealBatteryPercentFormat(resp.remainBatteryPercent * 1.0f / 100));
+        updateCurrentSpeed(resp);
+
         averageTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
         perMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
-        totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
-        perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
         restRideMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.getRemainMileage())));
-        temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
+
+        //totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
+        //perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
+        //temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
+        //batteryPercentTv.setText(StringUtils.dealBatteryPercentFormat(resp.remainBatteryPercent * 1.0f / 100));
     }
 
     private void initInfoLayout() {
@@ -647,11 +703,12 @@ public class BlueServiceActivity extends BaseActivity {
         initNormalInfoLayout(R.id.setting_rl, "设置", R.mipmap.gengduo);
         averageTv = initNormalInfoLayout(R.id.average_speed, "平均速度", "0.0km/h");
         perMeterTv = initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0km");
-        perRunTimeTv = initNormalInfoLayout(R.id.per_runTime, "本次行驶时间", "0min");
         restRideMeterTv = initNormalInfoLayout(R.id.rest_ride_meter, "剩余行驶里程", "0km");
-        totalMeterTextTv = initNormalInfoLayout(R.id.total_meter, "总里程", "0.0km");
-        temperatureTextTv = initNormalInfoLayout(R.id.temperature, "温度", "20℃");
-        batteryPercentTv = initNormalInfoLayout(R.id.battery_percent, "剩余电量百分比", "50%");
+        //in 2 layout no use
+        //perRunTimeTv = initNormalInfoLayout(R.id.per_runTime, "本次行驶时间", "0min");
+        //totalMeterTextTv = initNormalInfoLayout(R.id.total_meter, "总里程", "0.0km");
+        //temperatureTextTv = initNormalInfoLayout(R.id.temperature, "温度", "20℃");
+        //batteryPercentTv = initNormalInfoLayout(R.id.battery_percent, "剩余电量百分比", "50%");
     }
 
     private TextView initNormalInfoLayout(int parentId, String leftText, String rightText) {

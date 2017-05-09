@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:id="@+id/posture_layout"
     android:layout_height="wrap_content"
-    android:minHeight="74dp">
+    android:minHeight="60dp">
 
     <TextView
         android:id="@+id/info_left_text"
