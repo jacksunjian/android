@@ -39,7 +39,6 @@
         <activity android:name=".activity.BlueSettingActivity" />
         <activity android:name=".activity.OtherSettingActivity" />
         <activity android:name=".activity.DeviceInfoActivity" />
-        <activity android:name=".activity.BlackSettingActivity" />
         <activity android:name=".activity.LightSettingActivity" />
         <activity android:name=".activity.BlueControlActivity" />
         <activity android:name=".activity.BlackBoxActivity" />
