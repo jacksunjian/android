@@ -1,32 +1,31 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
-import android.os.Bundle;
+import android.graphics.Color;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
-import com.blue.car.model.AccountInfo;
 import com.blue.car.service.BlueUtils;
+import com.blue.car.utils.ActivityUtils;
 import com.blue.car.utils.StringUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.UnsupportedEncodingException;
-
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -53,11 +52,12 @@ public class BlueSettingActivity extends BaseActivity {
     @Bind(R.id.secret_tv)
     TextView secretTv;
 
+    private EditText firstPwdEdit, repeatPwdEdit;
+
     private CommandRespManager respManager = new CommandRespManager();
     private String settingPasswordCommand, settingNameCommand;
 
-    private boolean needFinishActivity = false;
-    String name="",password="";
+    String name = "", password = "";
 
     @Override
     protected int getLayoutId() {
@@ -86,35 +86,50 @@ public class BlueSettingActivity extends BaseActivity {
                 onBackPressed();
                 break;
             case R.id.name_rl:
-                showname();
+                showRenameDialog();
                 break;
             case R.id.password_rl:
-                showpassword();
+                showResetPassword();
                 break;
         }
     }
 
-    private void showpassword() {
-        new MaterialDialog.Builder(this)
-                .title("蓝牙密码")
-                .content("password")
-                .inputType(InputType.TYPE_CLASS_NUMBER)
-                .input("请输入六位数字密码", "", false, new MaterialDialog.InputCallback() {
+    private void showResetPassword() {
+        MaterialDialog dialog = new MaterialDialog.Builder(this)
+                .title("设置密码")
+                .autoDismiss(false)
+                .customView(R.layout.dialog_custom_multi_edit, false)
+                .positiveText("确认")
+                .negativeText("返回")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
-                    public void onInput(MaterialDialog dialog, CharSequence input) {
-                        if (input.toString().length() != 6) {
-                            showToast("密码需为6位数字");
-                            return;
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        boolean correct = checkInputPasswordCorrect();
+                        if (correct) {
+                            dialog.dismiss();
                         }
-                        writeSettingPasswordCommand(input.toString());
-                        password=input.toString();
                     }
-                }).show();
-
-
+                })
+                .show();
+        firstPwdEdit = (EditText) dialog.getCustomView().findViewById(R.id.first_pwd);
+        repeatPwdEdit = (EditText) dialog.getCustomView().findViewById(R.id.repeat_pwd);
     }
 
-    private void showname() {
+    private boolean checkInputPasswordCorrect() {
+        if (firstPwdEdit.getText().toString().length() != 6 || repeatPwdEdit.getText().toString().length() != 6) {
+            showToast("密码需为6位数字");
+            return false;
+        }
+        if (!firstPwdEdit.getText().toString().equals(repeatPwdEdit.getText().toString())) {
+            showToast("密码不一致");
+            return false;
+        }
+        writeSettingPasswordCommand(password = repeatPwdEdit.toString());
+        return true;
+    }
+
+    private void showRenameDialog() {
         new MaterialDialog.Builder(this)
                 .title("蓝牙名称")
                 .content("name")
@@ -124,9 +139,8 @@ public class BlueSettingActivity extends BaseActivity {
                     public void onInput(MaterialDialog dialog, CharSequence input) {
                         if (StringUtils.isNotBlank(input.toString())) {
                             if (input.toString().length() <= 10) {
-                                writeSettingNameCommand(input.toString());
-                                name=input.toString();
-                            }else{
+                                writeSettingNameCommand(name = input.toString());
+                            } else {
                                 showToast("请输入小于十个字数");
                             }
                         }
@@ -134,17 +148,6 @@ public class BlueSettingActivity extends BaseActivity {
                 })
                 .show();
     }
-
-    public static byte[] getBytesByUTF8CharsetName(String str) {
-        try {
-            return str.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
 
     private void writeSettingPasswordCommand(String s) {
         byte[] command = CommandManager.getBlueCarPasswordSettingCommand(s);
@@ -155,7 +158,6 @@ public class BlueSettingActivity extends BaseActivity {
     private void writeSettingNameCommand(String s) {
         byte[] command = CommandManager.getBlueCarNameSettingCommand(s);
         settingNameCommand = BlueUtils.bytesToAscii(command);
-
         writeCommand(command);
     }
 
@@ -182,24 +184,21 @@ public class BlueSettingActivity extends BaseActivity {
         }
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(settingPasswordCommand)) {
-            saveAccountPassword();
-            showToast("设置密码成功");
+            showToast("设置密码成功，平衡车即将重启");
+            startToResearch();
         } else if (command.equals(settingNameCommand)) {
-            saveAccountName();
-            showToast("设置名称成功");
+            showToast("设置名字成功，平衡车即将重启");
+            startToResearch();
         }
     }
 
-    private void saveAccountName() {
-        AccountInfo accountInfo = AccountInfo.currentAccountInfo(this);
-        accountInfo.bleName = name;
-        AccountInfo.saveAccountInfo(this, accountInfo);
-    }
-
-    private void saveAccountPassword() {
-        AccountInfo accountInfo = AccountInfo.currentAccountInfo(this);
-        accountInfo.blePassword = password;
-        AccountInfo.saveAccountInfo(this, accountInfo);
+    private void startToResearch() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ActivityUtils.startActivityWithClearTask(BlueSettingActivity.this, SearchActivity.class);
+            }
+        }, 1500);
     }
 
     @Override
