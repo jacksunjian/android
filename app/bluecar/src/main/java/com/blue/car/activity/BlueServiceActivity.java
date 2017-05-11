@@ -291,6 +291,7 @@ public class BlueServiceActivity extends BaseActivity {
                 .title("输入密码进行校验")
                 .canceledOnTouchOutside(false)
                 .autoDismiss(false)
+                .inputRange(6, 6)
                 .input("6位数字密码", "", false, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
@@ -310,7 +311,7 @@ public class BlueServiceActivity extends BaseActivity {
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        String pwd = dialog.getInputEditText().toString();
+                        String pwd = dialog.getInputEditText().getText().toString();
                         if (pwd.length() != 6) {
                             ToastUtils.showShortToast(BlueServiceActivity.this, "请输入6位数的密码");
                             return;
