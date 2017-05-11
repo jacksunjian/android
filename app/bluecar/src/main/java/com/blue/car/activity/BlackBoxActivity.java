@@ -1,9 +1,11 @@
 package com.blue.car.activity;
 
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +64,8 @@ public class BlackBoxActivity extends BaseActivity {
     ArrayList<BlackBoxCommandResp> list = new ArrayList<BlackBoxCommandResp>();
     MyAdapter myAdapter;
 
+    private MaterialDialog loadingDialog;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_blackbox_query;
@@ -99,6 +103,48 @@ public class BlackBoxActivity extends BaseActivity {
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss();
                         startLockCommand();
+                    }
+                }).show();
+    }
+
+    private void showReadingBlackInfoDialog() {
+        loadingDialog = new MaterialDialog.Builder(this)
+                .backgroundColor(Color.argb(80, 0, 0, 0))
+                .contentColor(Color.WHITE)
+                .widgetColor(Color.WHITE)
+                .canceledOnTouchOutside(false)
+                .keyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            return true;
+                        }
+                        return false;
+                    }
+                })
+                .content("读取中，请等待完毕...")
+                .progress(true, 0)
+                .build();
+        loadingDialog.getWindow().setDimAmount(0);
+        loadingDialog.show();
+    }
+
+    private void stopLoadingDialog() {
+        loadingDialog.dismiss();
+        loadingDialog = null;
+    }
+
+    private void showUnLockDialog() {
+        new MaterialDialog.Builder(this)
+                .content("黑匣子数据读取完成，是否解锁?")
+                .positiveText("确定")
+                .negativeText("取消")
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        startUnLockCommand();
                     }
                 }).show();
     }
@@ -151,7 +197,8 @@ public class BlackBoxActivity extends BaseActivity {
     private void stopBlackAndUnlock() {
         stopSendBlackBoxCommand = true;
         blackBoxCommandIndex = BLACK_BOX_START;
-        startUnLockCommand();
+        showUnLockDialog();
+        stopLoadingDialog();
     }
 
     private void updateView(BlackBoxCommandResp resp) {
@@ -178,13 +225,14 @@ public class BlackBoxActivity extends BaseActivity {
     private void processWriteEvent(byte[] dataBytes) {
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(lockCommand)) {
+            showReadingBlackInfoDialog();
             startBlackBoxCommand(blackBoxCommandIndex);
         } else if (command.equals(blackBoxCommand)) {
             if (BlueUtils.byteArrayToInt(dataBytes, 5, 2) >= BLACK_BOX_END - 4) {
                 stopBlackAndUnlock();
             }
         } else if (command.equals(unLockCommand)) {
-            showToast("信息收集完毕，车子解锁");
+            showToast("车子解锁成功");
         }
     }
 
@@ -201,12 +249,10 @@ public class BlackBoxActivity extends BaseActivity {
     }
 
 
-
     @OnClick({R.id.lh_btn_back, R.id.ll_back})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
-
             case R.id.ll_back:
                 onBackPressed();
                 break;
@@ -258,13 +304,9 @@ public class BlackBoxActivity extends BaseActivity {
 
 
         static class ViewHolder {
-
             TextView timeTv;
-
             TextView codeTv;
-
             TextView messageTv;
-
         }
     }
 }
