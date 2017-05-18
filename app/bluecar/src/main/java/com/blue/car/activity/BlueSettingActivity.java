@@ -18,6 +18,7 @@ import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
+import com.blue.car.model.AccountInfo;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.ActivityUtils;
 import com.blue.car.utils.StringUtils;
@@ -96,11 +97,11 @@ public class BlueSettingActivity extends BaseActivity {
 
     private void showResetPassword() {
         MaterialDialog dialog = new MaterialDialog.Builder(this)
-                .title("设置密码")
+                .title("密码设置")
                 .autoDismiss(false)
                 .customView(R.layout.dialog_custom_multi_edit, false)
-                .positiveText("确认")
-                .negativeText("返回")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
@@ -130,11 +131,21 @@ public class BlueSettingActivity extends BaseActivity {
     }
 
     private void showRenameDialog() {
-        new MaterialDialog.Builder(this)
-                .title("蓝牙名称")
-                .content("name")
+        AccountInfo account = AccountInfo.currentAccountInfo(this);
+        String defaultName = null;
+        if (account != null) {
+            defaultName = account.bleName;
+        }
+        if(StringUtils.isNullOrEmpty(defaultName)) {
+            defaultName = "请输入名称";
+        }
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
+                .title("蓝牙名称设置")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
+                .negativeColor(Color.GRAY)
                 .inputType(InputType.TYPE_CLASS_TEXT)
-                .input("请输入名称", "", false, new MaterialDialog.InputCallback() {
+                .input(defaultName, "", false, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(MaterialDialog dialog, CharSequence input) {
                         if (StringUtils.isNotBlank(input.toString())) {
@@ -145,8 +156,8 @@ public class BlueSettingActivity extends BaseActivity {
                             }
                         }
                     }
-                })
-                .show();
+                });
+        builder.show();
     }
 
     private void writeSettingPasswordCommand(String s) {
