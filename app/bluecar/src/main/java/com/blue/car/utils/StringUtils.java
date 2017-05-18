@@ -158,8 +158,16 @@ public class StringUtils {
         return String.format("%.1fkm",mile);
     }
 
+    public static  String dealMileFormatWithoutUnit(float mile){
+        return String.format("%.1f",mile);
+    }
+
     public static  String dealTempFormat(float temp){
         return String.format("%.1f℃",temp);
+    }
+
+    public static  String dealTempFormatWithoutUnit(float temp){
+        return String.format("%.1f",temp);
     }
 
     public static String dealBatteryPercentFormat(float percent) {

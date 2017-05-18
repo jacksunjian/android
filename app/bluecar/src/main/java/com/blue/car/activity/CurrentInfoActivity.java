@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -88,12 +89,13 @@ public class CurrentInfoActivity extends BaseActivity {
     private void initInfoLayout() {
         initNormalInfoLayout(R.id.info_rl, "信息", R.mipmap.gengduo);
         initNormalInfoLayout(R.id.setting_rl, "设置", R.mipmap.gengduo);
-        averageTv = initNormalInfoLayout(R.id.average_speed, "平均速度", "0.0km/h");
-        perMeterTv = initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0km");
+        AppApplication app = AppApplication.instance();
+        averageTv = initNormalInfoLayout(R.id.average_speed, "平均速度", "0.0" + app.getUnitWithTime());
+        perMeterTv = initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0" + app.getPerMeterUnit());
         perRunTimeTv = initNormalInfoLayout(R.id.per_runTime, "本次行驶时间", "5min");
-        restRideMeterTv = initNormalInfoLayout(R.id.rest_ride_meter, "剩余行驶里程", "3.2km");
-        totalMeterTextTv = initNormalInfoLayout(R.id.total_meter, "总里程", "23.2km");
-        temperatureTextTv = initNormalInfoLayout(R.id.temperature, "温度", "14℃");
+        restRideMeterTv = initNormalInfoLayout(R.id.rest_ride_meter, "剩余行驶里程", "3.2" + app.getPerMeterUnit());
+        totalMeterTextTv = initNormalInfoLayout(R.id.total_meter, "总里程", "23.2" + app.getPerMeterUnit());
+        temperatureTextTv = initNormalInfoLayout(R.id.temperature, "温度", "1" + app.getTemperUnit());
         batteryPercentTv = initNormalInfoLayout(R.id.battery_percent, "剩余电量百分比", "46%");
     }
 
@@ -133,18 +135,26 @@ public class CurrentInfoActivity extends BaseActivity {
         }
     };
 
+    @SuppressLint("SetTextI18n")
     private void updateView(MainFuncCommandResp resp) {
         if (resp == null) {
             return;
         }
-        currentSpeedView.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.speed)));
+        AppApplication app = AppApplication.instance();
         batteryPercentTv.setText(String.valueOf(resp.remainBatteryPercent * 1.0f / 100));
-        averageTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
-        perMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
-        totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
+        currentSpeedView.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.speed)) +
+                app.getUnitWithTime());
+        averageTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.averageSpeed)) +
+                app.getUnitWithTime());
+        perMeterTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.perMileage)) +
+                app.getPerMeterUnit());
+        totalMeterTextTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.totalMileage)) +
+                app.getPerMeterUnit());
+        restRideMeterTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.getRemainMileage())) +
+                app.getPerMeterUnit());
         perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
-        restRideMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.getRemainMileage())));
-        temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
+        temperatureTextTv.setText(StringUtils.dealTempFormatWithoutUnit(app.getTemperByUnit(resp.temperature)) +
+                app.getTemperUnit());
     }
 
     private void processSpeedLimitClick() {
@@ -180,11 +190,11 @@ public class CurrentInfoActivity extends BaseActivity {
                 processRemoteSettingClick();
                 break;
             case R.id.info_rl:
-                 it = new Intent(this, InfoMoreActivity.class);
+                it = new Intent(this, InfoMoreActivity.class);
                 startActivity(it);
                 break;
             case R.id.setting_rl:
-                 it = new Intent(this, SettingMoreActivity.class);
+                it = new Intent(this, SettingMoreActivity.class);
                 startActivity(it);
                 break;
             case R.id.search_btn:
@@ -231,7 +241,7 @@ public class CurrentInfoActivity extends BaseActivity {
                     + event.uuid.toString()
                     + " -> "
                     + BlueUtils.bytesToHexString(dataBytes));
-          //  processWriteEvent(dataBytes);
+            //  processWriteEvent(dataBytes);
         }
     }
 

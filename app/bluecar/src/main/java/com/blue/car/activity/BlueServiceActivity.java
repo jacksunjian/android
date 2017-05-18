@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -175,6 +176,7 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void initSpeedMainView() {
+        speedMainView.setKmUnit(AppApplication.instance().isKmUnit());
         speedMainView.setValueAnimatorDuration(mainFuncCommandDelay - 30);
         speedMainView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -683,16 +685,21 @@ public class BlueServiceActivity extends BaseActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateCurrentInfoView(MainFuncCommandResp resp) {
         if (resp == null) {
             return;
         }
         updateCurrentSpeed(resp);
 
-        averageTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
-        perMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
-        restRideMeterTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.getRemainMileage())));
-
+        AppApplication app = AppApplication.instance();
+        perMeterTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.perMileage)) +
+                app.getPerMeterUnit());
+        restRideMeterTv.setText(StringUtils.dealMileFormat(app.getResultByUnit(resp.getRemainMileage())) +
+                app.getPerMeterUnit());
+        temperatureTextTv.setText(StringUtils.dealTempFormatWithoutUnit(app.getTemperByUnit(resp.temperature)) +
+                app.getTemperUnit());
+        
         //totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
         //perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
         //temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));
@@ -702,9 +709,11 @@ public class BlueServiceActivity extends BaseActivity {
     private void initInfoLayout() {
         initNormalInfoLayout(R.id.info_rl, "信息", R.mipmap.gengduo);
         initNormalInfoLayout(R.id.setting_rl, "设置", R.mipmap.gengduo);
-        averageTv = initNormalInfoLayout(R.id.average_speed, "平均速度", "0.0km/h");
-        perMeterTv = initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0km");
-        restRideMeterTv = initNormalInfoLayout(R.id.rest_ride_meter, "剩余行驶里程", "0km");
+        AppApplication app = AppApplication.instance();
+        perMeterTv = initNormalInfoLayout(R.id.per_meter, "本次里程", "0.0" + app.getPerMeterUnit());
+        temperatureTextTv = initNormalInfoLayout(R.id.temperature, "车体温度", "20" + app.getTemperUnit());
+        restRideMeterTv = initNormalInfoLayout(R.id.rest_ride_meter, "剩余行驶里程", "0" + app.getPerMeterUnit());
+
         //in 2 layout no use
         //perRunTimeTv = initNormalInfoLayout(R.id.per_runTime, "本次行驶时间", "0min");
         //totalMeterTextTv = initNormalInfoLayout(R.id.total_meter, "总里程", "0.0km");

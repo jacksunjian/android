@@ -150,11 +150,11 @@
                     layout="@layout/normal_info_image_layout" />
 
                 <include
-                    android:id="@+id/average_speed"
+                    android:id="@+id/per_meter"
                     layout="@layout/normal_info_text_layout" />
 
                 <include
-                    android:id="@+id/per_meter"
+                    android:id="@+id/temperature"
                     layout="@layout/normal_info_text_layout" />
 
                 <include

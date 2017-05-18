@@ -38,7 +38,7 @@ public class AppApplication extends Application {
     }
 
     public void initKmUnitValue() {
-        setKmUnit(PreferenceManager.getBooleanValue(sInstance.getApplicationContext(), UNIT_KEY, true));
+        setKmUnit(PreferenceManager.getBooleanValue(sInstance.getApplicationContext(), UNIT_KEY, kmUnit));
     }
 
     public static void setBluetoothLeService(BluetoothLeService bluetoothLeService) {
@@ -66,19 +66,48 @@ public class AppApplication extends Application {
         if (kmUnit) {
             return "km";
         } else {
-            return "mi";
+            return "mp";
         }
     }
 
     public String getUnitWithTime() {
-        return getUnit() + "/h";
+        String value = getUnit();
+        String time = "/h";
+        if (!kmUnit) {
+            time = "h";
+        }
+        return value + time;
     }
 
     public float getResultByUnit(float origin) {
         if (kmUnit) {
             return origin;
         } else {
-            return origin * 0.6213712f;
+            return origin * 0.62f;
+        }
+    }
+
+    public String getPerMeterUnit() {
+        if (kmUnit) {
+            return "km";
+        } else {
+            return "ml";
+        }
+    }
+
+    public float getTemperByUnit(float origin) {
+        if (kmUnit) {
+            return origin;
+        } else {
+            return 32 + origin * 1.8f;
+        }
+    }
+
+    public String getTemperUnit() {
+        if (kmUnit) {
+            return "℃";
+        } else {
+            return "℉";
         }
     }
 }
