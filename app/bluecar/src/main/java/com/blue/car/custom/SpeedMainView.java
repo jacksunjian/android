@@ -81,7 +81,7 @@ public class SpeedMainView extends View {
     }
 
     private float batteryProgressMax = 4000;
-    private float batteryProgress = 3600;
+    private float batteryProgress = 0.1f;
     private RectF batteryProgressRectF;
 
     private void initPaint() {
@@ -197,7 +197,7 @@ public class SpeedMainView extends View {
 
     private void updateBatteryValueScale(float value) {
         if (value < 0) {
-            this.batteryProgress = 0;
+            this.batteryProgress = 0.1f;
         } else if (value > batteryProgressMax) {
             this.batteryProgress = batteryProgressMax;
         } else {
@@ -252,12 +252,33 @@ public class SpeedMainView extends View {
         if (kmUnit) {
             return "km";
         } else {
-            return "mi";
+            return "mp";
+        }
+    }
+
+    public String getPerMeterUnit() {
+        if (kmUnit) {
+            return "km";
+        } else {
+            return "ml";
         }
     }
 
     public String getUnitWithTime() {
-        return getUnit() + "/h";
+        String value = getUnit();
+        String time = "/h";
+        if (!kmUnit) {
+            time = "h";
+        }
+        return value + time;
+    }
+
+    public float getResultByUnit(float origin) {
+        if (kmUnit) {
+            return origin;
+        } else {
+            return origin * 0.62f;
+        }
     }
 
     @Override
@@ -288,10 +309,10 @@ public class SpeedMainView extends View {
 
     private void updateSomeDimen(int squareSize) {
         updateScaleCircle(squareSize);
-        mileageTextPaint.setTextSize(squareSize / 13);
-        speedValuePaint.setTextSize(squareSize / 2.5f);
-        speedUnitPaint.setTextSize(squareSize / 11);
-        batteryTextPaint.setTextSize(squareSize / 11);
+        mileageTextPaint.setTextSize(squareSize / 13.92f);
+        speedValuePaint.setTextSize(squareSize / 3.05f);
+        speedUnitPaint.setTextSize(squareSize / 12.0f);
+        batteryTextPaint.setTextSize(squareSize / 13f);
     }
 
     @Override
@@ -330,21 +351,30 @@ public class SpeedMainView extends View {
         canvas.drawText(String.format("%.0f%%", progressPercent * 100), getWidth() / 2, getHeight() - batteryProgressWidth * 2, batteryTextPaint);
     }
 
+    private int dp2px(Context context, int dipValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dipValue * scale + 0.5f);
+    }
+
     @SuppressLint("DefaultLocale")
     private void drawPerMileage(Canvas canvas) {
         int centre = getWidth() / 2;
         int marginTop = (int) (centre * 1.0f / 4);
         int height = (int) (centre * 1.0f / 4);
 
+        String showText = String.format("本次里程 %.1f" + getPerMeterUnit(), perMileage);
         if (mileageTextRect == null) {
-            mileageTextRect = new RectF(centre - centre * 2 / 3, centre + marginTop, centre + centre * 2 / 3, centre + marginTop + height);
+            Rect bounds = new Rect();
+            mileageTextPaint.getTextBounds(showText, 0, showText.length(), bounds);
+            int width = bounds.centerX() + dp2px(getContext(), 8);
+            mileageTextRect = new RectF(centre - width, centre + marginTop, centre + width, centre + marginTop + height);
             Paint.FontMetrics fontMetrics = mileageTextPaint.getFontMetrics();
             float top = fontMetrics.top;
             float bottom = fontMetrics.bottom;
             mileageTextDiff = top / 2 + bottom / 2;
         }
         canvas.drawRoundRect(mileageTextRect, 40, 40, mileageRectPaint);
-        canvas.drawText(String.format("本次里程 %.1f" + getUnit(), perMileage), centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
+        canvas.drawText(showText, centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
     }
 
     private int getSpeedValueTextHeight() {
@@ -358,7 +388,7 @@ public class SpeedMainView extends View {
 
     @SuppressLint("DefaultLocale")
     private void drawSpeedText(Canvas canvas) {
-        canvas.drawText(String.format("%.1f", speed), getWidth() / 2 - speedValuePaint.getTextSize() / 9, getHeight() / 2, speedValuePaint);
+        canvas.drawText(String.format("%.1f", getResultByUnit(speed)), getWidth() / 2 - speedValuePaint.getTextSize() / 9, getHeight() / 2, speedValuePaint);
         canvas.drawText(getUnitWithTime(), getWidth() / 2, getHeight() / 2 - getSpeedValueTextHeight() - getHeight() / 18, speedUnitPaint);
     }
 }
