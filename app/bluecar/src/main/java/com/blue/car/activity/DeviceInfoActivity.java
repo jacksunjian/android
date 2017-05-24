@@ -1,5 +1,6 @@
 package com.blue.car.activity;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.os.Bundle;
 import android.os.Handler;
@@ -55,7 +56,7 @@ public class DeviceInfoActivity extends BaseActivity {
     private static final String TAG = DeviceInfoActivity.class.getSimpleName();
 
     private CommandRespManager respManager = new CommandRespManager();
-    boolean stopThread=false;
+    boolean stopThread = false;
 
     @Override
     protected int getLayoutId() {
@@ -84,21 +85,23 @@ public class DeviceInfoActivity extends BaseActivity {
         respManager.setCommandRespCallBack(new String(command), deviceInfoRespCallback);
         writeCommand(command);
     }
-    Handler mHandler = new Handler(){
+
+    Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             startDeviceInfoQueryCommand();
         }
     };
     Runnable mRunnable = new Runnable() {
-        public void run(){
-            while(!stopThread){
-                try{Thread.sleep(500);}catch(InterruptedException e){}
+        public void run() {
+            while (!stopThread) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                }
                 mHandler.sendMessage(mHandler.obtainMessage());
             }
         }
     };
-
-
 
     private CommandRespManager.OnDataCallback deviceInfoRespCallback = new CommandRespManager.OnDataCallback() {
         @Override
@@ -117,17 +120,23 @@ public class DeviceInfoActivity extends BaseActivity {
     };
 
 
-    private void updateDeviceInfoView(MainFuncCommandResp resp){
-        currentSpeedTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.speed)));
-        averageSpeedTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.averageSpeed)));
-        allmileTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
-        thisMileTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.perMileage)));
-        perRunTime.setText( StringUtils.getHour(resp.perRunTime));
-        temperatureTv.setText(StringUtils.dealTempFormat(resp.temperature));
-        topSpeedTv.setText(StringUtils.dealSpeedFormat(AppApplication.instance().getResultByUnit(resp.speedLimit)));
-
+    @SuppressLint("SetTextI18n")
+    private void updateDeviceInfoView(MainFuncCommandResp resp) {
+        AppApplication app = AppApplication.instance();
+        currentSpeedTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.speed)) +
+                app.getUnitWithTime());
+        averageSpeedTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.averageSpeed)) +
+                app.getUnitWithTime());
+        topSpeedTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.speedLimit)) +
+                app.getUnitWithTime());
+        allmileTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.totalMileage)) +
+                app.getPerMeterUnit());
+        thisMileTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.perMileage)) +
+                app.getPerMeterUnit());
+        perRunTime.setText(StringUtils.getHour(resp.perRunTime));
+        temperatureTv.setText(StringUtils.dealTempFormatWithoutUnit(app.getTemperByUnit(resp.temperature)) +
+                app.getTemperUnit());
     }
-
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -185,7 +194,7 @@ public class DeviceInfoActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        stopThread=true;
+        stopThread = true;
         super.onDestroy();
     }
 }
