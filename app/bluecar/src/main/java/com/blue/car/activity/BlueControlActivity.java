@@ -22,6 +22,7 @@ import com.blue.car.model.RemoteControlInfoCommandResp;
 import com.blue.car.model.RemoteControlModeCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
+import com.blue.car.utils.DigitalUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 import com.blue.car.utils.UniversalViewUtils;
@@ -114,21 +115,28 @@ public class BlueControlActivity extends BaseActivity {
         initSpeedLimitView();
     }
 
+    private TextView seekBarTextView;
+    private int speedLimitOffset = 0;
+
     private void initSpeedLimitView() {
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.remote_maxSpeed_layout, "最大速度(km/h)", 0, speedLimitSeekBarOffset, new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            }
+        String leftText = String.format("最大速度(%s)", AppApplication.instance().getUnitWithTime());
+        seekBarTextView = (TextView) UniversalViewUtils.initNormalSeekBarLayoutWithoutRightTextSet(this, R.id.remote_maxSpeed_layout, leftText,
+                0, speedLimitSeekBarOffset, new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        double result = DigitalUtils.round(AppApplication.instance().getResultByUnit(progress - speedLimitOffset), 1);
+                        seekBarTextView.setText(StringUtils.dealSpeedFormatWithoutTime((float) result));
+                    }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                    }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                startSetRemoteSpeedLimit(seekBar.getProgress() - speedLimitSeekBarOffset);
-            }
-        });
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                        startSetRemoteSpeedLimit(seekBar.getProgress() - speedLimitSeekBarOffset);
+                    }
+                });
         UniversalViewUtils.getItemDividerView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout)).setVisibility(View.VISIBLE);
         speedLimitSeekBar = UniversalViewUtils.getSeekBarView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout));
         speedLimitSeekBar.setMax(5);

@@ -73,6 +73,40 @@ public class UniversalViewUtils {
         return rightTextView;
     }
 
+    public static View initNormalSeekBarLayoutWithoutRightTextSet(Activity activity, int parentId, final String leftText,
+                                               int seekProgress, final int offset, final SeekBar.OnSeekBarChangeListener listener) {
+        ViewGroup viewGroup = (ViewGroup) activity.findViewById(parentId);
+        TextView leftTextView = getLeftTextView(viewGroup);
+        leftTextView.setText(leftText);
+        final TextView rightTextView = getRightTextView(viewGroup);
+        rightTextView.setText(String.valueOf(seekProgress - offset));
+        SeekBar seekBar = getSeekBarView(viewGroup);
+        seekBar.setProgress(seekProgress);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (listener != null) {
+                    listener.onProgressChanged(seekBar, progress, fromUser);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                if (listener != null) {
+                    listener.onStartTrackingTouch(seekBar);
+                }
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (listener != null) {
+                    listener.onStopTrackingTouch(seekBar);
+                }
+            }
+        });
+        return rightTextView;
+    }
+
     public static View initNormalSeekBarLayout(Activity activity, int parentId, final String leftText,
                                                int seekProgress, final SeekBar.OnSeekBarChangeListener listener) {
         return initNormalSeekBarLayout(activity, parentId, leftText, seekProgress, 0, listener);

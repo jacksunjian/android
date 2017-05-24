@@ -9,6 +9,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -17,6 +18,7 @@ import com.blue.car.manager.CommandRespManager;
 import com.blue.car.manager.PreferenceManager;
 import com.blue.car.model.SpeedLimitResp;
 import com.blue.car.service.BlueUtils;
+import com.blue.car.utils.DigitalUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 import com.blue.car.utils.UniversalViewUtils;
@@ -68,11 +70,15 @@ public class SpeedControlActivity extends BaseActivity {
         initSpeedLimitSeekBar();
     }
 
+    private TextView seekBarTextView;
+
     private void initSpeedLimitSeekBar() {
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.speedg_control, "限速模式限速值",
+        seekBarTextView = (TextView) UniversalViewUtils.initNormalSeekBarLayoutWithoutRightTextSet(this, R.id.speedg_control, "限速模式限速值",
                 0, speedLimitOffset, new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                double result = DigitalUtils.round(AppApplication.instance().getResultByUnit(progress - speedLimitOffset), 1);
+                seekBarTextView.setText(StringUtils.dealSpeedFormatWithoutTime((float) result));
             }
 
             @Override
@@ -82,6 +88,7 @@ public class SpeedControlActivity extends BaseActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 writeSpeedLimitCommand(seekBar.getProgress() - speedLimitOffset);
+
             }
         });
         speedLimitSeekBar = UniversalViewUtils.getSeekBarView((ViewGroup) findViewById(R.id.speedg_control));
