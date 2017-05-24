@@ -1,11 +1,13 @@
 package com.blue.car.activity;
 
 import android.bluetooth.BluetoothGatt;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -25,6 +27,7 @@ import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.LockConditionInfoCommandResp;
 import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.service.BlueUtils;
+import com.blue.car.utils.ActivityUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
 
@@ -231,16 +234,23 @@ public class OtherSettingActivity extends BaseActivity {
 
     private void showGoToSearchDialog() {
         new MaterialDialog.Builder(this)
-                .content("需要进入重新搜索吗？")
-                .positiveText("确定")
-                .negativeText("取消")
-                .negativeColor(Color.GRAY)
+                .content("蓝牙连接已断开了")
+                .positiveText(R.string.ok)
+                .canceledOnTouchOutside(false)
+                .keyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                        if (keyCode == KeyEvent.KEYCODE_BACK) {
+                            return true;
+                        }
+                        return false;
+                    }
+                })
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss();
-                        Intent intent = new Intent(OtherSettingActivity.this, SearchActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        ActivityUtils.startActivityWithClearTask(OtherSettingActivity.this, SearchActivity.class);
                         finish();
                     }
                 }).show();
@@ -260,10 +270,25 @@ public class OtherSettingActivity extends BaseActivity {
                 if (workMode == 2) {
                     showToast("关机请先下车");
                 } else {
-                    closeCarCommamd();
+                    showCloseCarConfirmDialog();
                 }
                 break;
         }
+    }
+
+    private void showCloseCarConfirmDialog() {
+        new MaterialDialog.Builder(this)
+                .content("是否关闭车辆？")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
+                .negativeColor(Color.GRAY)
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        closeCarCommamd();
+                    }
+                })
+                .show();
     }
 
     private void closeCarCommamd() {
