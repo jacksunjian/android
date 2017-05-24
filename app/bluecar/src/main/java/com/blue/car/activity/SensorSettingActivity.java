@@ -278,8 +278,8 @@ public class SensorSettingActivity extends BaseActivity {
     private void showCarLockDialog() {
         new MaterialDialog.Builder(this)
                 .content("标定传感器需要锁车，是否继续")
-                .positiveText("同意")
-                .negativeText("取消")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
@@ -345,15 +345,20 @@ public class SensorSettingActivity extends BaseActivity {
             turningSeekBar.setProgress(50);
         } else if (command.equals(ridingOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A2 65 00 E7 FE
-           ridinglayout.setVisibility(View.GONE);
+            ridinglayout.setVisibility(View.GONE);
         } else if (command.equals(ridingOffSensorSettingCommand)) {
             //55 AA 04 0A 03 A2 32 00 1A FF
-          ridinglayout.setVisibility(View.VISIBLE);
+            ridinglayout.setVisibility(View.VISIBLE);
             ridingSeekBar.setProgress(50);
         } else if (command.equals(lockCommand)) {
             showWarnCommandPop();
         } else if (command.equals(checkCommand)) {
-            startUnLockCommand();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startUnLockCommand();
+                }
+            }, 3300);
         } else if (command.equals(unLockCommand)) {
             showToast("调整完毕，车子解锁");
         }
@@ -362,8 +367,8 @@ public class SensorSettingActivity extends BaseActivity {
     private void showWarnCommandPop() {
         new MaterialDialog.Builder(this)
                 .content(R.string.warning)
-                .positiveText("同意")
-                .negativeText("取消")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
