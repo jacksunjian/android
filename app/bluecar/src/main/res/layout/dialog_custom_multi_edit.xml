@@ -8,11 +8,11 @@
     <EditText
         android:id="@+id/first_pwd"
         style="@style/passwordEditStyle"
-        android:hint="输入新密码" />
+        android:hint="请输入6位数字新密码" />
 
     <EditText
         android:id="@+id/repeat_pwd"
         style="@style/passwordEditStyle"
-        android:hint="再确认一遍" />
+        android:hint="请再次输入密码" />
 
 </LinearLayout>
