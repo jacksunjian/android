@@ -170,7 +170,6 @@ public class BlueServiceActivity extends BaseActivity {
                 currentSpeed.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 int[] position = new int[2];
                 currentSpeed.getLocationInWindow(position);
-                Log.e("##location",String.valueOf(position[1]));
                 myScrollView.setDetailLayoutPosition(position[1]);
             }
         });
@@ -388,6 +387,12 @@ public class BlueServiceActivity extends BaseActivity {
             modeDescTv.setText(R.string.mode_speed_limit);
         } else {
             modeDescTv.setText(String.format(getString(R.string.mode_format), workModeArray[resp.workMode % workModeArray.length]));
+        }
+        if (resp.isError()) {
+            ToastUtils.showContinueToast(getApplicationContext(), R.string.car_error_tip);
+        }
+        if (resp.isWarning()) {
+            ToastUtils.showContinueToast(getApplicationContext(), R.string.car_waring_tip);
         }
     }
 
@@ -705,7 +710,7 @@ public class BlueServiceActivity extends BaseActivity {
                 app.getPerMeterUnit());
         temperatureTextTv.setText(StringUtils.dealTempFormatWithoutUnit(app.getTemperByUnit(resp.temperature)) +
                 app.getTemperUnit());
-        
+
         //totalMeterTextTv.setText(StringUtils.dealMileFormat(AppApplication.instance().getResultByUnit(resp.totalMileage)));
         //perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
         //temperatureTextTv.setText(StringUtils.dealTempFormat(resp.temperature));

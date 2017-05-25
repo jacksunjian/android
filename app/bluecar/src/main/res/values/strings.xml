@@ -29,4 +29,7 @@
     <string name="warning">在姿态传感器校准过程中请保持车辆处于绝对静止状态，标定过程持续大约三秒，是否继续？</string>
 
     <string name="battery_remain_format">剩余电量：%.0f%%</string>
+
+    <string name="car_error_tip">车辆故障，请及时维修</string>
+    <string name="car_waring_tip">小心驾驶，请注意安全</string>
 </resources>
