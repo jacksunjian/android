@@ -10,5 +10,5 @@
     <dimen name="scroll_view_margin">330dp</dimen>
     <dimen name="blue_service_scroll_view_margin">472dp</dimen>
 
-    <dimen name="current_speed_text_min_width">120dp</dimen>
+    <dimen name="current_speed_text_min_width">132dp</dimen>
 </resources>
