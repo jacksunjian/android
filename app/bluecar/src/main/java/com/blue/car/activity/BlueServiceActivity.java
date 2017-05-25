@@ -127,7 +127,7 @@ public class BlueServiceActivity extends BaseActivity {
     private int slideDownLimit = 20;
 
     private String[] workModeArray;
-    private boolean enablePasswordCheck = false;
+    private boolean enablePasswordCheck = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
