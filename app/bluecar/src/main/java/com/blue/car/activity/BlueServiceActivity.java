@@ -47,6 +47,7 @@ import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.service.BluetoothLeService;
+import com.blue.car.utils.ActivityUtils;
 import com.blue.car.utils.BluetoothGattUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.ScreenUtils;
@@ -270,6 +271,11 @@ public class BlueServiceActivity extends BaseActivity {
                 LogUtils.jsonLog(TAG, resp);
                 if (!enablePasswordCheck) {
                     startMainFuncCommand();
+                    return;
+                }
+                if (!resp.isCardIdValid()) {
+                    ToastUtils.showLongToast(BlueServiceActivity.this, "cardId校验失败...");
+                    ActivityUtils.startActivityWithClearTask(BlueServiceActivity.this, SearchActivity.class);
                     return;
                 }
                 if (StringUtils.isNullOrEmpty(resp.blePassword)) {
