@@ -94,7 +94,7 @@ public class BlackBoxActivity extends BaseActivity {
 
     private void showCarLockDialog() {
         new MaterialDialog.Builder(this)
-                .content("黑匣子读取第一步要先锁车")
+                .content("黑匣子读取需要锁车，是否继续？")
                 .positiveText("确认")
                 .negativeText("取消")
                 .negativeColor(Color.GRAY)
