@@ -124,7 +124,7 @@ public class SearchActivity extends BaseActivity {
     private void showCarLockDialog() {
         new MaterialDialog.Builder(this)
                 .content("需要打开位置，是否继续")
-                .positiveText("同意")
+                .positiveText("确认")
                 .negativeText("取消")
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
