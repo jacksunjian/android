@@ -61,7 +61,7 @@ public class BlackBoxActivity extends BaseActivity {
     private boolean stopSendBlackBoxCommand = false;
 
 
-    ArrayList<BlackBoxCommandResp> list = new ArrayList<BlackBoxCommandResp>();
+    ArrayList<BlackBoxCommandResp> list = new ArrayList<>();
     MyAdapter myAdapter;
 
     private MaterialDialog loadingDialog;
@@ -95,8 +95,8 @@ public class BlackBoxActivity extends BaseActivity {
     private void showCarLockDialog() {
         new MaterialDialog.Builder(this)
                 .content("黑匣子读取需要锁车，是否继续？")
-                .positiveText("确认")
-                .negativeText("取消")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
@@ -137,8 +137,8 @@ public class BlackBoxActivity extends BaseActivity {
     private void showUnLockDialog() {
         new MaterialDialog.Builder(this)
                 .content("黑匣子数据读取完成，是否解锁?")
-                .positiveText("确定")
-                .negativeText("取消")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
@@ -163,8 +163,15 @@ public class BlackBoxActivity extends BaseActivity {
 
     private void startBlackBoxCommand(int data) {
         byte[] command = CommandManager.getBlackBoxCommand(data);
-        respManager.setCommandRespCallBack(blackBoxCommand = BlueUtils.bytesToAscii(command), blackBoxCommandCallback);
+        if (StringUtils.isNullOrEmpty(blackBoxCommand)) {
+            blackBoxCommand = getBlackBoxCommand(command);
+        }
+        respManager.setCommandRespCallBack(blackBoxCommand, blackBoxCommandCallback);
         writeCommand(command);
+    }
+
+    private String getBlackBoxCommand(byte[] command) {
+        return BlueUtils.bytesToAscii(command, 3, 2);
     }
 
     private CommandRespManager.OnDataCallback blackBoxCommandCallback = new CommandRespManager.OnDataCallback() {
@@ -227,12 +234,14 @@ public class BlackBoxActivity extends BaseActivity {
         if (command.equals(lockCommand)) {
             showReadingBlackInfoDialog();
             startBlackBoxCommand(blackBoxCommandIndex);
-        } else if (command.equals(blackBoxCommand)) {
+        } else if (command.equals(unLockCommand)) {
+            showToast("车子解锁成功");
+        }
+        String blackCommand = getBlackBoxCommand(dataBytes);
+        if (blackCommand.equals(blackBoxCommand)) {
             if (BlueUtils.byteArrayToInt(dataBytes, 5, 2) >= BLACK_BOX_END - 4) {
                 stopBlackAndUnlock();
             }
-        } else if (command.equals(unLockCommand)) {
-            showToast("车子解锁成功");
         }
     }
 
