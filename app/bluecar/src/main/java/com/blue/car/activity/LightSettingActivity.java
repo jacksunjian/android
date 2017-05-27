@@ -92,6 +92,7 @@ public class LightSettingActivity extends BaseActivity {
 
     private String[] ambientModeStringArray;
     private Handler handler = new Handler();
+    private Handler colorHandler = new Handler();
 
     @Override
     protected int getLayoutId() {
@@ -111,8 +112,9 @@ public class LightSettingActivity extends BaseActivity {
         colorControlView.setRotationSelectListener(new RotationImageView.OnRotationSelectListener() {
             @Override
             public void OnRotation(float ro) {
-                int color = getColor(rotation = ro);
-                updateColorView(colorSelectIndex, color);
+                rotation = ro;
+                updateColorView();
+                postColorSetCommand();
             }
 
             @Override
@@ -191,6 +193,11 @@ public class LightSettingActivity extends BaseActivity {
         ShapeDrawable drawable = getOvalShapeDrawable();
         drawable.getPaint().setColor(color);
         imageView.setBackground(drawable);
+    }
+
+    private void updateColorView() {
+        int color = getColor(rotation);
+        updateColorView(colorSelectIndex, color);
     }
 
     @Override
@@ -285,6 +292,10 @@ public class LightSettingActivity extends BaseActivity {
 
     private void updateAmbientModeView(int mode) {
         ambientTextView.setText(ambientModeStringArray[mode % ambientLightModeCount]);
+    }
+
+    private void postColorSetCommand() {
+        setLedColor();
     }
 
     private void setLedColor() {
