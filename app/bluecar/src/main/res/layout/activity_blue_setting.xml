@@ -15,7 +15,7 @@
         <TextView
             android:id="@+id/name_tv"
             style="@style/settingTextLeftStyle"
-            android:layout_width="80dp"
+            android:layout_width="wrap_content"
             android:text="蓝牙名称"
             android:textColor="@color/white" />
 
@@ -30,7 +30,7 @@
         <TextView
             android:id="@+id/secret_tv"
             style="@style/settingTextLeftStyle"
-            android:layout_width="80dp"
+            android:layout_width="wrap_content"
             android:text="密码"
             android:textColor="@color/white" />
 
