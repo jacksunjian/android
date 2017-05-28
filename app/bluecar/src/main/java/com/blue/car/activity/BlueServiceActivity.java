@@ -488,6 +488,7 @@ public class BlueServiceActivity extends BaseActivity {
         super.onStop();
         stopRegisterEventBus();
         try {
+            intentToOtherBefore = true;
             processHandler.removeCallbacks(writeMainFunCommandRunnable);
         } catch (Exception e) {
         }
