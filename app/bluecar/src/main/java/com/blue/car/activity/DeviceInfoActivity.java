@@ -127,7 +127,7 @@ public class DeviceInfoActivity extends BaseActivity {
                 app.getUnitWithTime());
         averageSpeedTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.averageSpeed)) +
                 app.getUnitWithTime());
-        topSpeedTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.speedLimit)) +
+        topSpeedTv.setText(StringUtils.dealSpeedFormatWithoutTime(app.getResultByUnit(resp.maxAbsSpeed)) +
                 app.getUnitWithTime());
         allmileTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.totalMileage)) +
                 app.getPerMeterUnit());
