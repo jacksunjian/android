@@ -302,11 +302,11 @@ public class SensorSettingActivity extends BaseActivity {
             return;
         }
         turningSwitch.setChecked(resp.isAutoTurningSensityAdjust());
-        turningSeekBar.setEnabled(resp.isEnableTurningSeekBar());
+//        turningSeekBar.setEnabled(resp.isEnableTurningSeekBar());
         turningSeekBar.setProgress(resp.turningSensitivity);
 
         ridingSwitch.setChecked(resp.isAutoRidingSensityAdjust());
-        ridingSeekBar.setEnabled(resp.isEnableRidingSeekBar());
+//        ridingSeekBar.setEnabled(resp.isEnableRidingSeekBar());
         ridingSeekBar.setProgress(resp.ridingSensitivity);
 
         balanceSeekBar.setProgress(resp.balanceInPowerMode + balanceProgressOffset);
