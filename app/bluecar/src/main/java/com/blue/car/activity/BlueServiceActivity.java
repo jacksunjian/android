@@ -706,7 +706,7 @@ public class BlueServiceActivity extends BaseActivity {
         AppApplication app = AppApplication.instance();
         perMeterTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.perMileage)) +
                 app.getPerMeterUnit());
-        restRideMeterTv.setText(StringUtils.dealMileFormat(app.getResultByUnit(resp.getRemainMileage())) +
+        restRideMeterTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.getRemainMileage())) +
                 app.getPerMeterUnit());
         temperatureTextTv.setText(StringUtils.dealTempFormatWithoutUnit(app.getTemperByUnit(resp.temperature)) +
                 app.getTemperUnit());
