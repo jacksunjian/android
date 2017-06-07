@@ -320,7 +320,8 @@ public class SpeedMainView extends View {
         super.onDraw(canvas);
         drawSpeedProgress(canvas);
         drawBatteryProgress(canvas);
-        drawPerMileage(canvas);
+        //drawPerMileage(canvas);
+        drawSpeedLimitText(canvas);
         drawSpeedText(canvas);
     }
 
@@ -363,6 +364,27 @@ public class SpeedMainView extends View {
         int height = (int) (centre * 1.0f / 4);
 
         String showText = String.format("本次里程 %.1f" + getPerMeterUnit(), perMileage);
+        if (mileageTextRect == null) {
+            Rect bounds = new Rect();
+            mileageTextPaint.getTextBounds(showText, 0, showText.length(), bounds);
+            int width = bounds.centerX() + dp2px(getContext(), 8);
+            mileageTextRect = new RectF(centre - width, centre + marginTop, centre + width, centre + marginTop + height);
+            Paint.FontMetrics fontMetrics = mileageTextPaint.getFontMetrics();
+            float top = fontMetrics.top;
+            float bottom = fontMetrics.bottom;
+            mileageTextDiff = top / 2 + bottom / 2;
+        }
+        canvas.drawRoundRect(mileageTextRect, 40, 40, mileageRectPaint);
+        canvas.drawText(showText, centre, centre + marginTop + height * 1.0f / 2 - mileageTextDiff, mileageTextPaint);
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void drawSpeedLimitText(Canvas canvas) {
+        int centre = getWidth() / 2;
+        int marginTop = (int) (centre * 1.0f / 4);
+        int height = (int) (centre * 1.0f / 4);
+
+        String showText = String.format("当前限速 %.1f" + getUnitWithTime(), speedLimit);
         if (mileageTextRect == null) {
             Rect bounds = new Rect();
             mileageTextPaint.getTextBounds(showText, 0, showText.length(), bounds);

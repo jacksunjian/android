@@ -410,7 +410,8 @@ public class CommandManager {
         resp.perMileage = BlueUtils.byteArrayToInt(originData, 24, 2) * 1.0f / 100;
         resp.perRunTime = BlueUtils.byteArrayToInt(originData, 26, 2);
         resp.temperature = BlueUtils.byteArrayToInt(originData, 28, 2) * 1.0f / 10;
-        resp.speedLimit = BlueUtils.byteArrayToInt(originData, 30, 2) * 1.0f / 1000;
+        int speedLimit = BlueUtils.byteArrayToInt(originData, 30, 2) & 0x00FF;
+        resp.speedLimit = speedLimit * 1.0f / 10;
         if ((originData[33] & 0x80) == 0x80) {
             int result = (~originData[33] << 8) + (~originData[32] & 0xFF);
             resp.electricCurrent = (0xFFFF & (result + 1)) * -1;
