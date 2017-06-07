@@ -266,7 +266,7 @@ public class OtherSettingActivity extends BaseActivity {
                 break;
             case R.id.close_rl:
                 // 0待机，1助力，2骑行，3锁车，4遥控
-                showToast("" + workMode);
+                //showToast("" + workMode); //open just as debug
                 if (workMode == 2) {
                     showToast("关机请先下车");
                 } else {
