@@ -28,6 +28,7 @@ import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.LedCommandResp;
 import com.blue.car.model.LockConditionInfoCommandResp;
 import com.blue.car.service.BlueUtils;
+import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.LinearGradientUtil;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.StringUtils;
@@ -65,6 +66,7 @@ public class LightSettingActivity extends BaseActivity {
 
     private ImageView[] colorCollectionViews;
     private ShapeDrawable[] shapeDrawableCollection;
+    private int[] hsb = new int[4];
 
     private TextView ambientTextView;
     private Switch frontLightSwitch;
@@ -118,7 +120,8 @@ public class LightSettingActivity extends BaseActivity {
             }
 
             @Override
-            public void OnRotationUp(float rotation) {
+            public void OnRotationUp(float ro) {
+                hsb[colorSelectIndex] = getActualColor(rotation = ro)[1];
                 setLedColor();
             }
         });
@@ -274,11 +277,22 @@ public class LightSettingActivity extends BaseActivity {
         }
         ambientLightMode = resp.ledMode;
         updateAmbientModeView(ambientLightMode);
+        if (resp.ledColor.length > 0) {
+            hsb = new int[resp.ledColor.length];
+        }
         for (int i = 0; i < resp.ledColor.length; i++) {
-            int hsb = LinearGradientUtil.hsbToColor(resp.ledColor[i])[0];
-            Log.e("AA-hsb",""+i+":"+Integer.toHexString(hsb));
-
-            updateColorView(i, hsb );
+            hsb[i] = resp.ledColor[i];
+            int color = LinearGradientUtil.hsbToColor(hsb[i])[0];
+            if (BluetoothConstant.USE_DEBUG) {
+                Log.e("AA-hsb", "" + i + ":" + Integer.toHexString(color));
+            }
+            updateColorView(i, color);
+        }
+        if (resp.ledColor.length > 0) {
+            if (colorSelectIndex >= resp.ledColor.length) {
+                colorSelectIndex = 0;
+            }
+            colorControlView.invalidateRotationWithDiff(LinearGradientUtil.hsbToRotation(hsb[colorSelectIndex]));
         }
     }
 
@@ -299,20 +313,20 @@ public class LightSettingActivity extends BaseActivity {
     }
 
     private void setLedColor() {
-        int color = getActualColor(rotation)[1];
+        int hsb = getActualColor(rotation)[1];
         byte[] command = null;
         switch (colorSelectIndex) {
             case 0:
-                command = CommandManager.getLed1ColorSettingCommand(color);
+                command = CommandManager.getLed1ColorSettingCommand(hsb);
                 break;
             case 1:
-                command = CommandManager.getLed2ColorSettingCommand(color);
+                command = CommandManager.getLed2ColorSettingCommand(hsb);
                 break;
             case 2:
-                command = CommandManager.getLed3ColorSettingCommand(color);
+                command = CommandManager.getLed3ColorSettingCommand(hsb);
                 break;
             case 3:
-                command = CommandManager.getLed4ColorSettingCommand(color);
+                command = CommandManager.getLed4ColorSettingCommand(hsb);
                 break;
         }
         ledColorCommand = BlueUtils.bytesToAscii(command);
@@ -359,7 +373,7 @@ public class LightSettingActivity extends BaseActivity {
         if (data == null) {
             return;
         }
-        Log.e("AA-data",BlueUtils.bytesToHexString(data));
+        //Log.e("AA-data", BlueUtils.bytesToHexString(data));
 
         respManager.processCommandResp(getOnReadCommand(data), data);
     }
@@ -377,7 +391,7 @@ public class LightSettingActivity extends BaseActivity {
         }
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(ledColorCommand)) {
-            showToast(String.format("颜色%d设置成功", colorSelectIndex + 1));
+            //showToast(String.format("颜色%d设置成功", colorSelectIndex + 1));
         } else if (command.equals(ambientLightCommand)) {
             showToast("氛围灯设置成功");
         } else if (command.equals(frontLedCommand)) {
@@ -432,6 +446,7 @@ public class LightSettingActivity extends BaseActivity {
                 break;
         }
         renderCollectionImageView();
+        colorControlView.invalidateRotationWithDiff(LinearGradientUtil.hsbToRotation(hsb[colorSelectIndex]));
     }
 
     @OnClick(R.id.arrow_indicator)

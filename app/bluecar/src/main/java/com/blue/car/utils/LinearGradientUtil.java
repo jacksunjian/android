@@ -89,4 +89,8 @@ public class LinearGradientUtil {
         int actualColor = LinearGradientUtil.getColor(startColor, endColor, tmp % 60 / 60);
         return new int[]{actualColor, (int) (tmp)};
     }
+
+    public static float hsbToRotation(int hsb) {
+        return hsb * 1.0f / 240 * 360;
+    }
 }

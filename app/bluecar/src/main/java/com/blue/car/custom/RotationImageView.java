@@ -205,8 +205,14 @@ public class RotationImageView extends ImageView {
         invalidateRotation(0);
     }
 
-    private void invalidateRotation(float rotation) {
+    public void invalidateRotation(float rotation) {
         tempMatrix.setRotate(nowRotation = rotation, getWidth() / 2, getHeight() / 2);
+        bitmapMatrix.set(tempMatrix);
+        invalidate();
+    }
+
+    public void invalidateRotationWithDiff(float rotation) {
+        tempMatrix.setRotate(nowRotation = (rotation + rotationDiff), getWidth() / 2, getHeight() / 2);
         bitmapMatrix.set(tempMatrix);
         invalidate();
     }
