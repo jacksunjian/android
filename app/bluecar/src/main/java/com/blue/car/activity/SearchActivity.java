@@ -279,6 +279,10 @@ public class SearchActivity extends BaseActivity {
                     if (!(device.getType() == BluetoothDevice.DEVICE_TYPE_LE)) {
                         return;
                     }
+                    if (StringUtils.isNullOrEmpty(device.getAddress()) ||
+                            !device.getAddress().replaceAll(":", "").toLowerCase().startsWith("ec4d")) {
+                        return;
+                    }
                     addDeviceToAdapter(getBluetoothDeviceAlias(device));
                 } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                     Toast.makeText(SearchActivity.this, "扫描完成了哈", Toast.LENGTH_SHORT).show();
