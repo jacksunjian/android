@@ -103,6 +103,12 @@ public class BlueSettingActivity extends BaseActivity {
                 .positiveText(R.string.ok)
                 .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                    }
+                })
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
@@ -118,15 +124,17 @@ public class BlueSettingActivity extends BaseActivity {
     }
 
     private boolean checkInputPasswordCorrect() {
-        if (firstPwdEdit.getText().toString().length() != 6 || repeatPwdEdit.getText().toString().length() != 6) {
+        String firstPwd = firstPwdEdit.getText().toString();
+        String repeatPwd = repeatPwdEdit.getText().toString();
+        if (firstPwd.length() != 6 || repeatPwd.length() != 6) {
             showToast("密码需为6位数字");
             return false;
         }
-        if (!firstPwdEdit.getText().toString().equals(repeatPwdEdit.getText().toString())) {
+        if (!firstPwd.equals(repeatPwd)) {
             showToast("密码不一致");
             return false;
         }
-        writeSettingPasswordCommand(password = repeatPwdEdit.toString());
+        writeSettingPasswordCommand(password = repeatPwd);
         return true;
     }
 
