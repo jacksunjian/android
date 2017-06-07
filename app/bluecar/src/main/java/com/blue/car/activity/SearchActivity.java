@@ -10,10 +10,8 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -39,9 +37,7 @@ import com.blue.car.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -69,8 +65,6 @@ public class SearchActivity extends BaseActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
-    private BroadcastReceiver bleDiscoveryReceiver;
-    private Map<String, String> blueNameAddressMap = new HashMap<>();
 
     private boolean scanning = false;
     private Handler handler = new Handler();
@@ -117,15 +111,14 @@ public class SearchActivity extends BaseActivity {
             initBluetooth();
         } else {
             showCarLockDialog();
-
         }
     }
 
     private void showCarLockDialog() {
         new MaterialDialog.Builder(this)
                 .content("需要打开位置，是否继续")
-                .positiveText("确认")
-                .negativeText("取消")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
                 .negativeColor(Color.GRAY)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
@@ -135,8 +128,6 @@ public class SearchActivity extends BaseActivity {
                     }
                 }).show();
     }
-
-
 
     private void setLocationService() {
         Intent locationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -217,26 +208,14 @@ public class SearchActivity extends BaseActivity {
 
     private void stopLeScan() {
         scanning = false;
-        //1.first method
-//        getBluetoothAdapter().stopLeScan(scanCallback1);
-        //2.second method
         getBluetoothLeScanner().stopScan(scanCallback2);
-        //3.third method
-//        stopDiscovery();
     }
 
     private void startLeScan() {
         scanning = true;
-        //1.first method
-//        getBluetoothAdapter().startLeScan(scanCallback1);
-//        2.second method
-//        getBluetoothLeScanner().startScan(scanCallback2);
         List<ScanFilter> bleScanFilters = new ArrayList<>();
         bleScanFilters.add(new ScanFilter.Builder().setServiceUuid(new ParcelUuid(BluetoothConstant.UUID_SERVICE)).build());
         getBluetoothLeScanner().startScan(bleScanFilters, new ScanSettings.Builder().build(), scanCallback2);
-
-        //3.broadcast method
-//        startDiscovery();
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -256,42 +235,6 @@ public class SearchActivity extends BaseActivity {
         }, STOP_LE_SCAN_DELAY);
     }
 
-    private void startDiscovery() {
-        initReceiver();
-        getBluetoothAdapter().startDiscovery();
-    }
-
-    private void stopDiscovery() {
-        cleanReceiverRegistered();
-        if (getBluetoothAdapter().isDiscovering()) {
-            getBluetoothAdapter().cancelDiscovery();
-        }
-    }
-
-    private void initReceiver() {
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        bleDiscoveryReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    if (!(device.getType() == BluetoothDevice.DEVICE_TYPE_LE)) {
-                        return;
-                    }
-                    if (StringUtils.isNullOrEmpty(device.getAddress()) ||
-                            !device.getAddress().replaceAll(":", "").toLowerCase().startsWith("ec4d")) {
-                        return;
-                    }
-                    addDeviceToAdapter(getBluetoothDeviceAlias(device));
-                } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                    Toast.makeText(SearchActivity.this, "扫描完成了哈", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-        registerReceiver(bleDiscoveryReceiver, filter);
-    }
-
     private void addDeviceToAdapter(String deviceAlias) {
         if (deviceList.contains(deviceAlias)) {
             return;
@@ -307,11 +250,13 @@ public class SearchActivity extends BaseActivity {
         }
         String name = device.getName();
         try {
-            nameBytes =name.getBytes("UTF-8");
+            nameBytes = name.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        Log.e("names",""+ BlueUtils.bytesToHexString(nameBytes));
+        if (BluetoothConstant.USE_DEBUG) {
+            Log.e("utf-8,blueName", "" + BlueUtils.bytesToHexString(nameBytes));
+        }
         String address = device.getAddress();
         if (StringUtils.isNullOrEmpty(name)) {
             name = "unknown name";
@@ -354,15 +299,6 @@ public class SearchActivity extends BaseActivity {
         stopLeScan();
     }
 
-    private void cleanReceiverRegistered() {
-        try {
-            if (bleDiscoveryReceiver != null) {
-                unregisterReceiver(bleDiscoveryReceiver);
-            }
-        } catch (Exception e) {
-        }
-    }
-
     @OnClick(R.id.search_btn)
     public void onSearchClick(View view) {
         stopLeScan();
@@ -399,21 +335,6 @@ public class SearchActivity extends BaseActivity {
         return bluetoothLeScanner;
     }
 
-    private BluetoothAdapter.LeScanCallback scanCallback1 = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (device != null) {
-                        String deviceAlias = getBluetoothDeviceAlias(device);
-                        addDeviceToAdapter(deviceAlias);
-                    }
-                }
-            });
-        }
-    };
-
     private ScanCallback scanCallback2 = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
@@ -422,9 +343,14 @@ public class SearchActivity extends BaseActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (device != null) {
-                            addDeviceToAdapter(getBluetoothDeviceAlias(device));
+                        if (device == null || !(device.getType() == BluetoothDevice.DEVICE_TYPE_LE)) {
+                            return;
                         }
+                        if (StringUtils.isNullOrEmpty(device.getAddress()) ||
+                                !device.getAddress().replaceAll(":", "").toLowerCase().startsWith("ec4d")) {
+                            return;
+                        }
+                        addDeviceToAdapter(getBluetoothDeviceAlias(device));
                     }
                 });
             }
