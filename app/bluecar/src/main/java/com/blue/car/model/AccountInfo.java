@@ -16,6 +16,7 @@ public class AccountInfo implements Serializable {
 
     private static AccountInfo accountInfo;
 
+    public String macAddress;
     public String bleName;
     public String blePassword;
 
@@ -31,11 +32,12 @@ public class AccountInfo implements Serializable {
         saveToSecurePreferences(context, account);
     }
 
-    static public void saveAccountInfo(Context context, String bleName, String blePassword) {
+    static public void saveAccountInfo(Context context, String macAddress, String bleName, String blePassword) {
         AccountInfo accountInfo = currentAccountInfo(context);
         if (accountInfo == null) {
             accountInfo = new AccountInfo();
         }
+        accountInfo.macAddress = macAddress;
         accountInfo.bleName = bleName;
         accountInfo.blePassword = blePassword;
         saveAccountInfo(context, accountInfo);

@@ -277,7 +277,7 @@ public class BlueServiceActivity extends BaseActivity {
                     ActivityUtils.startActivityWithClearTask(BlueServiceActivity.this, SearchActivity.class);
                     return;
                 }
-                if (StringUtils.isNullOrEmpty(resp.blePassword)) {
+                if (resp.isEmptyPwd()) {
                     startMainFuncCommand();
                 } else {
                     String password = null;
@@ -287,6 +287,8 @@ public class BlueServiceActivity extends BaseActivity {
                     }
                     if (StringUtils.isNullOrEmpty(password) || !password.equals(resp.blePassword)) {
                         showPwdCheckDialog(resp.blePassword);
+                    } else {
+                        startMainFuncCommand();
                     }
                 }
             }
@@ -296,13 +298,15 @@ public class BlueServiceActivity extends BaseActivity {
     private void showPwdCheckDialog(final String blePassword) {
         new MaterialDialog.Builder(BlueServiceActivity.this)
                 .title("输入密码进行校验")
+                .positiveText(R.string.ok)
+                .negativeText(R.string.cancel)
+                .negativeColor(Color.GRAY)
                 .canceledOnTouchOutside(false)
                 .autoDismiss(false)
                 .inputRange(6, 6)
                 .input("6位数字密码", "", false, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-
                     }
                 })
                 .alwaysCallInputCallback()
@@ -323,13 +327,20 @@ public class BlueServiceActivity extends BaseActivity {
                             ToastUtils.showShortToast(BlueServiceActivity.this, "请输入6位数的密码");
                             return;
                         }
-                        if (blePassword.equals(pwd)) {
+                        if (!blePassword.equals(pwd)) {
                             ToastUtils.showShortToast(BlueServiceActivity.this, "密码校验失败");
                             return;
                         }
-                        AccountInfo.saveAccountInfo(BlueServiceActivity.this, deviceName, pwd);
+                        AccountInfo.saveAccountInfo(BlueServiceActivity.this, deviceAddress, deviceName, pwd);
                         startMainFuncCommand();
                         dialog.dismiss();
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        ActivityUtils.startActivityWithClearTask(BlueServiceActivity.this, SearchActivity.class);
                     }
                 })
                 .show();

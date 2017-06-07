@@ -18,4 +18,8 @@ public class FirstStartCommandResp {
         }
         return carId.startsWith("11960") || carId.startsWith("201702");
     }
+
+    public boolean isEmptyPwd() {
+        return StringUtils.isNullOrEmpty(blePassword) || "000000".equals(blePassword);
+    }
 }
