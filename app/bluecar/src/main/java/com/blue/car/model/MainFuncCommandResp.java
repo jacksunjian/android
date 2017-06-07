@@ -16,11 +16,11 @@ public class MainFuncCommandResp {
     public float temperature;
     public float speedLimit;
     public float electricCurrent;
-    public byte[] remain = new byte[2];
+    public float remainKm;
     public float maxAbsSpeed;
 
     public float getRemainMileage() {
-        return remainBatteryPercent * maxAbsSpeed;
+        return remainKm;
     }
 
     public boolean isError() {

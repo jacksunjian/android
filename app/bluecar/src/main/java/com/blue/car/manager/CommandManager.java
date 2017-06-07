@@ -418,7 +418,7 @@ public class CommandManager {
             resp.electricCurrent = BlueUtils.byteArrayToInt(originData, 32, 2);
         }
         resp.electricCurrent = resp.electricCurrent * 1.0f / 100;
-        resp.remain = BlueUtils.getNewBytes(originData, 34, 2);
+        resp.remainKm = BlueUtils.byteArrayToInt(originData, 34, 2) * 1.0f / 10;
         resp.maxAbsSpeed = BlueUtils.byteArrayToInt(originData, 36, 2) * 1.0f / 1000;
         return resp;
     }

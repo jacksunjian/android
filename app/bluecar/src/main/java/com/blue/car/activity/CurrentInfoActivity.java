@@ -150,7 +150,7 @@ public class CurrentInfoActivity extends BaseActivity {
                 app.getPerMeterUnit());
         totalMeterTextTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.totalMileage)) +
                 app.getPerMeterUnit());
-        restRideMeterTv.setText(StringUtils.dealMileFormatWithoutUnit(app.getResultByUnit(resp.getRemainMileage())) +
+        restRideMeterTv.setText(String.valueOf((int)app.getResultByUnit(resp.getRemainMileage())) +
                 app.getPerMeterUnit());
         perRunTimeTv.setText(StringUtils.getTime(resp.perRunTime));
         temperatureTextTv.setText(StringUtils.dealTempFormatWithoutUnit(app.getTemperByUnit(resp.temperature)) +
