@@ -166,12 +166,12 @@ public class BlackBoxActivity extends BaseActivity {
         if (StringUtils.isNullOrEmpty(blackBoxCommand)) {
             blackBoxCommand = getBlackBoxCommand(command);
         }
-        respManager.setCommandRespCallBack(blackBoxCommand, blackBoxCommandCallback);
+        respManager.addCommandRespCallBack(blackBoxCommand, blackBoxCommandCallback);
         writeCommand(command);
     }
 
     private String getBlackBoxCommand(byte[] command) {
-        return BlueUtils.bytesToAscii(command, 3, 2);
+        return BlueUtils.bytesToAscii(command, 4, 1) + " blackBox";
     }
 
     private CommandRespManager.OnDataCallback blackBoxCommandCallback = new CommandRespManager.OnDataCallback() {
@@ -219,7 +219,10 @@ public class BlackBoxActivity extends BaseActivity {
         byte[] dataBytes = printGattCharacteristicReadEvent(event);
         if (dataBytes != null) {
             byte[] result = respManager.obtainData(dataBytes);
-            respManager.processCommandResp(result);
+            if (result == null) {
+                return;
+            }
+            respManager.processCommandResp(getBlackBoxCommand(result), result);
         }
     }
 
@@ -234,8 +237,10 @@ public class BlackBoxActivity extends BaseActivity {
         if (command.equals(lockCommand)) {
             showReadingBlackInfoDialog();
             startBlackBoxCommand(blackBoxCommandIndex);
+            return;
         } else if (command.equals(unLockCommand)) {
             showToast("车子解锁成功");
+            return;
         }
         String blackCommand = getBlackBoxCommand(dataBytes);
         if (blackCommand.equals(blackBoxCommand)) {

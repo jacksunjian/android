@@ -26,9 +26,6 @@ public class CommandRespManager {
     }
 
     public void processCommandResp(byte[] data) {
-        if (StringUtils.isNullOrEmpty(command) || !commandMap.containsKey(command)) {
-            return;
-        }
         processCommandResp(command, data);
     }
 
