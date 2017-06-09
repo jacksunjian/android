@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -170,6 +171,15 @@ public class BlackBoxActivity extends BaseActivity {
         writeCommand(command);
     }
 
+    private void postBlackBoxCommandDelay(final int data, final int delay) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startBlackBoxCommand(data);
+            }
+        },delay);
+    }
+
     private String getBlackBoxCommand(byte[] command) {
         return BlueUtils.bytesToAscii(command, 4, 1) + " blackBox";
     }
@@ -236,7 +246,7 @@ public class BlackBoxActivity extends BaseActivity {
         String command = BlueUtils.bytesToAscii(dataBytes);
         if (command.equals(lockCommand)) {
             showReadingBlackInfoDialog();
-            startBlackBoxCommand(blackBoxCommandIndex);
+            postBlackBoxCommandDelay(blackBoxCommandIndex, 1400);
             return;
         } else if (command.equals(unLockCommand)) {
             showToast("车子解锁成功");
