@@ -252,6 +252,9 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void startRemoteControlModeCommand() {
+        if (controlModeHandler == null) {
+            return;
+        }
         controlModeHandler.postDelayed(controlModeRunnable, CONTROL_MODE_DELAY);
     }
 
@@ -403,6 +406,7 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void afterQuitRemoteMode() {
+        stopRemoteRunningResource();
         finish();
     }
 
@@ -439,10 +443,18 @@ public class BlueControlActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
+        stopRemoteRunningResource();
+        super.onDestroy();
+    }
+
+    private void stopRemoteRunningResource() {
         try {
+            if (controlModeHandler == null) {
+                return;
+            }
             controlModeHandler.removeCallbacks(controlModeRunnable);
+            controlModeHandler = null;
         } catch (Exception e) {
         }
-        super.onDestroy();
     }
 }
