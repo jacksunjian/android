@@ -9,13 +9,6 @@
         layout="@layout/layout_head"
         android:background="@android:color/transparent" />
 
-    <!--<ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="40dp"
-        android:src="@mipmap/blue_control" />-->
-
     <TextView
         android:id="@+id/speed_textView"
         android:layout_width="wrap_content"
@@ -53,9 +46,11 @@
             android:src="@drawable/remote_background" />
 
         <ImageView
+            android:id="@+id/remote_button"
             android:layout_width="63dp"
             android:layout_height="63dp"
             android:layout_gravity="center"
+            android:visibility="gone"
             android:src="@drawable/remote_button" />
 
         <com.blue.car.custom.RotationImageView

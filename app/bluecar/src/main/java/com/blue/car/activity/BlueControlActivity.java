@@ -1,15 +1,22 @@
 package com.blue.car.activity;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.blue.car.AppApplication;
 import com.blue.car.R;
@@ -24,7 +31,9 @@ import com.blue.car.service.BlueUtils;
 import com.blue.car.service.BluetoothConstant;
 import com.blue.car.utils.DigitalUtils;
 import com.blue.car.utils.LogUtils;
+import com.blue.car.utils.ScreenUtils;
 import com.blue.car.utils.StringUtils;
+import com.blue.car.utils.ToastUtils;
 import com.blue.car.utils.UniversalViewUtils;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -59,6 +68,11 @@ public class BlueControlActivity extends BaseActivity {
 
     @Bind(R.id.remote_control_view)
     RotationImageView controlView;
+    @Bind(R.id.remote_button)
+    ImageView remoteButton;
+
+    private TextView seekBarTextView;
+    private int speedLimitOffset = 0;
 
     private CommandRespManager respManager = new CommandRespManager();
     private String speedLimitCommand;
@@ -71,7 +85,7 @@ public class BlueControlActivity extends BaseActivity {
     private long lastSendMoveCommandTime = System.currentTimeMillis();
 
     private Handler controlModeHandler = new Handler();
-
+    private boolean firstTimeEnter = false;
 
     @Override
     protected int getLayoutId() {
@@ -80,7 +94,6 @@ public class BlueControlActivity extends BaseActivity {
 
     @Override
     protected void initConfig() {
-
     }
 
     @Override
@@ -112,11 +125,80 @@ public class BlueControlActivity extends BaseActivity {
             public void onLongScaleChanged(float xScale, float yScale) {
             }
         });
+        controlView.setBorderBitmap(R.drawable.remote_button, ScreenUtils.dip2px(this, 63), ScreenUtils.dip2px(this, 63));
+        /*controlView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int[] location = new int[2];
+                controlView.getLocationInWindow(location);
+                *//*float x = getInnerXPos(event.getX() + location[0], event.getY()  + location[1], controlView.getWidth() / 2);
+                float y = getInnerYPos(event.getX()  + location[0], event.getY() +  location[1], controlView.getHeight() / 2);
+                remoteButton.setX(x);
+                remoteButton.setY(y);
+                if (event.getX() <= location[0]) {
+                    remoteButton.setX(location[0]);
+                } else if (event.getX() >= location[0] + controlView.getWidth()) {
+                    remoteButton.setX(location[0] + controlView.getWidth());
+                } else {
+                    remoteButton.setX(event.getX());
+                }*//*
+                Log.e("##x,y",event.toString());
+                int width = controlView.getWidth();
+                float newXPos = event.getRawX();
+                float newYPos = event.getRawY();
+                if (newXPos < location[0] || newXPos > location[0] + controlView.getWidth()) {
+                    float yPos = newYPos;
+                    if (newYPos < location[1]) {
+                        yPos = location[1] + width / 2 - newYPos;
+                    } else if (newYPos > location[1] + width) {
+                        yPos = newYPos - location[1] - width / 2;
+                    }
+                    if (newXPos < location[0]) {
+                        float xPos = getInnerXPos(location[0] + width / 2 - newXPos, yPos, width / 2);
+                        newXPos = location[0] + width / 2 - xPos;
+                    } else {
+                        float xPos = getInnerXPos(newXPos - location[0] + width / 2, yPos, width / 2);
+                        newXPos = location[0] + width / 2 + xPos;
+                    }
+                }
+
+                if (newYPos < location[1] || newYPos > location[1] + width) {
+                    if (newYPos < location[1]) {
+                        float yPos = getInnerYPos(newXPos, location[1] + width / 2 - newYPos, width / 2);
+                        newYPos = location[1] + width / 2 - yPos;
+                    } else {
+                        float yPos = getInnerYPos(newXPos, newYPos - location[1] - width / 2, width / 2);
+                        newYPos = location[1] + width / 2 + yPos;
+                    }
+                }
+
+                remoteButton.setX(newXPos);
+                remoteButton.setY(newYPos);
+                return false;
+            }
+        });*/
         initSpeedLimitView();
     }
 
-    private TextView seekBarTextView;
-    private int speedLimitOffset = 0;
+    private float getInnerXPos(float x, float y, float borderLength) {
+        double theThirdSide = Math.sqrt(x * x + y * y);
+        Log.e("##thirdSize", String.valueOf(theThirdSide));
+        if (x <= borderLength) {
+            return x;
+        }
+        double xScale = borderLength / theThirdSide;
+        Log.e("##x", String.valueOf(xScale * x));
+        return (float) (xScale * x);
+    }
+
+    private float getInnerYPos(float x, float y, float borderLength) {
+        double theThirdSide = Math.sqrt(x * x + y * y);
+        if (y <= borderLength) {
+            return y;
+        }
+        double yScale = borderLength / theThirdSide;
+        return (float) (yScale * y);
+    }
 
     private void initSpeedLimitView() {
         String leftText = String.format("最大速度(%s)", AppApplication.instance().getUnitWithTime());
@@ -144,7 +226,7 @@ public class BlueControlActivity extends BaseActivity {
 
     @Override
     protected void initData() {
-        enterRemoteModeCommand();
+        startRemoteControlModeCommand();
     }
 
     private String getSpecialCommand(byte[] command) {
@@ -230,7 +312,7 @@ public class BlueControlActivity extends BaseActivity {
             return;
         }
         lastSendMoveCommandTime = System.currentTimeMillis();
-        byte[] command = CommandManager.getRemoteControlMoveCommand((int) xValue * speedLimit * 500, (int) yValue * speedLimit * 1000);
+        byte[] command = CommandManager.getRemoteControlMoveCommand((int) xValue * 5000, (int) yValue * speedLimit * 1000);
         writeCommand(command);
     }
 
@@ -250,12 +332,18 @@ public class BlueControlActivity extends BaseActivity {
         speedLimitSeekBar.setProgress(getSpeedLimitSeekBarProgress());
     }
 
+    @SuppressLint("DefaultLocale")
     private void updateControlModeView(RemoteControlModeCommandResp resp) {
         if (resp == null) {
             return;
         }
         if (resp.workMode != 0 && resp.workMode != 1) {
             showToast("要求当前模式为助力或者待机");
+        } else {
+            if (!firstTimeEnter) {
+                firstTimeEnter = true;
+                enterRemoteModeCommand();
+            }
         }
         if (resp.isRemoteConditionStatus() && (resp.isPickingUpStatus() || resp.isStandingManStatus())) {
             showToast("遥控模式，不可站人和拎起");
@@ -310,7 +398,6 @@ public class BlueControlActivity extends BaseActivity {
 
     private void afterEnterRemoteMode() {
         startRemoteControlInfoCommand();
-        startRemoteControlModeCommand();
     }
 
     private void afterQuitRemoteMode() {

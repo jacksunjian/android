@@ -5,12 +5,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 public class RotationImageView extends ImageView {
+    private static final String TAG = RotationImageView.class.getSimpleName();
 
     private float nowRotation = 0;
     private int rotationDiff = 0;
@@ -21,12 +24,15 @@ public class RotationImageView extends ImageView {
     private Matrix tempMatrix = new Matrix();
     private Bitmap rotationBitmap;
 
+    private Bitmap borderBitmap;
+
     private boolean constantlyRotationSelect = false;
     private OnRotationSelectListener rotationSelectListener;
     private OnMoveScaleChangedListener onMoveScaleChangedListener;
 
     public interface OnRotationSelectListener {
         void OnRotation(float rotation);
+
         void OnRotationUp(float rotation);
     }
 
@@ -60,6 +66,9 @@ public class RotationImageView extends ImageView {
                         getHeight() * 1.0f / rotationBitmap.getHeight());
                 rotationBitmap = Bitmap.createBitmap(rotationBitmap, 0, 0, rotationBitmap.getWidth(),
                         rotationBitmap.getHeight(), matrix, true);
+                if (borderBitmap != null) {
+                    resetToOriginalRotation();
+                }
             }
         });
     }
@@ -132,6 +141,14 @@ public class RotationImageView extends ImageView {
         canvas.save();
         canvas.drawBitmap(rotationBitmap, bitmapMatrix, null);
         canvas.restore();
+        drawBorderDrawable(canvas);
+    }
+
+    private void drawBorderDrawable(Canvas canvas) {
+        if (borderBitmap == null) {
+            return;
+        }
+        canvas.drawBitmap(borderBitmap, xPos, yPos, null);
     }
 
     private void invokeRotationListener() {
@@ -200,9 +217,17 @@ public class RotationImageView extends ImageView {
     }
 
     public void resetToOriginalRotation() {
-        xPos = 0;
-        yPos = 0;
+        xPos = getWidth() / 2 - getBorderBitmapWidth() * 1.0f / 2;
+        yPos = getHeight() / 2 - getBorderBitmapHeight() * 1.0f / 2;
         invalidateRotation(0);
+    }
+
+    private int getBorderBitmapWidth() {
+        return borderBitmap == null ? 0 : borderBitmap.getWidth();
+    }
+
+    private int getBorderBitmapHeight() {
+        return borderBitmap == null ? 0 : borderBitmap.getHeight();
     }
 
     public void invalidateRotation(float rotation) {
@@ -215,5 +240,32 @@ public class RotationImageView extends ImageView {
         tempMatrix.setRotate(nowRotation = (rotation + rotationDiff), getWidth() / 2, getHeight() / 2);
         bitmapMatrix.set(tempMatrix);
         invalidate();
+    }
+
+    public void setBorderBitmap(int drawableRes) {
+        setBorderBitmap(drawableRes, -1, -1);
+    }
+
+    public void setBorderBitmap(int drawableRes, int targetWidth, int targetHeight) {
+        if (drawableRes <= 0) {
+            Log.w(TAG, "detect the border drawable res is invalid:" + drawableRes);
+            return;
+        }
+        try {
+            borderBitmap = BitmapFactory.decodeResource(getResources(), drawableRes);
+            Matrix matrix = null;
+            if (targetHeight == -1 && targetWidth == -1) {
+                matrix = new Matrix();
+                matrix.postScale(getWidth() * 1.0f / borderBitmap.getWidth(),
+                        getHeight() * 1.0f / borderBitmap.getHeight());
+                targetWidth = borderBitmap.getWidth();
+                targetHeight = borderBitmap.getHeight();
+            }
+            borderBitmap = Bitmap.createBitmap(borderBitmap, 0, 0, targetWidth,
+                    targetHeight, matrix, true);
+            resetToOriginalRotation();
+        } catch (Exception e) {
+            Log.w(TAG, e);
+        }
     }
 }
