@@ -164,7 +164,7 @@ public class BluetoothLeService extends Service {
 
     @Override
     public void onDestroy() {
-        closeResource();
+        disconnect();
         super.onDestroy();
     }
 
@@ -251,10 +251,15 @@ public class BluetoothLeService extends Service {
         if (!isValidBluetooth()) {
             return;
         }
+        disconnectTheGatt();
+        closeResource();
+    }
+
+    private void disconnectTheGatt() {
         bluetoothGatt.disconnect();
     }
 
-    public void closeResource() {
+    private void closeResource() {
         if (bluetoothGatt == null) {
             return;
         }

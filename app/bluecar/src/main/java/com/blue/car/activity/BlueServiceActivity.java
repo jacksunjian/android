@@ -516,7 +516,7 @@ public class BlueServiceActivity extends BaseActivity {
 
     private void clearBluetoothLeService() {
         if (bluetoothLeService != null) {
-            bluetoothLeService.closeResource();
+            bluetoothLeService.disconnect();
             bluetoothLeService = null;
         }
     }
@@ -570,8 +570,8 @@ public class BlueServiceActivity extends BaseActivity {
             new MaterialDialog.Builder(this)
                     .title("温馨提示")
                     .content("您确定要切换为限速模式吗？")
-                    .positiveText("确定")
-                    .negativeText("取消")
+                    .positiveText(R.string.ok)
+                    .negativeText(R.string.cancel)
                     .negativeColor(Color.BLACK)
                     .onPositive(new MaterialDialog.SingleButtonCallback() {
                         @Override
