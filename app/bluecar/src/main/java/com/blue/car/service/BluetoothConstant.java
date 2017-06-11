@@ -3,7 +3,7 @@ package com.blue.car.service;
 import java.util.UUID;
 
 public class BluetoothConstant {
-    public static final boolean USE_DEBUG = true;
+    public static final boolean USE_DEBUG = false;
     // Intent request codes
     public static final int REQUEST_CONNECT_DEVICE = 1;
     public static final int REQUEST_ENABLE_BT = 2;
