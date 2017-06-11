@@ -337,12 +337,14 @@ public class BlueControlActivity extends BaseActivity {
         if (resp == null) {
             return;
         }
-        if (resp.workMode != 0 && resp.workMode != 1) {
-            showToast("要求当前模式为助力或者待机");
-        } else {
-            if (!firstTimeEnter) {
-                firstTimeEnter = true;
-                enterRemoteModeCommand();
+        if (!resp.isRemoteMode()) {
+            if (!resp.isPowerMode() && !resp.isStandByMode()) {
+                showToast("要求当前模式为助力或者待机");
+            } else {
+                if (!firstTimeEnter) {
+                    firstTimeEnter = true;
+                    enterRemoteModeCommand();
+                }
             }
         }
         if (resp.isRemoteConditionStatus() && (resp.isPickingUpStatus() || resp.isStandingManStatus())) {
