@@ -1,9 +1,22 @@
 package com.blue.car;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
+import android.os.Bundle;
 
+import com.blue.car.activity.BlueServiceActivity;
+import com.blue.car.activity.SearchActivity;
+import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.events.GattConnectStatusEvent;
 import com.blue.car.manager.PreferenceManager;
 import com.blue.car.service.BluetoothLeService;
+import com.blue.car.utils.ActivityUtils;
+import com.blue.car.utils.ToastUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class AppApplication extends Application {
     public static final String UNIT_KEY = "unit_key";
@@ -24,6 +37,7 @@ public class AppApplication extends Application {
             sInstance = this;
             initPreferenceManager();
             initKmUnitValue();
+            registerEventBus();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -31,6 +45,18 @@ public class AppApplication extends Application {
 
     public static AppApplication instance() {
         return sInstance;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGattConnectStatusEvent(GattConnectStatusEvent event) {
+        if (event.isDisconnected()) {
+            ToastUtils.showShortToast(sInstance.getApplicationContext(), "检查到蓝牙意外断开");
+            ActivityUtils.startActivityWithClearTask(sInstance.getApplicationContext(), SearchActivity.class);
+        }
+    }
+
+    private void registerEventBus() {
+        EventBus.getDefault().register(this);
     }
 
     public void initPreferenceManager() {
