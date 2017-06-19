@@ -254,7 +254,9 @@ public class RotationImageView extends ImageView {
         try {
             borderBitmap = BitmapFactory.decodeResource(getResources(), drawableRes);
             Matrix matrix = null;
-            if (targetHeight == -1 && targetWidth == -1) {
+            boolean useScaleTargetSize = (targetHeight == -1 && targetWidth == -1);
+            useScaleTargetSize = true;
+            if (useScaleTargetSize) {
                 matrix = new Matrix();
                 matrix.postScale(getWidth() * 1.0f / borderBitmap.getWidth(),
                         getHeight() * 1.0f / borderBitmap.getHeight());
