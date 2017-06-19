@@ -132,6 +132,7 @@ public class LightSettingActivity extends BaseActivity {
             public void OnRotationUp(float ro) {
                 setStartDetectColor(false);
                 updateColorView(ro);
+                setLedColor();
             }
         });
         initLightSettingLayout();
