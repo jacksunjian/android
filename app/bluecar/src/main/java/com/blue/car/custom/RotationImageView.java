@@ -253,18 +253,13 @@ public class RotationImageView extends ImageView {
         }
         try {
             borderBitmap = BitmapFactory.decodeResource(getResources(), drawableRes);
-            Matrix matrix = null;
             boolean useScaleTargetSize = (targetHeight == -1 && targetWidth == -1);
-            useScaleTargetSize = true;
             if (useScaleTargetSize) {
-                matrix = new Matrix();
-                matrix.postScale(getWidth() * 1.0f / borderBitmap.getWidth(),
-                        getHeight() * 1.0f / borderBitmap.getHeight());
                 targetWidth = borderBitmap.getWidth();
                 targetHeight = borderBitmap.getHeight();
             }
-            borderBitmap = Bitmap.createBitmap(borderBitmap, 0, 0, targetWidth,
-                    targetHeight, matrix, true);
+            borderBitmap = Bitmap.createScaledBitmap(borderBitmap,targetWidth,
+                    targetHeight, true);
             resetToOriginalRotation();
         } catch (Exception e) {
             Log.w(TAG, e);
