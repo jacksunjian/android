@@ -96,6 +96,8 @@ public class LightSettingActivity extends BaseActivity {
     private Handler handler = new Handler();
     private Handler colorHandler = new Handler();
 
+    private volatile boolean startDetectColor = false;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_light_setting;
@@ -107,6 +109,14 @@ public class LightSettingActivity extends BaseActivity {
         ambientLightModeCount = ambientModeStringArray.length;
     }
 
+    private synchronized boolean isStartDetectColor() {
+        return startDetectColor;
+    }
+
+    private synchronized void setStartDetectColor(boolean detectColor) {
+        this.startDetectColor = detectColor;
+    }
+
     @Override
     protected void initView() {
         lhTvTitle.setText("灯光设置");
@@ -114,15 +124,14 @@ public class LightSettingActivity extends BaseActivity {
         colorControlView.setRotationSelectListener(new RotationImageView.OnRotationSelectListener() {
             @Override
             public void OnRotation(float ro) {
-                rotation = ro;
-                updateColorView();
-                postColorSetCommand();
+                setStartDetectColor(true);
+                updateColorView(ro);
             }
 
             @Override
             public void OnRotationUp(float ro) {
-                hsb[colorSelectIndex] = getActualColor(rotation = ro)[1];
-                setLedColor();
+                setStartDetectColor(false);
+                updateColorView(ro);
             }
         });
         initLightSettingLayout();
@@ -206,12 +215,31 @@ public class LightSettingActivity extends BaseActivity {
     @Override
     protected void initData() {
         startLedQueryCommand();
+        postCycleSetLedColorCommand();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 startLedLockConditionCommand();
             }
         }, 1000);
+    }
+
+    private void postCycleSetLedColorCommand() {
+        colorHandler.postDelayed(cycleRunnable, 300);
+    }
+
+    private Runnable cycleRunnable = new Runnable() {
+        @Override
+        public void run() {
+            cycleSetLedColor();
+            postCycleSetLedColorCommand();
+        }
+    };
+
+    private void cycleSetLedColor() {
+        if (isStartDetectColor()) {
+            setLedColor();
+        }
     }
 
     private int getColor(float rotation) {
@@ -308,25 +336,26 @@ public class LightSettingActivity extends BaseActivity {
         ambientTextView.setText(ambientModeStringArray[mode % ambientLightModeCount]);
     }
 
-    private void postColorSetCommand() {
-        setLedColor();
+    private void updateColorView(float ro) {
+        hsb[colorSelectIndex] = getActualColor(rotation = ro)[1];
+        updateColorView();
     }
 
     private void setLedColor() {
-        int hsb = getActualColor(rotation)[1];
+        int hsbColor = hsb[colorSelectIndex];
         byte[] command = null;
         switch (colorSelectIndex) {
             case 0:
-                command = CommandManager.getLed1ColorSettingCommand(hsb);
+                command = CommandManager.getLed1ColorSettingCommand(hsbColor);
                 break;
             case 1:
-                command = CommandManager.getLed2ColorSettingCommand(hsb);
+                command = CommandManager.getLed2ColorSettingCommand(hsbColor);
                 break;
             case 2:
-                command = CommandManager.getLed3ColorSettingCommand(hsb);
+                command = CommandManager.getLed3ColorSettingCommand(hsbColor);
                 break;
             case 3:
-                command = CommandManager.getLed4ColorSettingCommand(hsb);
+                command = CommandManager.getLed4ColorSettingCommand(hsbColor);
                 break;
         }
         ledColorCommand = BlueUtils.bytesToAscii(command);
