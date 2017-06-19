@@ -550,4 +550,13 @@ public class LightSettingActivity extends BaseActivity {
         settingAnimator.setDuration(500);
         settingAnimator.start();
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            colorHandler.removeCallbacks(cycleRunnable);
+        } catch (Exception e) {
+        }
+    }
 }
