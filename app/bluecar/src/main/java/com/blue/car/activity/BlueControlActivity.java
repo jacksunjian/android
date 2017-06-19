@@ -206,7 +206,7 @@ public class BlueControlActivity extends BaseActivity {
                 0, speedLimitSeekBarOffset, new SeekBar.OnSeekBarChangeListener() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        double result = DigitalUtils.round(AppApplication.instance().getResultByUnit(progress - speedLimitOffset), 1);
+                        double result = DigitalUtils.round(AppApplication.instance().getResultByUnit(progress - speedLimitSeekBarOffset), 1);
                         seekBarTextView.setText(StringUtils.dealSpeedFormatWithoutTime((float) result));
                     }
 
@@ -315,7 +315,7 @@ public class BlueControlActivity extends BaseActivity {
             return;
         }
         lastSendMoveCommandTime = System.currentTimeMillis();
-        byte[] command = CommandManager.getRemoteControlMoveCommand((int) xValue * 5000, (int) yValue * speedLimit * 1000);
+        byte[] command = CommandManager.getRemoteControlMoveCommand((int) (xValue * 5000), (int) (yValue * speedLimit * 1000));
         writeCommand(command);
     }
 
