@@ -315,7 +315,7 @@ public class BlueControlActivity extends BaseActivity {
             return;
         }
         lastSendMoveCommandTime = System.currentTimeMillis();
-        byte[] command = CommandManager.getRemoteControlMoveCommand((int) xValue * 5000, (int) yValue * speedLimit * 1000);
+        byte[] command = CommandManager.getRemoteControlMoveCommand((int) (xValue * 5000), (int) (yValue * speedLimit * 1000));
         writeCommand(command);
     }
 
