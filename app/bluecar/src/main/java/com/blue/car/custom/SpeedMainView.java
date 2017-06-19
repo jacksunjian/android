@@ -29,7 +29,7 @@ public class SpeedMainView extends View {
     private int valueAnimatorDuration = 800;
 
     private float speed = 0;
-    private float speedLimit = 30;
+    private float speedLimit = 0.1f;
     private int startAngle = 160;
     private int speedSweepMaxAngle = 220;
     private float currentSweepAngle = 0.1f;
@@ -383,8 +383,7 @@ public class SpeedMainView extends View {
         int centre = getWidth() / 2;
         int marginTop = (int) (centre * 1.0f / 4);
         int height = (int) (centre * 1.0f / 4);
-
-        String showText = String.format("当前限速 %.1f" + getUnitWithTime(), speedLimit);
+        String showText = String.format("当前限速 %.1f", speedLimit <= 0.1f ? 0 : speedLimit);
         if (mileageTextRect == null) {
             Rect bounds = new Rect();
             mileageTextPaint.getTextBounds(showText, 0, showText.length(), bounds);
