@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.blue.car.AppApplication;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
@@ -215,6 +216,7 @@ public class BlueSettingActivity extends BaseActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                AppApplication.instance().setDisconnectDetect(false);
                 ActivityUtils.startActivityWithClearTask(BlueSettingActivity.this, SearchActivity.class);
             }
         }, 1500);

@@ -250,6 +250,7 @@ public class OtherSettingActivity extends BaseActivity {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss();
+                        AppApplication.instance().setDisconnectDetect(false);
                         ActivityUtils.startActivityWithClearTask(OtherSettingActivity.this, SearchActivity.class);
                         finish();
                     }

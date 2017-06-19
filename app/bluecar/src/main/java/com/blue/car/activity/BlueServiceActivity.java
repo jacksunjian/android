@@ -274,6 +274,7 @@ public class BlueServiceActivity extends BaseActivity {
                 }
                 if (!resp.isCardIdValid()) {
                     ToastUtils.showLongToast(BlueServiceActivity.this, "cardId校验失败...");
+                    AppApplication.instance().setDisconnectDetect(false);
                     ActivityUtils.startActivityWithClearTask(BlueServiceActivity.this, SearchActivity.class);
                     return;
                 }
@@ -340,6 +341,7 @@ public class BlueServiceActivity extends BaseActivity {
                     @Override
                     public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                         dialog.dismiss();
+                        AppApplication.instance().setDisconnectDetect(false);
                         ActivityUtils.startActivityWithClearTask(BlueServiceActivity.this, SearchActivity.class);
                     }
                 })

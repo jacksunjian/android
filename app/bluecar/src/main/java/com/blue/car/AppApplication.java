@@ -24,6 +24,7 @@ public class AppApplication extends Application {
     static private AppApplication sInstance;
     static private BluetoothLeService bluetoothLeService;
 
+    private boolean disconnectDetect = true;
     private boolean kmUnit = true;
 
     @Override
@@ -50,9 +51,21 @@ public class AppApplication extends Application {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGattConnectStatusEvent(GattConnectStatusEvent event) {
         if (event.isDisconnected()) {
-            ToastUtils.showShortToast(sInstance.getApplicationContext(), "检查到蓝牙意外断开");
-            ActivityUtils.startActivityWithClearTask(sInstance.getApplicationContext(), SearchActivity.class);
+            if (isDisconnectDetect()) {
+                ToastUtils.showShortToast(sInstance.getApplicationContext(), "检查到蓝牙意外断开");
+                ActivityUtils.startActivityWithClearTask(sInstance.getApplicationContext(), SearchActivity.class);
+            } else {
+                setDisconnectDetect(true);
+            }
         }
+    }
+
+    public void setDisconnectDetect(boolean detect) {
+        disconnectDetect = detect;
+    }
+
+    public boolean isDisconnectDetect() {
+        return disconnectDetect;
     }
 
     private void registerEventBus() {
