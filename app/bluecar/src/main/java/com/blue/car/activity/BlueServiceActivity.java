@@ -91,6 +91,9 @@ public class BlueServiceActivity extends BaseActivity {
     @Bind(R.id.system_status_tv)
     TextView sysStatusTv;
 
+    @Bind(R.id.tv_device_name)
+    TextView deviceNameTv;
+
     private TextView averageTv;
     private TextView perMeterTv;
     private TextView perRunTimeTv;
@@ -187,10 +190,18 @@ public class BlueServiceActivity extends BaseActivity {
         });
     }
 
+    private void updateDeviceName(String name) {
+        if (StringUtils.isNullOrEmpty(name)) {
+            return;
+        }
+        deviceNameTv.setText(name);
+    }
+
     @Override
     protected void initData() {
         deviceName = getIntent().getStringExtra(BluetoothConstant.EXTRAS_DEVICE_NAME);
         deviceAddress = getIntent().getStringExtra(BluetoothConstant.EXTRA_DEVICE_ADDRESS);
+        updateDeviceName(deviceName);
         startServiceConnection();
     }
 
@@ -512,8 +523,24 @@ public class BlueServiceActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         clearBluetoothLeService();
-        unbindService(bluetoothServiceConnection);
-        stopService(getIntent());
+        unbindService();
+        stopService();
+    }
+
+    private void unbindService() {
+        try {
+            unbindService(bluetoothServiceConnection);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopService() {
+        try {
+            stopService(getIntent());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void clearBluetoothLeService() {
