@@ -5,6 +5,7 @@
 
     <TextView
         android:id="@+id/info_left_text"
+        android:textColor="@color/white"
         style="@style/settingTextLeftStyle"
         android:layout_marginLeft="0dp" />
 
@@ -17,6 +18,6 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/white" />
+        android:background="@color/white_sixty_percent" />
 
 </RelativeLayout>
