@@ -324,7 +324,7 @@ public class BlueControlActivity extends BaseActivity {
                     return;
                 }
                 String temp = StringUtils.dealTempFormatWithoutUnit(AppApplication.instance().getTemperByUnit(resp.temperature)) +
-                        AppApplication.instance();
+                        AppApplication.instance().getTemperUnit();
                 carTemperature.setText(String.format("车体温度：%s", temp));
             }
         }
