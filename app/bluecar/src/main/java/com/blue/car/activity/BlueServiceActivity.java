@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -160,9 +161,13 @@ public class BlueServiceActivity extends BaseActivity {
     }
 
     private void initSpecialLayout() {
+        Rect bounds = new Rect();
+        deviceNameTv.getPaint().getTextBounds(deviceNameTv.getText().toString(), 0,
+                deviceNameTv.getText().length(), bounds);
+
         ViewGroup viewGroup = (ViewGroup) findViewById(R.id.speed_panel);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) viewGroup.getLayoutParams();
-        lp.height = ScreenUtils.screenHeight(this) - ScreenUtils.getNavigationBarHeight(this);
+        lp.height = ScreenUtils.screenHeight(this) - ScreenUtils.getNavigationBarHeight(this) - bounds.height();
         viewGroup.setLayoutParams(lp);
 
         currentSpeedUnit.setText(AppApplication.instance().getUnitWithTime());
