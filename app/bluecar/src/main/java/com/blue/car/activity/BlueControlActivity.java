@@ -22,6 +22,7 @@ import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
+import com.blue.car.model.MainFuncCommandResp;
 import com.blue.car.model.RemoteControlInfoCommandResp;
 import com.blue.car.model.RemoteControlModeCommandResp;
 import com.blue.car.service.BlueUtils;
@@ -83,6 +84,8 @@ public class BlueControlActivity extends BaseActivity {
 
     private long lastSendMoveCommandTime = System.currentTimeMillis();
 
+    private long lastTempCommandTime = 0;
+    private Handler controlMoveHandler = new Handler();
     private Handler controlModeHandler = new Handler();
     private boolean firstTimeEnter = false;
 
@@ -94,6 +97,8 @@ public class BlueControlActivity extends BaseActivity {
     @Override
     protected void initConfig() {
     }
+
+    private float xValue, yValue;
 
     @Override
     protected void initView() {
@@ -109,6 +114,7 @@ public class BlueControlActivity extends BaseActivity {
             @Override
             public void OnRotationUp(float rotation) {
                 controlView.resetToOriginalRotation();
+                xValue = yValue = 0;
             }
         });
         controlView.setOnMoveScaleChangedListener(new RotationImageView.OnMoveScaleChangedListener() {
@@ -117,7 +123,9 @@ public class BlueControlActivity extends BaseActivity {
                 if (BluetoothConstant.USE_DEBUG) {
                     LogUtils.e(TAG, String.format("xScale:%.1f,yScale:%.1f", xScale, yScale));
                 }
-                startRemoteControlMoveCommand(yScale, xScale * -1);
+                xValue = yScale;
+                yValue = xScale * -1;
+                //startRemoteControlMoveCommand(yScale, xScale * -1);
             }
 
             @Override
@@ -228,6 +236,21 @@ public class BlueControlActivity extends BaseActivity {
         startRemoteControlModeCommand();
     }
 
+    private void postCycleControlMoveCommand() {
+        if (controlMoveHandler == null) {
+            return;
+        }
+        controlMoveHandler.postDelayed(moveCycleRunnable, 292);
+    }
+
+    private Runnable moveCycleRunnable = new Runnable() {
+        @Override
+        public void run() {
+            startRemoteControlMoveCommand(xValue, yValue);
+            postCycleControlMoveCommand();
+        }
+    };
+
     private String getSpecialCommand(byte[] command) {
         return BlueUtils.bytesToAscii(CommandManager.getSpecialCommandBytes(command));
     }
@@ -261,6 +284,15 @@ public class BlueControlActivity extends BaseActivity {
         @Override
         public void run() {
             postRemoteControlModeCommand();
+            if (lastTempCommandTime == 0 || System.currentTimeMillis() - lastTempCommandTime > 5 * 1000) {
+                lastTempCommandTime = System.currentTimeMillis();
+                controlModeHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        postMainFuncCommand();
+                    }
+                }, 125);
+            }
             startRemoteControlModeCommand();
         }
     };
@@ -270,6 +302,33 @@ public class BlueControlActivity extends BaseActivity {
         respManager.addCommandRespCallBack(getSpecialCommand(command), remoteModeRespCallback);
         writeCommand(command);
     }
+
+    private void postMainFuncCommand() {
+        byte[] command = CommandManager.getMainFuncCommand();
+        respManager.addCommandRespCallBack(getSpecialCommand(command), mainFuncRespCallback);
+        writeCommand(command);
+    }
+
+    private CommandRespManager.OnDataCallback mainFuncRespCallback = new CommandRespManager.OnDataCallback() {
+        @Override
+        public void resp(byte[] data) {
+            if (StringUtils.isNullOrEmpty(data)) {
+                return;
+            }
+            boolean result = CommandManager.checkVerificationCode(data);
+            LogUtils.e("checkVerificationCode", String.valueOf(result));
+            if (result) {
+                MainFuncCommandResp resp = CommandManager.getMainFuncCommandResp(data);
+                LogUtils.jsonLog("MainFuncCommandResp", resp);
+                if (resp == null) {
+                    return;
+                }
+                String temp = StringUtils.dealTempFormatWithoutUnit(AppApplication.instance().getTemperByUnit(resp.temperature)) +
+                        AppApplication.instance();
+                carTemperature.setText(String.format("车体温度：%s", temp));
+            }
+        }
+    };
 
     private CommandRespManager.OnDataCallback remoteModeRespCallback = new CommandRespManager.OnDataCallback() {
         @Override
@@ -310,11 +369,12 @@ public class BlueControlActivity extends BaseActivity {
     };
 
     private void startRemoteControlMoveCommand(float xValue, float yValue) {
-        if (System.currentTimeMillis() < lastSendMoveCommandTime + SEND_MOVE_COMMAND_INTERVAL) {
+        /*if (System.currentTimeMillis() < lastSendMoveCommandTime + SEND_MOVE_COMMAND_INTERVAL) {
             return;
         }
-        lastSendMoveCommandTime = System.currentTimeMillis();
-        byte[] command = CommandManager.getRemoteControlMoveCommand((int) (xValue * 5000), (int) (yValue * speedLimit * 1000));
+        lastSendMoveCommandTime = System.currentTimeMillis();*/
+        byte[] command = CommandManager.getRemoteControlMoveCommand((int) (xValue * 5000),
+                (int) (yValue * speedLimit * 1000));
         writeCommand(command);
     }
 
@@ -447,12 +507,28 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void stopRemoteRunningResource() {
+        stopControlModeHandler();
+        stopControlMoveHandler();
+    }
+
+    private void stopControlModeHandler() {
         try {
             if (controlModeHandler == null) {
                 return;
             }
             controlModeHandler.removeCallbacks(controlModeRunnable);
             controlModeHandler = null;
+        } catch (Exception e) {
+        }
+    }
+
+    private void stopControlMoveHandler() {
+        try {
+            if (controlMoveHandler == null) {
+                return;
+            }
+            controlMoveHandler.removeCallbacks(moveCycleRunnable);
+            controlMoveHandler = null;
         } catch (Exception e) {
         }
     }
