@@ -2,13 +2,11 @@ package com.blue.car.activity;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -16,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.blue.car.AppApplication;
 import com.blue.car.R;
@@ -33,13 +30,13 @@ import com.blue.car.utils.DigitalUtils;
 import com.blue.car.utils.LogUtils;
 import com.blue.car.utils.ScreenUtils;
 import com.blue.car.utils.StringUtils;
-import com.blue.car.utils.ToastUtils;
 import com.blue.car.utils.UniversalViewUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -70,6 +67,8 @@ public class BlueControlActivity extends BaseActivity {
     RotationImageView controlView;
     @Bind(R.id.remote_button)
     ImageView remoteButton;
+    @Bind(R.id.car_temperature)
+    TextView carTemperature;
 
     private TextView seekBarTextView;
     private int speedLimitOffset = 0;
@@ -456,5 +455,12 @@ public class BlueControlActivity extends BaseActivity {
             controlModeHandler = null;
         } catch (Exception e) {
         }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO: add setContentView(...) invocation
+        ButterKnife.bind(this);
     }
 }

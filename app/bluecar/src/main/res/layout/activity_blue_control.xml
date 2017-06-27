@@ -61,18 +61,46 @@
             android:src="@drawable/remote_arrow" />
 
     </FrameLayout>
+<RelativeLayout
+    android:id="@+id/rl_mes"
+    android:layout_width="match_parent"
+    android:layout_marginBottom="3dp"
+    android:layout_marginTop="6dp"
+    android:layout_below="@+id/remote_control_layout"
+    android:layout_height="wrap_content">
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_height="wrap_content">
     <TextView
         android:id="@+id/battery_remain_percent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/remote_control_layout"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="3dp"
-        android:layout_marginTop="6dp"
         android:text="剩余电量：80%"
         android:textColor="@android:color/white"
         android:textSize="18sp" />
+        <View
+            android:id="@+id/v1"
+            android:layout_toRightOf="@+id/battery_remain_percent"
+            android:layout_width="2dp"
+            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"
+            android:layout_height="15dp"
+            android:background="@color/white"/>
+        <TextView
+            android:id="@+id/car_temperature"
+            android:layout_toRightOf="@+id/v1"
+            android:layout_marginLeft="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="车体温度：20℃"
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
 
     <include
         android:id="@+id/remote_maxSpeed_layout"
@@ -81,6 +109,6 @@
         android:layout_marginRight="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/battery_remain_percent" />
+        android:layout_below="@+id/rl_mes" />
 
 </RelativeLayout>
