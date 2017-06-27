@@ -222,6 +222,8 @@ public class BlueSettingActivity extends BaseActivity {
         }, 1500);
     }
 
+
+
     @Override
     protected void onStart() {
         super.onStart();
