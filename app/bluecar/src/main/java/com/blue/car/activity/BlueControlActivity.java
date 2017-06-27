@@ -234,6 +234,7 @@ public class BlueControlActivity extends BaseActivity {
     @Override
     protected void initData() {
         startRemoteControlModeCommand();
+        postCycleControlMoveCommand();
     }
 
     private void postCycleControlMoveCommand() {
