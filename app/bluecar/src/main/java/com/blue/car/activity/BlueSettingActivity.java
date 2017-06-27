@@ -19,7 +19,6 @@ import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
-import com.blue.car.model.AccountInfo;
 import com.blue.car.service.BlueUtils;
 import com.blue.car.utils.ActivityUtils;
 import com.blue.car.utils.StringUtils;
@@ -140,12 +139,8 @@ public class BlueSettingActivity extends BaseActivity {
     }
 
     private void showRenameDialog() {
-        AccountInfo account = AccountInfo.currentAccountInfo(this);
-        String defaultName = null;
-        if (account != null) {
-            defaultName = account.bleName;
-        }
-        if(StringUtils.isNullOrEmpty(defaultName)) {
+        String defaultName = AppApplication.instance().getDeviceName();
+        if (StringUtils.isNullOrEmpty(defaultName)) {
             defaultName = "请输入名称";
         }
         MaterialDialog.Builder builder = new MaterialDialog.Builder(this)

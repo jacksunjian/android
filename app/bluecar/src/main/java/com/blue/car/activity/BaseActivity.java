@@ -73,14 +73,22 @@ public abstract class BaseActivity extends AppCompatActivity implements EasyPerm
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-
     protected void writeCommand(byte[] command) {
         BluetoothGattCharacteristic characteristic = getCommandWriteGattCharacteristic(AppApplication.getBluetoothLeService());
+        if (characteristic == null) {
+            return;
+        }
         characteristic.setValue(command);
-        AppApplication.getBluetoothLeService().getBluetoothGatt().writeCharacteristic(characteristic);
+        BluetoothGatt bluetoothGatt = AppApplication.getBluetoothLeService().getBluetoothGatt();
+        if (bluetoothGatt != null) {
+            bluetoothGatt.writeCharacteristic(characteristic);
+        }
     }
 
     protected BluetoothGattCharacteristic getCommandWriteGattCharacteristic(BluetoothLeService bluetoothLeService) {
+        if (bluetoothLeService == null) {
+            return null;
+        }
         return bluetoothLeService.getCharacteristic(BluetoothConstant.UUID_SERVICE, BluetoothConstant.UUID_CHARACTER_TX);
     }
 

@@ -206,6 +206,7 @@ public class BlueServiceActivity extends BaseActivity {
     protected void initData() {
         deviceName = getIntent().getStringExtra(BluetoothConstant.EXTRAS_DEVICE_NAME);
         deviceAddress = getIntent().getStringExtra(BluetoothConstant.EXTRA_DEVICE_ADDRESS);
+        AppApplication.instance().setDeviceName(deviceName);
         updateDeviceName(deviceName);
         startServiceConnection();
     }

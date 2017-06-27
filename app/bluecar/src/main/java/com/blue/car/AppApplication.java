@@ -1,13 +1,8 @@
 package com.blue.car;
 
-import android.app.Activity;
 import android.app.Application;
-import android.content.Intent;
-import android.os.Bundle;
 
-import com.blue.car.activity.BlueServiceActivity;
 import com.blue.car.activity.SearchActivity;
-import com.blue.car.events.GattCharacteristicWriteEvent;
 import com.blue.car.events.GattConnectStatusEvent;
 import com.blue.car.manager.PreferenceManager;
 import com.blue.car.service.BluetoothLeService;
@@ -26,6 +21,7 @@ public class AppApplication extends Application {
 
     private boolean disconnectDetect = true;
     private boolean kmUnit = true;
+    private String deviceName;
 
     @Override
     public void onCreate() {
@@ -148,5 +144,13 @@ public class AppApplication extends Application {
         } else {
             return "℉";
         }
+    }
+
+    public void setDeviceName(String name) {
+        this.deviceName = name;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
     }
 }
