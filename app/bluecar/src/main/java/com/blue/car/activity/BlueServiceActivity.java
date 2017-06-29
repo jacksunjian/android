@@ -695,6 +695,9 @@ public class BlueServiceActivity extends BaseActivity {
                     if (t <= 240) {
                         currentSpeed.setAlpha(t * 1.0f / 240);
                         currentSpeedUnit.setAlpha(t * 1.0f / 240);
+                    } else {
+                        currentSpeed.setAlpha(1);
+                        currentSpeedUnit.setAlpha(1);
                     }
                 }
             }

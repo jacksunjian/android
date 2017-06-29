@@ -2,7 +2,6 @@ package com.blue.car.custom;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
 
@@ -57,8 +56,6 @@ public class MyScrollView extends ScrollView {
                 lastYPos = y;
                 break;
             case MotionEvent.ACTION_UP:
-                Log.e("##offsetSum", String.valueOf(offsetSum));
-                Log.e("##isOpen", String.valueOf(isOpen));
                 if (offsetSum > 0) {
                     if (isOpen) {
                         if (offsetSum > threshold) {
