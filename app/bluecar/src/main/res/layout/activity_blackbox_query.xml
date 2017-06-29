@@ -9,38 +9,26 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:padding="15dp">
 
         <TextView
             android:id="@+id/time_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/blackBoxTextLabelStyle"
             android:layout_centerVertical="true"
-            android:minHeight="40dp"
-            android:text="时间"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:text="时间" />
 
         <TextView
             android:id="@+id/code_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/blackBoxTextLabelStyle"
             android:layout_centerInParent="true"
-            android:minHeight="40dp"
-            android:text="代码"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:text="代码" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/blackBoxTextLabelStyle"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:minHeight="40dp"
-            android:text="错误信息"
-            android:textColor="@android:color/white"
-            android:textSize="18sp" />
+            android:text="错误信息" />
     </RelativeLayout>
 
     <ListView
