@@ -203,6 +203,7 @@ public class SensorSettingActivity extends BaseActivity {
         balanceText = (TextView) UniversalViewUtils.initNormalSeekBarLayout(this, R.id.power_balance, "助力平衡点", 20, balanceProgressOffset, new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                writePowerBalanceCommand(seekBar.getProgress() - balanceProgressOffset);
             }
 
             @Override
@@ -211,7 +212,7 @@ public class SensorSettingActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                writePowerBalanceCommand(seekBar.getProgress() - balanceProgressOffset);
+
             }
         });
 
