@@ -89,6 +89,8 @@ public class BlueControlActivity extends BaseActivity {
     private Handler controlModeHandler = new Handler();
     private boolean firstTimeEnter = false;
 
+    private boolean beingInRemoteMode = false;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_blue_control;
@@ -125,7 +127,6 @@ public class BlueControlActivity extends BaseActivity {
                 }
                 xValue = yScale;
                 yValue = xScale * -1;
-                //startRemoteControlMoveCommand(yScale, xScale * -1);
             }
 
             @Override
@@ -133,78 +134,7 @@ public class BlueControlActivity extends BaseActivity {
             }
         });
         controlView.setBorderBitmap(R.drawable.remote_button, ScreenUtils.dip2px(this, 63), ScreenUtils.dip2px(this, 63));
-        /*controlView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int[] location = new int[2];
-                controlView.getLocationInWindow(location);
-                *//*float x = getInnerXPos(event.getX() + location[0], event.getY()  + location[1], controlView.getWidth() / 2);
-                float y = getInnerYPos(event.getX()  + location[0], event.getY() +  location[1], controlView.getHeight() / 2);
-                remoteButton.setX(x);
-                remoteButton.setY(y);
-                if (event.getX() <= location[0]) {
-                    remoteButton.setX(location[0]);
-                } else if (event.getX() >= location[0] + controlView.getWidth()) {
-                    remoteButton.setX(location[0] + controlView.getWidth());
-                } else {
-                    remoteButton.setX(event.getX());
-                }*//*
-                Log.e("##x,y",event.toString());
-                int width = controlView.getWidth();
-                float newXPos = event.getRawX();
-                float newYPos = event.getRawY();
-                if (newXPos < location[0] || newXPos > location[0] + controlView.getWidth()) {
-                    float yPos = newYPos;
-                    if (newYPos < location[1]) {
-                        yPos = location[1] + width / 2 - newYPos;
-                    } else if (newYPos > location[1] + width) {
-                        yPos = newYPos - location[1] - width / 2;
-                    }
-                    if (newXPos < location[0]) {
-                        float xPos = getInnerXPos(location[0] + width / 2 - newXPos, yPos, width / 2);
-                        newXPos = location[0] + width / 2 - xPos;
-                    } else {
-                        float xPos = getInnerXPos(newXPos - location[0] + width / 2, yPos, width / 2);
-                        newXPos = location[0] + width / 2 + xPos;
-                    }
-                }
-
-                if (newYPos < location[1] || newYPos > location[1] + width) {
-                    if (newYPos < location[1]) {
-                        float yPos = getInnerYPos(newXPos, location[1] + width / 2 - newYPos, width / 2);
-                        newYPos = location[1] + width / 2 - yPos;
-                    } else {
-                        float yPos = getInnerYPos(newXPos, newYPos - location[1] - width / 2, width / 2);
-                        newYPos = location[1] + width / 2 + yPos;
-                    }
-                }
-
-                remoteButton.setX(newXPos);
-                remoteButton.setY(newYPos);
-                return false;
-            }
-        });*/
         initSpeedLimitView();
-    }
-
-    private float getInnerXPos(float x, float y, float borderLength) {
-        double theThirdSide = Math.sqrt(x * x + y * y);
-        Log.e("##thirdSize", String.valueOf(theThirdSide));
-        if (x <= borderLength) {
-            return x;
-        }
-        double xScale = borderLength / theThirdSide;
-        Log.e("##x", String.valueOf(xScale * x));
-        return (float) (xScale * x);
-    }
-
-    private float getInnerYPos(float x, float y, float borderLength) {
-        double theThirdSide = Math.sqrt(x * x + y * y);
-        if (y <= borderLength) {
-            return y;
-        }
-        double yScale = borderLength / theThirdSide;
-        return (float) (yScale * y);
     }
 
     private void initSpeedLimitView() {
@@ -238,7 +168,7 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void postCycleControlMoveCommand() {
-        if (controlMoveHandler == null) {
+        if (controlMoveHandler == null || !beingInRemoteMode) {
             return;
         }
         controlMoveHandler.postDelayed(moveCycleRunnable, 292);
@@ -285,7 +215,11 @@ public class BlueControlActivity extends BaseActivity {
         @Override
         public void run() {
             postRemoteControlModeCommand();
-            if (lastTempCommandTime == 0 || System.currentTimeMillis() - lastTempCommandTime > 5 * 1000) {
+            startRemoteControlModeCommand();
+            if(!beingInRemoteMode) {
+                return;
+            }
+            if (System.currentTimeMillis() - lastTempCommandTime > 5 * 1000) {
                 lastTempCommandTime = System.currentTimeMillis();
                 controlModeHandler.postDelayed(new Runnable() {
                     @Override
@@ -294,7 +228,6 @@ public class BlueControlActivity extends BaseActivity {
                     }
                 }, 125);
             }
-            startRemoteControlModeCommand();
         }
     };
 
@@ -462,6 +395,7 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void afterEnterRemoteMode() {
+        beingInRemoteMode = true;
         startRemoteControlInfoCommand();
     }
 
@@ -532,12 +466,5 @@ public class BlueControlActivity extends BaseActivity {
             controlMoveHandler = null;
         } catch (Exception e) {
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
-        ButterKnife.bind(this);
     }
 }
