@@ -168,7 +168,7 @@ public class BlueControlActivity extends BaseActivity {
     }
 
     private void postCycleControlMoveCommand() {
-        if (controlMoveHandler == null || !beingInRemoteMode) {
+        if (controlMoveHandler == null) {
             return;
         }
         controlMoveHandler.postDelayed(moveCycleRunnable, 292);
@@ -177,7 +177,9 @@ public class BlueControlActivity extends BaseActivity {
     private Runnable moveCycleRunnable = new Runnable() {
         @Override
         public void run() {
-            startRemoteControlMoveCommand(xValue, yValue);
+            if (beingInRemoteMode) {
+                startRemoteControlMoveCommand(xValue, yValue);
+            }
             postCycleControlMoveCommand();
         }
     };
