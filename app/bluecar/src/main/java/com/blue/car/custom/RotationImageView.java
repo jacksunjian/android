@@ -5,12 +5,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.Region;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+
+import com.blue.car.utils.ScreenUtils;
 
 public class RotationImageView extends ImageView {
     private static final String TAG = RotationImageView.class.getSimpleName();
@@ -18,6 +22,7 @@ public class RotationImageView extends ImageView {
     private float nowRotation = 0;
     private int rotationDiff = 0;
 
+    private float borderXPos, borderYPos;
     private float xPos, yPos;
 
     private Matrix bitmapMatrix = new Matrix();
@@ -29,6 +34,9 @@ public class RotationImageView extends ImageView {
     private boolean constantlyRotationSelect = false;
     private OnRotationSelectListener rotationSelectListener;
     private OnMoveScaleChangedListener onMoveScaleChangedListener;
+
+    private Region region = new Region();
+    private float borderScaleLimitLength;
 
     public interface OnRotationSelectListener {
         void OnRotation(float rotation);
@@ -68,14 +76,57 @@ public class RotationImageView extends ImageView {
                         rotationBitmap.getHeight(), matrix, true);
                 if (borderBitmap != null) {
                     resetToOriginalRotation();
+                    initBorderScaleLimitLength();
+                    initCircleRegion();
                 }
             }
         });
     }
 
+    private void initBorderScaleLimitLength() {
+        borderScaleLimitLength = getWidth() / 2 -
+                ScreenUtils.dip2px(getContext(), 12) - borderBitmap.getWidth() / 2;
+    }
+
+    private void initCircleRegion() {
+        Path path = new Path();
+        path.addCircle(getWidth() / 2, getHeight() / 2, borderScaleLimitLength, Path.Direction.CCW);
+        RectF bounds = new RectF();
+        path.computeBounds(bounds, true);
+        region = new Region();
+        region.setPath(path, new Region((int) bounds.left, (int) bounds.top, (int) bounds.right, (int) bounds.bottom));
+    }
+
     private void initBitmapAttribute(AttributeSet attrs) {
         int srcId = attrs.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "src", 0);
         rotationBitmap = BitmapFactory.decodeStream(getResources().openRawResource(srcId));
+    }
+
+    private void setBorderPos(MotionEvent event) {
+        if (borderBitmap == null) {
+            return;
+        }
+        float x = event.getX();
+        float y = event.getY();
+        if (region.contains((int) x, (int) y)) {
+            borderXPos = event.getX();
+            borderYPos = event.getY();
+        } else {
+            float limitLength = borderScaleLimitLength;
+            float xLength = Math.abs(x - getWidth() / 2);
+            float yLength = Math.abs(y - getHeight() / 2);
+            float third = (float) Math.sqrt(xLength * xLength + yLength * yLength);
+            if (x <= getWidth() / 2) {
+                borderXPos = xLength - limitLength / third * xLength + event.getX();
+            } else {
+                borderXPos = getWidth() / 2 + limitLength / third * xLength;
+            }
+            if (y <= getHeight() / 2) {
+                borderYPos = (third - limitLength) / third * yLength + event.getY();
+            } else {
+                borderYPos = limitLength / third * yLength + getHeight() / 2;
+            }
+        }
     }
 
     @Override
@@ -90,6 +141,7 @@ public class RotationImageView extends ImageView {
                 tempMatrix.set(bitmapMatrix);
                 break;
             case MotionEvent.ACTION_MOVE:
+                setBorderPos(event);
                 invalidateRotation(getRotation(event) + rotationDiff);
                 invokeMoveScaleChangeListener();
                 invokeConstantlyRotationListener();
@@ -148,7 +200,8 @@ public class RotationImageView extends ImageView {
         if (borderBitmap == null) {
             return;
         }
-        canvas.drawBitmap(borderBitmap, xPos, yPos, null);
+        canvas.drawBitmap(borderBitmap, borderXPos - borderBitmap.getWidth() / 2,
+                borderYPos - borderBitmap.getHeight() / 2, null);
     }
 
     private void invokeRotationListener() {
@@ -217,8 +270,8 @@ public class RotationImageView extends ImageView {
     }
 
     public void resetToOriginalRotation() {
-        xPos = getWidth() / 2 - getBorderBitmapWidth() * 1.0f / 2;
-        yPos = getHeight() / 2 - getBorderBitmapHeight() * 1.0f / 2;
+        borderXPos = getWidth() / 2;
+        borderYPos = getHeight() / 2;
         invalidateRotation(0);
     }
 
@@ -258,7 +311,7 @@ public class RotationImageView extends ImageView {
                 targetWidth = borderBitmap.getWidth();
                 targetHeight = borderBitmap.getHeight();
             }
-            borderBitmap = Bitmap.createScaledBitmap(borderBitmap,targetWidth,
+            borderBitmap = Bitmap.createScaledBitmap(borderBitmap, targetWidth,
                     targetHeight, true);
             resetToOriginalRotation();
         } catch (Exception e) {
