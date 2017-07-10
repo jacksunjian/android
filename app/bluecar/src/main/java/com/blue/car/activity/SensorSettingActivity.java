@@ -93,7 +93,7 @@ public class SensorSettingActivity extends BaseActivity {
 
     private void startMainFuncCommand() {
         byte[] command = CommandManager.getMainFuncCommand();
-        respManager.setCommandRespCallBack(getReadCommandInfo(command), mainCommandCallback);
+        respManager.addCommandRespCallBack(getReadCommandInfo(command), mainCommandCallback);
         writeCommand(command);
     }
 
@@ -231,7 +231,7 @@ public class SensorSettingActivity extends BaseActivity {
 
     private void getSensorInfo() {
         byte[] command = CommandManager.getSensitivityCommand();
-        respManager.setCommandRespCallBack(getReadCommandInfo(command), sensorInfoRespCallback);
+        respManager.addCommandRespCallBack(getReadCommandInfo(command), sensorInfoRespCallback);
         writeCommand(command);
     }
 
