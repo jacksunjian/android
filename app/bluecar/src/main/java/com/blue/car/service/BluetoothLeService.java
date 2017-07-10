@@ -307,6 +307,9 @@ public class BluetoothLeService extends Service {
     }
 
     public BluetoothGattCharacteristic getCharacteristic(UUID serviceUUID, UUID characteristicUUID) {
+        if(bluetoothGatt==null) {
+            return null;
+        }
         BluetoothGattService bluetoothGattService = bluetoothGatt.getService(serviceUUID);
         if (bluetoothGattService == null) {
             return null;

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,6 +21,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.blue.car.R;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.impl.OnSeekBarChangeListenerImpl;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.MainFuncCommandResp;
@@ -67,8 +67,8 @@ public class SensorSettingActivity extends BaseActivity {
     private String unLockCommand;
     private String checkCommand;
     private Handler handler = new Handler();
-    ViewGroup turnlayout;
-    ViewGroup ridinglayout;
+    ViewGroup turnLayout;
+    ViewGroup ridingLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,7 +93,7 @@ public class SensorSettingActivity extends BaseActivity {
 
     private void startMainFuncCommand() {
         byte[] command = CommandManager.getMainFuncCommand();
-        respManager.setCommandRespCallBack(new String(command), mainCommandCallback);
+        respManager.setCommandRespCallBack(getReadCommandInfo(command), mainCommandCallback);
         writeCommand(command);
     }
 
@@ -104,7 +104,6 @@ public class SensorSettingActivity extends BaseActivity {
                 return;
             }
             boolean result = CommandManager.checkVerificationCode(data);
-            LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
                 mainFuncResp = CommandManager.getMainFuncCommandResp(data);
                 LogUtils.jsonLog("sunjianjian", mainFuncResp);
@@ -118,28 +117,27 @@ public class SensorSettingActivity extends BaseActivity {
         findViewById(R.id.iv_right).setVisibility(View.GONE);
         actionBarTitle.setText("传感器设置");
 
-         turnlayout = (ViewGroup) findViewById(R.id.turning_sensitivity);
-         ridinglayout =(ViewGroup) findViewById(R.id.riding_sensitivity);
+        turnLayout = (ViewGroup) findViewById(R.id.turning_sensitivity);
+        ridingLayout = (ViewGroup) findViewById(R.id.riding_sensitivity);
     }
 
     private void initSettingView() {
-        UniversalViewUtils.initNormalInfoLayout(this, R.id.posture_layout, "姿态校准", R.mipmap.gengduo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("sunjian", "" + workMode);
-                if (workMode == 1) {
-                    showCarLockDialog();
-                } else {
-                    showToast("当前不是助力模式，请下车");
-                }
-            }
-        });
+        UniversalViewUtils.initNormalInfoLayout(this, R.id.posture_layout, "姿态校准", R.mipmap.gengduo)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (workMode == 1) {
+                            showCarLockDialog();
+                        } else {
+                            showToast("当前不是助力模式，请下车");
+                        }
+                    }
+                });
         Switch turningSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.turning_sensitivity_auto_regulation,
                 "转向灵敏度自动调节");
         turningSwitchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                LogUtils.e("turningSensitivity", "checked:" + isChecked);
                 byte[] command;
                 if (isChecked) {
                     command = CommandManager.getOpenTurnSensitivityCommand();
@@ -149,31 +147,20 @@ public class SensorSettingActivity extends BaseActivity {
                     turnoffSensorSettingCommand = BlueUtils.bytesToAscii(command);
                 }
                 writeCommand(command);
-
             }
         });
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.turning_sensitivity, "转向灵敏度", 45, new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                writeTurnSensorCommand(seekBar.getProgress());
-
-            }
-        });
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.turning_sensitivity, "转向灵敏度", 45,
+                new OnSeekBarChangeListenerImpl() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        writeTurnSensorCommand(seekBar.getProgress());
+                    }
+                });
         Switch ridingSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.riding_sensitivity_auto_regulation,
                 "骑行灵敏度自动调节");
         ridingSwitchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                LogUtils.e("ridingSensitivity", "checked:" + isChecked);
                 byte[] ridingCommand;
                 if (isChecked) {
                     ridingCommand = CommandManager.getOpenRidingSensitivityCommand();
@@ -185,36 +172,21 @@ public class SensorSettingActivity extends BaseActivity {
                 writeCommand(ridingCommand);
             }
         });
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.riding_sensitivity, "骑行灵敏度", 60, new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            }
+        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.riding_sensitivity, "骑行灵敏度", 60,
+                new OnSeekBarChangeListenerImpl() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        writeRideSensorCommand(seekBar.getProgress());
+                    }
+                });
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                writeRideSensorCommand(seekBar.getProgress());
-            }
-        });
-
-        balanceText = (TextView) UniversalViewUtils.initNormalSeekBarLayout(this, R.id.power_balance, "助力平衡点", 20, balanceProgressOffset, new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                writePowerBalanceCommand(seekBar.getProgress() - balanceProgressOffset);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
+        balanceText = (TextView) UniversalViewUtils.initNormalSeekBarLayout(this, R.id.power_balance,
+                "助力平衡点", 20, balanceProgressOffset, new OnSeekBarChangeListenerImpl() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        writePowerBalanceCommand(seekBar.getProgress() - balanceProgressOffset);
+                    }
+                });
 
         turningSwitch = UniversalViewUtils.getSwitchView((ViewGroup) findViewById(R.id.turning_sensitivity_auto_regulation));
         ridingSwitch = UniversalViewUtils.getSwitchView((ViewGroup) findViewById(R.id.riding_sensitivity_auto_regulation));
@@ -253,9 +225,13 @@ public class SensorSettingActivity extends BaseActivity {
         }, 1000);
     }
 
+    private String getReadCommandInfo(byte[] command) {
+        return BlueUtils.bytesToAscii(command, 4, 2);
+    }
+
     private void getSensorInfo() {
         byte[] command = CommandManager.getSensitivityCommand();
-        respManager.setCommandRespCallBack(new String(command), sensorInfoRespCallback);
+        respManager.setCommandRespCallBack(getReadCommandInfo(command), sensorInfoRespCallback);
         writeCommand(command);
     }
 
@@ -266,11 +242,9 @@ public class SensorSettingActivity extends BaseActivity {
                 return;
             }
             boolean result = CommandManager.checkVerificationCode(data);
-            LogUtils.e("checkVerificationCode", String.valueOf(result));
             if (result) {
                 sensitivityCommandResp = CommandManager.getSensitivityCommandResp(data);
                 LogUtils.jsonLog("speedLimitResp", sensitivityCommandResp);
-                // saveSensitivityResp();
                 updateView(sensitivityCommandResp);
             }
         }
@@ -297,17 +271,14 @@ public class SensorSettingActivity extends BaseActivity {
         writeCommand(command);
     }
 
-
     private void updateView(SensitivityCommandResp resp) {
         if (resp == null) {
             return;
         }
         turningSwitch.setChecked(resp.isAutoTurningSensityAdjust());
-//        turningSeekBar.setEnabled(resp.isEnableTurningSeekBar());
         turningSeekBar.setProgress(resp.turningSensitivity);
 
         ridingSwitch.setChecked(resp.isAutoRidingSensityAdjust());
-//        ridingSeekBar.setEnabled(resp.isEnableRidingSeekBar());
         ridingSeekBar.setProgress(resp.ridingSensitivity);
 
         balanceSeekBar.setProgress(resp.balanceInPowerMode + balanceProgressOffset);
@@ -319,7 +290,10 @@ public class SensorSettingActivity extends BaseActivity {
         final byte[] dataBytes = printGattCharacteristicReadEvent(event);
         if (dataBytes != null) {
             byte[] result = respManager.obtainData(dataBytes);
-            respManager.processCommandResp(result);
+            if (result == null) {
+                return;
+            }
+            respManager.processCommandResp(getReadCommandInfo(result), result);
         }
     }
 
@@ -336,21 +310,24 @@ public class SensorSettingActivity extends BaseActivity {
             return;
         }
         String command = BlueUtils.bytesToAscii(dataBytes);
-        Log.e("sunjian-ridingSwitch", command);
         if (command.equals(turnOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A1 65 00 E8 FE
-            turnlayout.setVisibility(View.GONE);
+            turnLayout.setVisibility(View.GONE);
         } else if (command.equals(turnoffSensorSettingCommand)) {
             //55 AA 04 0A 03 A1 32 00 1B FF
-            turnlayout.setVisibility(View.VISIBLE);
-            turningSeekBar.setProgress(50);
+            turnLayout.setVisibility(View.VISIBLE);
+            if (sensitivityCommandResp != null) {
+                turningSeekBar.setProgress(sensitivityCommandResp.turningSensitivity);
+            }
         } else if (command.equals(ridingOnSensorSettingCommand)) {
             //55 AA 04 0A 03 A2 65 00 E7 FE
-            ridinglayout.setVisibility(View.GONE);
+            ridingLayout.setVisibility(View.GONE);
         } else if (command.equals(ridingOffSensorSettingCommand)) {
             //55 AA 04 0A 03 A2 32 00 1A FF
-            ridinglayout.setVisibility(View.VISIBLE);
-            ridingSeekBar.setProgress(50);
+            ridingLayout.setVisibility(View.VISIBLE);
+            if (sensitivityCommandResp != null) {
+                ridingSeekBar.setProgress(sensitivityCommandResp.ridingSensitivity);
+            }
         } else if (command.equals(lockCommand)) {
             showWarnCommandPop();
         } else if (command.equals(checkCommand)) {
@@ -404,8 +381,7 @@ public class SensorSettingActivity extends BaseActivity {
         stopRegisterEventBus();
     }
 
-
-    @OnClick({R.id.lh_btn_back, R.id.ll_back,R.id.posture_layout})
+    @OnClick({R.id.lh_btn_back, R.id.ll_back, R.id.posture_layout})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.lh_btn_back:
