@@ -160,16 +160,19 @@ public class BlueServiceActivity extends BaseActivity {
         initInfoLayout();
     }
 
-    private void initSpecialLayout() {
+    private void relayoutTheSpeedPanelLayout() {
         Rect bounds = new Rect();
         deviceNameTv.getPaint().getTextBounds(deviceNameTv.getText().toString(), 0,
                 deviceNameTv.getText().length(), bounds);
-
+        int height = Math.max(bounds.height(), deviceNameTv.getHeight());
         ViewGroup viewGroup = (ViewGroup) findViewById(R.id.speed_panel);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) viewGroup.getLayoutParams();
-        lp.height = ScreenUtils.screenHeight(this) - ScreenUtils.getNavigationBarHeight(this) - bounds.height();
+        lp.height = ScreenUtils.screenHeight(this) - ScreenUtils.getNavigationBarHeight(this) - height;
         viewGroup.setLayoutParams(lp);
+    }
 
+    private void initTheCurrentSpeedLayout() {
+        relayoutTheSpeedPanelLayout();
         currentSpeedUnit.setText(AppApplication.instance().getUnitWithTime());
         currentSpeed.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/zaozigongfang.otf"), Typeface.ITALIC);
         currentSpeed.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -179,6 +182,16 @@ public class BlueServiceActivity extends BaseActivity {
                 int[] position = new int[2];
                 currentSpeed.getLocationInWindow(position);
                 myScrollView.setDetailLayoutPosition(position[1]);
+            }
+        });
+    }
+
+    private void initSpecialLayout() {
+        deviceNameTv.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                deviceNameTv.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                initTheCurrentSpeedLayout();
             }
         });
     }
