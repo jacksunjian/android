@@ -216,6 +216,18 @@ public class SensorSettingActivity extends BaseActivity {
 
     @Override
     protected void initData() {
+//        getSensorInfo();
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                startMainFuncCommand();
+//            }
+//        }, 1000);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         getSensorInfo();
         handler.postDelayed(new Runnable() {
             @Override
