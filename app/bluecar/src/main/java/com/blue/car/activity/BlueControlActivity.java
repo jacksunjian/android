@@ -3,9 +3,7 @@ package com.blue.car.activity;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +18,7 @@ import com.blue.car.R;
 import com.blue.car.custom.RotationImageView;
 import com.blue.car.events.GattCharacteristicReadEvent;
 import com.blue.car.events.GattCharacteristicWriteEvent;
+import com.blue.car.impl.OnSeekBarChangeListenerImpl;
 import com.blue.car.manager.CommandManager;
 import com.blue.car.manager.CommandRespManager;
 import com.blue.car.model.MainFuncCommandResp;
@@ -37,7 +36,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
@@ -140,7 +138,7 @@ public class BlueControlActivity extends BaseActivity {
     private void initSpeedLimitView() {
         String leftText = String.format("最大速度(%s)", AppApplication.instance().getUnitWithTime());
         seekBarTextView = (TextView) UniversalViewUtils.initNormalSeekBarLayoutWithoutRightTextSet(this, R.id.remote_maxSpeed_layout, leftText,
-                0, speedLimitSeekBarOffset, new SeekBar.OnSeekBarChangeListener() {
+                0, speedLimitSeekBarOffset, new OnSeekBarChangeListenerImpl() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         double result = DigitalUtils.round(AppApplication.instance().getResultByUnit(progress - speedLimitSeekBarOffset), 1);
@@ -148,15 +146,12 @@ public class BlueControlActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                    }
-
-                    @Override
                     public void onStopTrackingTouch(SeekBar seekBar) {
                         startSetRemoteSpeedLimit(seekBar.getProgress() - speedLimitSeekBarOffset);
                     }
                 });
-        UniversalViewUtils.getItemDividerView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout)).setVisibility(View.VISIBLE);
+        UniversalViewUtils.getItemDividerView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout))
+                .setVisibility(View.INVISIBLE);
         speedLimitSeekBar = UniversalViewUtils.getSeekBarView((ViewGroup) findViewById(R.id.remote_maxSpeed_layout));
         speedLimitSeekBar.setMax(5);
     }
