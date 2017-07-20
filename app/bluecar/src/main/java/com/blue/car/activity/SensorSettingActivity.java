@@ -49,7 +49,7 @@ public class SensorSettingActivity extends BaseActivity {
 
     Switch turningSwitch, ridingSwitch;
     SeekBar turningSeekBar, ridingSeekBar, balanceSeekBar;
-    TextView balanceText;
+    TextView turningText,ridingText, balanceText;
     int workMode;
     @Bind(R.id.posture_layout)
     RelativeLayout postureLayout;
@@ -133,6 +133,9 @@ public class SensorSettingActivity extends BaseActivity {
                         }
                     }
                 });
+
+
+
         Switch turningSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.turning_sensitivity_auto_regulation,
                 "转向灵敏度自动调节");
         turningSwitchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -149,13 +152,7 @@ public class SensorSettingActivity extends BaseActivity {
                 writeCommand(command);
             }
         });
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.turning_sensitivity, "转向灵敏度", 45,
-                new OnSeekBarChangeListenerImpl() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        writeTurnSensorCommand(seekBar.getProgress());
-                    }
-                });
+//
         Switch ridingSwitchView = (Switch) UniversalViewUtils.initNormalSwitchLayout(this, R.id.riding_sensitivity_auto_regulation,
                 "骑行灵敏度自动调节");
         ridingSwitchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -172,7 +169,17 @@ public class SensorSettingActivity extends BaseActivity {
                 writeCommand(ridingCommand);
             }
         });
-        UniversalViewUtils.initNormalSeekBarLayout(this, R.id.riding_sensitivity, "骑行灵敏度", 60,
+
+
+        turningText =(TextView) UniversalViewUtils.initNormalSeekBarLayout(this, R.id.turning_sensitivity, "转向灵敏度", 45,
+                new OnSeekBarChangeListenerImpl() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        writeTurnSensorCommand(seekBar.getProgress());
+                    }
+                });
+
+        ridingText =(TextView)UniversalViewUtils.initNormalSeekBarLayout(this, R.id.riding_sensitivity, "骑行灵敏度", 60,
                 new OnSeekBarChangeListenerImpl() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -180,7 +187,9 @@ public class SensorSettingActivity extends BaseActivity {
                     }
                 });
 
-        balanceText = (TextView) UniversalViewUtils.initNormalSeekBarLayout(this, R.id.power_balance,
+
+
+                balanceText = (TextView) UniversalViewUtils.initNormalSeekBarLayout(this, R.id.power_balance,
                 "助力平衡点", 20, balanceProgressOffset, new OnSeekBarChangeListenerImpl() {
                     @Override
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -288,11 +297,23 @@ public class SensorSettingActivity extends BaseActivity {
             return;
         }
         turningSwitch.setChecked(resp.isAutoTurningSensityAdjust());
-        turningSeekBar.setProgress(resp.turningSensitivity);
 
+        if (resp.isAutoTurningSensityAdjust()) {
+            turnLayout.setVisibility(View.GONE);
+        }else {
+            turnLayout.setVisibility(View.VISIBLE);
+            turningSeekBar.setProgress(resp.turningSensitivity);
+            turningText.setText(String.valueOf(resp.turningSensitivity));
+        }
+
+        if (resp.isAutoRidingSensityAdjust()) {
+            ridingLayout.setVisibility(View.GONE);
+        }else {
+            ridingLayout.setVisibility(View.VISIBLE);
+            ridingSeekBar.setProgress(resp.ridingSensitivity);
+            ridingText.setText(String.valueOf(resp.ridingSensitivity));
+        }
         ridingSwitch.setChecked(resp.isAutoRidingSensityAdjust());
-        ridingSeekBar.setProgress(resp.ridingSensitivity);
-
         balanceSeekBar.setProgress(resp.balanceInPowerMode + balanceProgressOffset);
         balanceText.setText(String.valueOf(resp.balanceInPowerMode));
     }
